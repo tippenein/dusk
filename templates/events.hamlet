@@ -1,0 +1,28 @@
+<div .container>
+    <div .row>
+        <ul .list-group>
+
+            <li .list-group-item>
+                Some event
+
+            <li .list-group-item>
+                some other event
+
+    <div .row>
+        <div .col-lg-6>
+            <div .bs-callout bs-callout-info well>
+                <form .form-horizontal method=post action=@{EventR}#forms enctype=#{formEnctype}>
+                    ^{formWidget}
+
+                    <button .btn.btn-primary type="submit">
+                        Upload it!
+
+
+        <div .col-lg-4.col-lg-offset-1>
+            <div .bs-callout.bs-callout-info.upload-response>
+
+                $maybe (FileForm info con) <- submission
+                    Your file type is <em>#{fileContentType info}</em>. You say it has: <em>#{con}</em>
+
+                $nothing
+                    File upload result will be here...
