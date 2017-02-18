@@ -143,6 +143,7 @@ instance Yesod App where
 
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized EventR _ = return Authorized -- isAuthenticated
+    isAuthorized (EventShowR _) _ = return Authorized -- isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows

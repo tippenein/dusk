@@ -1,12 +1,10 @@
 <div .container>
     <div .row>
         <ul .list-group>
+            $forall Entity eventId event <- events
 
-            <li .list-group-item>
-                Some event
-
-            <li .list-group-item>
-                some other event
+                <li .list-group-item>
+                    <p>#{eventName event}
 
     <div .row>
         <div .col-lg-6>
@@ -20,9 +18,5 @@
 
         <div .col-lg-4.col-lg-offset-1>
             <div .bs-callout.bs-callout-info.upload-response>
+                <p> whatever
 
-                $maybe (FileForm info con) <- submission
-                    Your file type is <em>#{fileContentType info}</em>. You say it has: <em>#{con}</em>
-
-                $nothing
-                    File upload result will be here...

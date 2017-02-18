@@ -5,24 +5,44 @@ import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 import Import
 
 
-data FileForm = FileForm
-    { fileInfo :: FileInfo
-    , fileDescription :: Text
-    }
+-- data EventForm = EventForm
+--     { _logo_image :: FileInfo
+--     , _name :: Text
+--     , _event_description :: Text
+--     }
+
+getEventShowR :: Key Event -> Handler Html
+getEventShowR k = undefined  --do
+  -- events <- runDB $ get k
 
 getEventR :: Handler Html
 getEventR = do
-  (formWidget, formEnctype) <- generateFormPost sampleForm
-  -- events <- runDB $ selectList [] []
-  let submission = Nothing :: Maybe FileForm
+  events <- runDB $ selectList [] [Desc EventName]
+  (formWidget, formEnctype) <- generateFormPost eventForm
+  let submission = Nothing :: Maybe Event
   defaultLayout $ do
     setTitle "events!"
     $(widgetFile "events")
 
-sampleForm :: Form FileForm
-sampleForm = renderBootstrap3 BootstrapBasicForm $ FileForm
-  <$> fileAFormReq "Choose a file"
-  <*> areq textField textSettings Nothing
+postEventR :: Handler Html
+postEventR = do
+  ((result, formWidget), formEnctype) <- runFormPost eventForm
+  events <- runDB $ selectList [] [Desc EventName]
+  case result of
+    FormSuccess res -> do
+      entryId <- runDB $ insert res
+      redirect $ EventShowR entryId
+    _ -> defaultLayout $ do
+            setTitle "events!"
+            $(widgetFile "events")
+
+
+eventForm :: Form Event
+eventForm = renderBootstrap3 BootstrapBasicForm $
+  Event
+    <$> areq textField (textSettings { fsLabel = "event name"}) Nothing
+    <*> aopt textField textSettings Nothing
+    <*> pure Nothing -- (fileContent <$> fileAFormOpt "Choose a file")
   -- Add attributes like the placeholder and CSS classes.
   where textSettings = FieldSettings
           { fsLabel = "event description"
@@ -34,15 +54,3 @@ sampleForm = renderBootstrap3 BootstrapBasicForm $ FileForm
               , ("placeholder", "Event description")
               ]
           }
-
-postEventR :: Handler Html
-postEventR = do
-  ((result, formWidget), formEnctype) <- runFormPost sampleForm
-  let
-    submission = case result of
-      FormSuccess res -> Just res
-      _ -> Nothing
-
-  defaultLayout $ do
-    setTitle "events!"
-    $(widgetFile "events")
