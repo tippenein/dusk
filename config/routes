@@ -7,7 +7,5 @@
 / HomeR GET
 
 /events EventR GET POST
-/events/#EventId EventShowR GET
 
-/comments CommentR POST
 /profile ProfileR GET

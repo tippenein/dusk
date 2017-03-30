@@ -22,7 +22,6 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
-                     Handler.Comment
                      Handler.Profile
                      Handler.Event
 
@@ -83,6 +82,7 @@ library
                  , data-default
                  , aeson                         >= 0.6        && < 1.1
                  , conduit                       >= 1.0        && < 2.0
+                 , conduit-extra                 >= 1.0        && < 2.0
                  , monad-logger                  >= 0.3        && < 0.4
                  , fast-logger                   >= 2.2        && < 2.5
                  , wai-logger                    >= 2.2        && < 2.4
@@ -92,6 +92,7 @@ library
                  , containers
                  , vector
                  , time
+                 , uuid
                  , case-insensitive
                  , wai
 
@@ -126,11 +127,11 @@ executable         rsvp-yesod
 test-suite test
     type:              exitcode-stdio-1.0
     main-is:           Spec.hs
-    other-modules:     Handler.CommentSpec
-                       Handler.CommonSpec
-                       Handler.HomeSpec
-                       Handler.ProfileSpec
-                       TestImport
+    other-modules:  Handler.CommonSpec
+                    Handler.EventSpec
+                    Handler.HomeSpec
+                    Handler.ProfileSpec
+                    TestImport
     hs-source-dirs:    test
     ghc-options:       -Wall
 

@@ -3,24 +3,19 @@ User sql=users
     password Text Maybe
     UniqueUser ident
     deriving Typeable
+
 Email sql=emails
     email Text
     userId UserId Maybe
     verkey Text Maybe
     UniqueEmail email
+
 Rsvp sql=rsvps
     email Text Maybe
     phone Text Maybe
     name Text
+
 Event sql=events
     name Text
     description Text Maybe
-    logo_image ByteString Maybe
-
-Comment json -- Adding "json" causes ToJSON and FromJSON instances to be derived.
-    message Text
-    userId UserId Maybe
-    deriving Eq
-    deriving Show
-
- -- By default this file is used in Model.hs (which is imported by Foundation.hs)
+    asset_id Text
