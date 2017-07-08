@@ -37,9 +37,6 @@ import Handler.Home
 import Handler.Profile
 import Handler.Event
 
--- This line actually creates our YesodDispatch instance. It is the second half
--- of the call to mkYesodData which occurs in Foundation.hs. Please see the
--- comments there for more details.
 mkYesodDispatch "App" resourcesApp
 
 -- | This function allocates resources (such as a database connection pool),
@@ -48,8 +45,7 @@ mkYesodDispatch "App" resourcesApp
 -- migrations handled by Yesod.
 makeFoundation :: AppSettings -> IO App
 makeFoundation appSettings = do
-    -- Some basic initializations: HTTP connection manager, logger, and static
-    -- subsite.
+    -- initializations: HTTP connection manager, logger, and static subsite.
     appHttpManager <- newManager
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
     appStatic <-
@@ -62,9 +58,6 @@ makeFoundation appSettings = do
     -- temporary foundation without a real connection pool, get a log function
     -- from there, and then create the real foundation.
     let mkFoundation appConnPool = App {..}
-        -- The App {..} syntax is an example of record wild cards. For more
-        -- information, see:
-        -- https://ocharles.org.uk/blog/posts/2014-12-04-record-wildcards.html
         tempFoundation = mkFoundation $ error "connPool forced in tempFoundation"
         logFunc = messageLoggerSource tempFoundation appLogger
 
@@ -73,10 +66,9 @@ makeFoundation appSettings = do
         (pgConnStr  $ appDatabaseConf appSettings)
         (pgPoolSize $ appDatabaseConf appSettings)
 
-    -- Perform database migration using our application's logging settings.
+    -- autorun migrations on startup
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
 
-    -- Return the foundation
     return $ mkFoundation pool
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
@@ -136,7 +128,6 @@ develMain = develMainHelper getApplicationDev
 -- | The @main@ function for an executable running this site.
 appMain :: IO ()
 appMain = do
-    -- Get the settings from all relevant sources
     settings <- loadYamlSettingsArgs
         -- fall back to compile-time values, set to [] to require values at runtime
         [configSettingsYmlValue]
@@ -144,13 +135,8 @@ appMain = do
         -- allow environment variables to override
         useEnv
 
-    -- Generate the foundation from the settings
     foundation <- makeFoundation settings
-
-    -- Generate a WAI Application from the foundation
     app <- makeApplication foundation
-
-    -- Run the application with Warp
     runSettings (warpSettings foundation) app
 
 

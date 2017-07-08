@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# usage: ./bin/deploy [APP]
+#
+#   APP defaults to rsvp-yesod-staging
+#
+###
+set -e
+
+case "${1:-rsvp-yesod-staging}" in
+  rsvp-yesod-staging)
+    heroku docker:release --app rsvp-yesod-staging
+    ;;
+  rsvp-yesod-production)
+    heroku pipeline:promote --app rsvp-yesod-staging
+    heroku restart --app rsvp-yesod-production
+    ;;
+  *)
+    sed '/^# \(usage:.*\)/!d; s//\1/' "$0" >&2
+    exit 64
+    ;;
+esac

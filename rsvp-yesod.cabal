@@ -12,8 +12,10 @@ Flag library-only
     Default:       False
 
 library
-    hs-source-dirs: ., app
+    hs-source-dirs: src
     exposed-modules: Application
+                     Routes
+                     AppType
                      Foundation
                      Import
                      Import.NoFoundation
@@ -28,6 +30,7 @@ library
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
         ghc-options:   -Wall -Werror -fwarn-tabs -O0
+        build-depends: foreign-store
     else
         ghc-options:   -Wall -fwarn-tabs -O2
 

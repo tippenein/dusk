@@ -1,1 +1,1 @@
-web: rsvp-yesod production -p $PORT
+web: ./rsvp-yesod

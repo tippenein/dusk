@@ -48,13 +48,11 @@ update :: IO ()
 update = do
     mtidStore <- lookupStore tidStoreNum
     case mtidStore of
-      -- no server running
       Nothing -> do
           done <- storeAction doneStore newEmptyMVar
           tid <- start done
           _ <- storeAction (Store tidStoreNum) (newIORef tid)
           return ()
-      -- server is already running
       Just tidStore -> restartAppInNewThread tidStore
   where
     doneStore :: Store (MVar ())
