@@ -13,3 +13,6 @@ db_down:
 
 db_test:
 	psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$(base_db_name)_test'" | grep -q 1 || psql -U postgres -c "CREATE DATABASE $(base_db_name)_test"
+
+db_user:
+	createuser -P -s -e $(base_db_name)

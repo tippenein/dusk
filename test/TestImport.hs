@@ -12,6 +12,8 @@ import ClassyPrelude         as X hiding (delete, deleteBy)
 import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
+import AppType               as X
+import Routes                as X
 import Model                 as X
 import Test.Hspec            as X
 import Text.Shakespeare.Text (st)
