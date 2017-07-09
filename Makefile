@@ -1,7 +1,8 @@
 base_db_name = rsvp_site
 
 ghci:
-	stack ghci rsvp-site:lib
+	stack ghci --ghc-options -fobject-code rsvp-site:lib
+
 dev:
 	stack build --fast --file-watch rsvp-site:lib --exec rsvp-site
 

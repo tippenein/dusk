@@ -1,22 +1,18 @@
 <div .container>
-    <div .row>
-        <ul .list-group>
-            $forall Entity eventId event <- events
+  <div .row>
+    <ul .list-group>
+      $forall Entity _eventId event <- events
 
-                <li .list-group-item>
-                    <p>#{eventName event}
+        <li .list-group-item>
+          <span>
+            <p>#{eventName event}
+            <img src="static/upload/#{eventAsset_id event}" height="250" width="250">
 
-    <div .row>
-        <div .col-lg-6>
-            <div .bs-callout bs-callout-info well>
-                <form .form-horizontal method=post action=@{EventR}#forms enctype=#{formEnctype}>
-                    ^{formWidget}
+  <div .row>
+    <div .col-lg-12>
+      <div .bs-callout bs-callout-info well>
+        <form .form-horizontal method=post action=@{EventR}#forms enctype=#{formEnctype}>
+          ^{formWidget}
 
-                    <button .btn.btn-primary type="submit">
-                        Upload it!
-
-
-        <div .col-lg-4.col-lg-offset-1>
-            <div .bs-callout.bs-callout-info.upload-response>
-                <p> whatever
-
+          <button .btn.btn-primary type="submit">
+            Upload it!

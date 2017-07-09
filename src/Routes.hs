@@ -5,6 +5,13 @@ module Routes where
 import Import.NoFoundation
 import AppType
 
+
+uploadDirectory :: FilePath
+uploadDirectory = "static"
+
+imageFilePath :: String -> FilePath
+imageFilePath f = uploadDirectory </> f
+
 -- http://www.yesodweb.com/book/routing-and-handlers
 mkYesodData "App" [parseRoutes|
 /static StaticR Static appStatic

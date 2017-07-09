@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 {-# LANGUAGE FlexibleInstances #-}
 
 module Model where
@@ -6,7 +8,6 @@ import ClassyPrelude.Yesod
 import Data.UUID (UUID)
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.UUID as UUID
-import Database.Persist.Quasi
 import Database.Persist.Sql
 
 instance PersistField UUID where
@@ -20,11 +21,27 @@ instance PersistField UUID where
 instance PersistFieldSql UUID where
   sqlType _ = SqlOther "uuid"
 
-
-
--- You can define all of your database entities in the entities file.
--- You can find more information on persistent and how to declare entities
--- at:
 -- http://www.yesodweb.com/book/persistent/
-share [mkPersist sqlSettings, mkMigrate "migrateAll"]
-    $(persistFileWith lowerCaseSettings "config/models")
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+User sql=users
+    ident Text
+    password Text Maybe
+    UniqueUser ident
+    deriving Typeable
+
+Email sql=emails
+    email Text
+    userId UserId Maybe
+    verkey Text Maybe
+    UniqueEmail email
+
+Rsvp sql=rsvps
+    email Text Maybe
+    phone Text Maybe
+    name Text
+
+Event sql=events
+    name Text
+    description Text Maybe
+    asset_id Text
+|]

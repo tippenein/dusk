@@ -3,6 +3,8 @@ module Handler.Event where
 import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 import Data.Conduit.Binary (sinkLbs)
 
+import qualified Data.Text as T
+
 import Import
 
 getEventR :: Handler Html
@@ -17,30 +19,38 @@ postEventR :: Handler Html
 postEventR = do
   ((result, formWidget), formEnctype) <- runFormPost eventForm
   events <- runDB $ selectList [] [Desc EventName]
-  -- let fi = fileSource result
-  -- bytes <- toStrict . runResourceT $ fileSource fi $$ sinkLbs
-  case formToEvent <$> result of
-    FormSuccess res -> do
-      entryId <- runDB $ insert res
+  case result of
+    FormSuccess (EventForm n d fi)-> do
+      filename <- writeToServer fi
+      _ <- runDB $ insert (Event n d filename)
+      setMessage "Image saved"
       redirect EventR
     _ -> defaultLayout $ do
             setTitle "events!"
             $(widgetFile "events")
 
+writeToServer :: FileInfo -> Handler Text
+writeToServer file = do
+  filename <- runResourceT $ fileSource file $$ sinkLbs
+  let path = imageFilePath $ genFileName filename
+  liftIO $ fileMove file path
+  return $ T.pack $ genFileName filename
+  where
+    genFileName lbs = "upload-" ++ base64md5 lbs
 
-formToEvent :: EventForm -> Event
-formToEvent (EventForm name maybe_descrip fi) = do
-  -- do something with the FileInfo
-  Event name maybe_descrip "derp"
-
-data EventForm = EventForm Text (Maybe Text) FileInfo
+data EventForm
+  = EventForm
+  { ef_name :: Text
+  , ef_description :: Maybe Text
+  , ef_fileInfo :: FileInfo
+  }
 
 eventForm :: Form EventForm
 eventForm = renderBootstrap3 BootstrapBasicForm $
   EventForm
     <$> areq textField (textSettings "name") Nothing
     <*> aopt textField (textSettings "description") Nothing
-    <*> fileAFormReq "Choose a file"
+    <*> fileAFormReq "Choose an Event Image"
   where
     textSettings t = FieldSettings
           { fsLabel = t
