@@ -5,6 +5,7 @@ module Routes where
 import Import.NoFoundation
 import AppType
 
+-- http://www.yesodweb.com/book/routing-and-handlers
 mkYesodData "App" [parseRoutes|
 /static StaticR Static appStatic
 /auth   AuthR   Auth   getAuth

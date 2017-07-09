@@ -1,4 +1,4 @@
-name:              rsvp-yesod
+name:              rsvp-site
 version:           0.0.0
 cabal-version:     >= 1.8
 build-type:        Simple
@@ -99,13 +99,13 @@ library
                  , case-insensitive
                  , wai
 
-executable         rsvp-yesod
+executable         rsvp-site
     if flag(library-only)
         Buildable: False
 
     main-is:           main.hs
     hs-source-dirs:    app
-    build-depends:     base, rsvp-yesod
+    build-depends:     base, rsvp-site
 
     ghc-options:       -threaded -rtsopts -with-rtsopts=-N
 
@@ -157,7 +157,7 @@ test-suite test
                 CPP
 
     build-depends: base
-                 , rsvp-yesod
+                 , rsvp-site
                  , yesod-auth
                  , yesod-test >= 1.5.2 && < 1.6
                  , yesod-core

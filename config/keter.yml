@@ -15,8 +15,8 @@ stanzas:
     #
     # The path given is for Stack projects. If you're still using cabal, change
     # to
-    # exec: ../dist/build/rsvp-yesod/rsvp-yesod
-    exec: ../dist/bin/rsvp-yesod
+    # exec: ../dist/build/rsvp-site/rsvp-site
+    exec: ../dist/bin/rsvp-site
 
     # Command line options passed to your application.
     args: []
@@ -25,7 +25,7 @@ stanzas:
       # You can specify one or more hostnames for your application to respond
       # to. The primary hostname will be used for generating your application
       # root.
-      - www.rsvp-yesod.com
+      - www.rsvp-site.com
 
     # Enable to force Keter to redirect to https
     # Can be added to any stanza
@@ -34,7 +34,7 @@ stanzas:
   # Static files.
   - type: static-files
     hosts:
-      - static.rsvp-yesod.com
+      - static.rsvp-site.com
     root: ../static
 
     # Uncomment to turn on directory listings.
@@ -44,9 +44,9 @@ stanzas:
   - type: redirect
 
     hosts:
-      - rsvp-yesod.com
+      - rsvp-site.com
     actions:
-      - host: www.rsvp-yesod.com
+      - host: www.rsvp-site.com
         # secure: false
         # port: 80
 

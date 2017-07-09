@@ -2,18 +2,18 @@
 #
 # usage: ./bin/deploy [APP]
 #
-#   APP defaults to rsvp-yesod-staging
+#   APP defaults to rsvp-site-staging
 #
 ###
 set -e
 
-case "${1:-rsvp-yesod-staging}" in
-  rsvp-yesod-staging)
-    heroku docker:release --app rsvp-yesod-staging
+case "${1:-rsvp-site-staging}" in
+  rsvp-site-staging)
+    heroku docker:release --app rsvp-site-staging
     ;;
-  rsvp-yesod-production)
-    heroku pipeline:promote --app rsvp-yesod-staging
-    heroku restart --app rsvp-yesod-production
+  rsvp-site-production)
+    heroku pipeline:promote --app rsvp-site-staging
+    heroku restart --app rsvp-site-production
     ;;
   *)
     sed '/^# \(usage:.*\)/!d; s//\1/' "$0" >&2

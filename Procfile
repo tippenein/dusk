@@ -1,1 +1,1 @@
-web: ./rsvp-yesod
+web: ./rsvp-site

@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports #-}
-import "rsvp-yesod" Application (develMain)
+import "rsvp-site" Application (develMain)
 import Prelude (IO)
 
 main :: IO ()

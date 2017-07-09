@@ -6,6 +6,6 @@ database:
   # something like:
   #
   #   database: "_env:PGDATABASE:rsvp-yesod_LOWER_test"
-  database: rsvp_yesod_test
+  database: rsvp_site_test
 
 auth-dummy-login: true
