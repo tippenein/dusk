@@ -1,18 +1,9 @@
 <div .container>
   <div .row>
-    <ul .list-group>
-      $forall Entity _eventId event <- events
-
-        <li .list-group-item>
-          <span>
-            <p>#{eventName event}
-            <img src="static/upload/#{eventAsset_id event}" height="250" width="250">
-
-  <div .row>
     <div .col-lg-12>
       <div .bs-callout bs-callout-info well>
         <form .form-horizontal method=post action=@{EventR}#forms enctype=#{formEnctype}>
           ^{formWidget}
 
           <button .btn.btn-primary type="submit">
-            Upload it!
+            Post it!

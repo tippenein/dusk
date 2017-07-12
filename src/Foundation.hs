@@ -1,5 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Foundation where
 
 import Import.NoFoundation
@@ -10,7 +12,7 @@ import Text.Jasmine         (minifym)
 -- Used only when in "auth-dummy-login" setting is enabled.
 -- import Yesod.Auth.Dummy
 
-import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
+-- import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
 import Yesod.Default.Util   (addStaticContentExternal)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
@@ -29,10 +31,6 @@ data MenuTypes
     = NavbarLeft MenuItem
     | NavbarRight MenuItem
 
--- This is where we define all of the routes in our application. For a full
--- explanation of the syntax, please see:
--- http://www.yesodweb.com/book/routing-and-handlers
---
 -- Note that this is really half the story; in Application.hs, mkYesodDispatch
 -- generates the rest of the code. Please see the following documentation
 -- for an explanation for this split:
@@ -41,8 +39,6 @@ data MenuTypes
 -- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
--- Please see the documentation for the Yesod typeclass. There are a number
--- of settings which can be configured by overriding methods here.
 instance Yesod App where
     -- Controls the base of generated URLs. For more information on modifying,
     -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
@@ -57,16 +53,12 @@ instance Yesod App where
         120    -- timeout in minutes
         "config/client_session_key.aes"
 
-    -- Yesod Middleware allows you to run code before and after each handler function.
-    -- The defaultYesodMiddleware adds the response header "Vary: Accept, Accept-Language" and performs authorization checks.
-    -- Some users may also want to add the defaultCsrfMiddleware, which:
-    --   a) Sets a cookie with a CSRF token in it.
-    --   b) Validates that incoming write requests include that token in either a header or POST parameter.
-    -- To add it, chain it together with the defaultMiddleware: yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware
     -- For details, see the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package.
-    yesodMiddleware = defaultYesodMiddleware
+    yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware
 
     defaultLayout widget = do
+
+
         master <- getYesod
         mmsg <- getMessage
 
@@ -84,8 +76,13 @@ instance Yesod App where
                     , menuItemAccessCallback = True
                     }
                 , NavbarLeft $ MenuItem
-                    { menuItemLabel = "Profile"
+                    { menuItemLabel = "Curators"
                     , menuItemRoute = ProfileR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                , NavbarLeft $ MenuItem
+                    { menuItemLabel = "Events"
+                    , menuItemRoute = EventR
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
@@ -167,7 +164,7 @@ instance YesodBreadcrumbs App where
   breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb (AuthR _) = return ("Login", Just HomeR)
   breadcrumb ProfileR = return ("Profile", Just HomeR)
-  -- breadcrumb EventR = return ("Event", Just EventR)
+  breadcrumb EventR = return ("Events", Just HomeR)
   breadcrumb  _ = return ("home", Nothing)
 
 -- How to run database actions.
@@ -195,11 +192,10 @@ instance YesodAuth App where
             Just (Entity uid _) -> return $ Authenticated uid
             Nothing -> Authenticated <$> insert User
                 { userIdent = credsIdent creds
-                , userPassword = Nothing
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _app = [authGoogleEmail "asdf" "asdf"] -- [authOpenId Claimed []] ++ extraAuthPlugins
+    authPlugins _app = [] -- authGoogleEmail "asdf" "asdf"] -- [authOpenId Claimed []] ++ extraAuthPlugins
         -- Enable authDummy login if enabled.
         -- where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 
@@ -228,6 +224,15 @@ instance HasHttpManager App where
 
 unsafeHandler :: App -> Handler a -> IO a
 unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
+
+
+runDBor404 :: DB (Maybe a) -> Handler a
+runDBor404 dba = do
+  ma <- runDB dba
+  case ma of
+    Nothing -> notFound
+    Just a -> return a
+
 
 -- Note: Some functionality previously present in the scaffolding has been
 -- moved to documentation in the Wiki. Following are some hopefully helpful

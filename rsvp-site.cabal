@@ -20,6 +20,8 @@ library
                      Import
                      Import.NoFoundation
                      Model
+                     Model.BCrypt
+                     Model.Instances
                      Settings
                      Settings.StaticFiles
                      Handler.Common
@@ -73,6 +75,7 @@ library
                  , persistent                    >= 2.0        && < 2.7
                  , persistent-postgresql         >= 2.1.1      && < 2.7
                  , persistent-template           >= 2.0        && < 2.7
+                 , esqueleto
                  , template-haskell
                  , shakespeare                   >= 2.0        && < 2.1
                  , hjsmin                        >= 0.1        && < 0.3
@@ -90,6 +93,7 @@ library
                  , fast-logger                   >= 2.2        && < 2.5
                  , wai-logger                    >= 2.2        && < 2.4
                  , file-embed
+                 , bcrypt
                  , safe
                  , unordered-containers
                  , containers

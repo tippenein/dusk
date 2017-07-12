@@ -4,8 +4,7 @@ import Import
 
 getHomeR :: Handler Html
 getHomeR = do
-  let handlerName = "getHomeR" :: Text
+  events <- runDB $ selectList [] [Desc EventStart_time]
   defaultLayout $ do
-    aDomId <- newIdent
-    setTitle "Welcome To Yesod!"
+    setTitle "RSVP!"
     $(widgetFile "homepage")

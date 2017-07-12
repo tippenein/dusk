@@ -2,6 +2,7 @@ module Handler.Event where
 
 import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 import Data.Conduit.Binary (sinkLbs)
+import Data.Time.Clock as Clock
 
 import qualified Data.Text as T
 
@@ -9,7 +10,7 @@ import Import
 
 getEventR :: Handler Html
 getEventR = do
-  events <- runDB $ selectList [] [Desc EventName]
+  events <- runDB $ selectList [] [Desc EventStart_time]
   (formWidget, formEnctype) <- generateFormPost eventForm
   defaultLayout $ do
     setTitle "events!"
@@ -22,7 +23,8 @@ postEventR = do
   case result of
     FormSuccess (EventForm n d fi)-> do
       filename <- writeToServer fi
-      _ <- runDB $ insert (Event n d filename)
+      t <- liftIO Clock.getCurrentTime
+      _ <- runDB $ insert (Event n d filename True (Just t) Nothing)
       setMessage "Image saved"
       redirect EventR
     _ -> defaultLayout $ do

@@ -7,7 +7,7 @@ import AppType
 
 
 uploadDirectory :: FilePath
-uploadDirectory = "static"
+uploadDirectory = "static/upload"
 
 imageFilePath :: String -> FilePath
 imageFilePath f = uploadDirectory </> f
