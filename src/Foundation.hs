@@ -39,6 +39,49 @@ data MenuTypes
 -- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
+navLayout :: Maybe (Entity User) -> Widget
+navLayout user =
+  [whamlet|
+<div class="top-bar">
+  <div class="top-bar-left">
+    <ul class="menu">
+      <li .menu-logo>
+        <a href="@{HomeR}" .plain>RSVP
+  <div class="top-bar-right">
+    <ul class="menu">
+      $maybe _ <- user
+        <li>
+          <a href="@{HomeR}">Signout
+      $nothing
+        <li>no
+|]
+        -- <li>
+        --   <a href="@{LoginR}">Login
+        -- <li>
+        --   <a href="@{SignupR}">Signup
+
+baseLayout :: Html -> Maybe (Entity User) -> WidgetT App IO () -> Handler Html
+baseLayout title user content = do
+  defaultLayout $ do
+    setTitle title
+    [whamlet|
+^{navLayout user}
+^{content}
+|]
+
+errorFragment' :: Maybe Text -> Text -> Widget
+errorFragment' mmsg t =
+  [whamlet|
+<div #error-block .container-lg>
+  <h1 .error-title>#{t}
+  $maybe msg <- mmsg
+    <h2 .error-explanation>
+      #{msg}
+|]
+
+errorFragment :: Text -> Widget
+errorFragment = errorFragment' Nothing
+
 instance Yesod App where
     -- Controls the base of generated URLs. For more information on modifying,
     -- see: https://github.com/yesodweb/yesod/wiki/Overriding-approot
@@ -118,14 +161,17 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
-    isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
+    -- isAuthorized SignupR _ = return Authorized
+    -- isAuthorized SignoutR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
 
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized EventR _ = return Authorized -- isAuthenticated
+    isAuthorized AdminEventR _ = isAuthenticated
+    isAuthorized (AuthR _) _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows

@@ -1,6 +1,6 @@
 name:              rsvp-site
 version:           0.0.0
-cabal-version:     >= 1.8
+cabal-version:     >= 1.10
 build-type:        Simple
 
 Flag dev
@@ -17,6 +17,7 @@ library
                      Routes
                      AppType
                      Foundation
+                     Helpers.Forms
                      Import
                      Import.NoFoundation
                      Model
@@ -36,23 +37,8 @@ library
     else
         ghc-options:   -Wall -fwarn-tabs -O2
 
-    extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                FlexibleInstances
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ViewPatterns
-                TupleSections
-                RecordWildCards
-                CPP
+    default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
+
 
     build-depends:
                    -- Due to a bug in GHC 8.0.1, we block its usage
@@ -95,10 +81,12 @@ library
                  , file-embed
                  , bcrypt
                  , safe
+                 , errors
                  , unordered-containers
                  , containers
                  , vector
                  , time
+                 , transformers
                  , uuid
                  , case-insensitive
                  , wai
@@ -111,25 +99,10 @@ executable         rsvp-site
     hs-source-dirs:    app
     build-depends:     base, rsvp-site
 
+
+    default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
     ghc-options:       -threaded -rtsopts -with-rtsopts=-N
 
-    extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                FlexibleInstances
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ViewPatterns
-                TupleSections
-                RecordWildCards
-                CPP
 
 test-suite test
     type:              exitcode-stdio-1.0
@@ -142,23 +115,8 @@ test-suite test
     hs-source-dirs:    test
     ghc-options:       -Wall
 
-    extensions: TemplateHaskell
-                QuasiQuotes
-                OverloadedStrings
-                NoImplicitPrelude
-                MultiParamTypeClasses
-                TypeFamilies
-                GADTs
-                GeneralizedNewtypeDeriving
-                FlexibleContexts
-                FlexibleInstances
-                EmptyDataDecls
-                NoMonomorphismRestriction
-                DeriveDataTypeable
-                ViewPatterns
-                TupleSections
-                RecordWildCards
-                CPP
+
+    default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
 
     build-depends: base
                  , rsvp-site

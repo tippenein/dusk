@@ -12,20 +12,20 @@ uploadDirectory = "static/upload"
 imageFilePath :: String -> FilePath
 imageFilePath f = uploadDirectory </> f
 
+
 -- http://www.yesodweb.com/book/routing-and-handlers
 mkYesodData "App" [parseRoutes|
-/static StaticR Static appStatic
-/auth   AuthR   Auth   getAuth
-
+/static      StaticR Static appStatic
 /favicon.ico FaviconR GET
-/robots.txt RobotsR GET
+/robots.txt  RobotsR GET
 
-/ HomeR GET
+/auth        AuthR Auth   getAuth
 
-/events EventR GET POST
-
-/profile ProfileR GET
+/            HomeR GET
+/events       EventR GET
+/admin/events AdminEventR GET POST
+/profile      ProfileR GET
 |]
 
--- type Handler = HandlerT App IO
--- type Widget = WidgetT App IO ()
+-- /signup      SignupR  GET POST
+-- /signout     SignoutR GET

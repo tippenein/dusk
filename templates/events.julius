@@ -1,0 +1,14 @@
+<script type="text/javascript">
+    $(function () {
+        $('#datetimepicker6').datetimepicker();
+        $('#datetimepicker7').datetimepicker({
+            useCurrent: false //Important! See issue #1075
+        });
+        $("#datetimepicker-start_time").on("dp.change", function (e) {
+            $('#datetimepicker-start_date').data("DateTimePicker").minDate(e.date);
+        });
+        $("#datetimepicker-end_time").on("dp.change", function (e) {
+            $('#datetimepicker-end_date').data("DateTimePicker").maxDate(e.date);
+        });
+    });
+</script>
