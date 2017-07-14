@@ -19,44 +19,30 @@ import Yesod.Default.Config2       (applyEnvValue, configSettingsYml)
 import Yesod.Default.Util          (WidgetFileSettings, widgetFileNoReload,
                                     widgetFileReload)
 
--- | Runtime settings to configure this application. These settings can be
--- loaded from various sources: defaults, environment variables, config files,
--- theoretically even a database.
 data AppSettings = AppSettings
     { appStaticDir              :: String
-    -- ^ Directory from which to serve static files.
     , appDatabaseConf           :: PostgresConf
-    -- ^ Configuration settings for accessing the database.
     , appRoot                   :: Maybe Text
     -- ^ Base for all generated URLs. If @Nothing@, determined
     -- from the request headers.
     , appHost                   :: HostPreference
     -- ^ Host/interface the server should bind to.
     , appPort                   :: Int
-    -- ^ Port to listen on
     , appIpFromHeader           :: Bool
     -- ^ Get the IP address from the header when logging. Useful when sitting
     -- behind a reverse proxy.
-
     , appDetailedRequestLogging :: Bool
     -- ^ Use detailed request logging system
     , appShouldLogAll           :: Bool
-    -- ^ Should all log messages be displayed?
     , appReloadTemplates        :: Bool
-    -- ^ Use the reload version of templates
     , appMutableStatic          :: Bool
-    -- ^ Assume that files in the static dir may change after compilation
     , appSkipCombining          :: Bool
     -- ^ Perform no stylesheet/script combining
-
-    -- Example app-specific configuration values.
     , appCopyright              :: Text
-    -- ^ Copyright text to appear in the footer of the page
     , appAnalytics              :: Maybe Text
-    -- ^ Google Analytics code
-
     , appAuthDummyLogin         :: Bool
-    -- ^ Indicate if auth dummy login should be enabled.
+    , appGoogleAuthKey          :: Text
+    , appGoogleAuthSecret       :: Text
     }
 
 instance FromJSON AppSettings where
@@ -82,6 +68,8 @@ instance FromJSON AppSettings where
 
         appCopyright              <- o .:  "copyright"
         appAnalytics              <- o .:? "analytics"
+        appGoogleAuthKey          <- o .: "google_auth_key"
+        appGoogleAuthSecret       <- o .: "google_auth_secret"
 
         appAuthDummyLogin         <- o .:? "auth-dummy-login"      .!= defaultDev
 
@@ -89,8 +77,6 @@ instance FromJSON AppSettings where
 
 -- | Settings for 'widgetFile', such as which template languages to support and
 -- default Hamlet settings.
---
--- For more information on modifying behavior, see:
 --
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
@@ -100,9 +86,7 @@ widgetFileSettings = def
 combineSettings :: CombineSettings
 combineSettings = def
 
--- The rest of this file contains settings which rarely need changing by a
--- user.
-
+-- The rest of this file contains settings which rarely need changing
 widgetFile :: String -> Q Exp
 widgetFile = (if appReloadTemplates compileTimeAppSettings
                 then widgetFileReload

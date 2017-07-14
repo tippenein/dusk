@@ -12,7 +12,7 @@ import Text.Jasmine         (minifym)
 -- Used only when in "auth-dummy-login" setting is enabled.
 -- import Yesod.Auth.Dummy
 
--- import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
+import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
 import Yesod.Default.Util   (addStaticContentExternal)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
@@ -51,14 +51,11 @@ navLayout user =
     <ul class="menu">
       $maybe _ <- user
         <li>
-          <a href="@{HomeR}">Signout
+          <a href="@{ProfileR}">Signout
       $nothing
-        <li>no
+        <li>
+          <a href="@{AuthR LoginR}">Login
 |]
-        -- <li>
-        --   <a href="@{LoginR}">Login
-        -- <li>
-        --   <a href="@{SignupR}">Signup
 
 baseLayout :: Html -> Maybe (Entity User) -> WidgetT App IO () -> Handler Html
 baseLayout title user content = do
@@ -161,9 +158,8 @@ instance Yesod App where
     authRoute _ = Just $ AuthR LoginR
 
     -- Routes not requiring authentication.
+    isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
-    -- isAuthorized SignupR _ = return Authorized
-    -- isAuthorized SignoutR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
@@ -171,7 +167,6 @@ instance Yesod App where
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized EventR _ = return Authorized -- isAuthenticated
     isAuthorized AdminEventR _ = isAuthenticated
-    isAuthorized (AuthR _) _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -240,8 +235,11 @@ instance YesodAuth App where
                 { userIdent = credsIdent creds
                 }
 
-    -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _app = [] -- authGoogleEmail "asdf" "asdf"] -- [authOpenId Claimed []] ++ extraAuthPlugins
+    authPlugins app = [authGoogleEmail authKey authSecret]
+      where
+        settings = appSettings app
+        authKey = appGoogleAuthKey settings
+        authSecret = appGoogleAuthSecret settings
         -- Enable authDummy login if enabled.
         -- where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 

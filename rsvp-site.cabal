@@ -28,6 +28,7 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Profile
+                     Handler.AdminEvent
                      Handler.Event
 
     if flag(dev) || flag(library-only)

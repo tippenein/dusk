@@ -15,13 +15,13 @@ imageFilePath f = uploadDirectory </> f
 
 -- http://www.yesodweb.com/book/routing-and-handlers
 mkYesodData "App" [parseRoutes|
-/static      StaticR Static appStatic
-/favicon.ico FaviconR GET
-/robots.txt  RobotsR GET
+/static       StaticR Static appStatic
+/favicon.ico  FaviconR GET
+/robots.txt   RobotsR GET
 
-/auth        AuthR Auth   getAuth
+/auth         AuthR Auth   getAuth
 
-/            HomeR GET
+/             HomeR GET
 /events       EventR GET
 /admin/events AdminEventR GET POST
 /profile      ProfileR GET

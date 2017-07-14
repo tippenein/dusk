@@ -36,6 +36,7 @@ import Handler.Common
 import Handler.Home
 import Handler.Profile
 import Handler.Event
+import Handler.AdminEvent
 
 mkYesodDispatch "App" resourcesApp
 

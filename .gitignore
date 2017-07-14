@@ -3,6 +3,7 @@ static/tmp/
 static/combined/
 static/upload/
 config/client_session_key.aes
+config/google_oauth_keys
 *.hi
 *.o
 *.sqlite3
