@@ -7,4 +7,9 @@ getProfileR = do
     (_, user) <- requireAuthPair
     defaultLayout $ do
         setTitle . toHtml $ userIdent user <> "'s User page"
-        $(widgetFile "profile")
+        [whamlet|
+<div .ui.container>
+
+    <h1>
+      Hello <strong><span class="username">#{userIdent user}</span></strong>!
+|]

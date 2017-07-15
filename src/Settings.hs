@@ -29,8 +29,7 @@ data AppSettings = AppSettings
     -- ^ Host/interface the server should bind to.
     , appPort                   :: Int
     , appIpFromHeader           :: Bool
-    -- ^ Get the IP address from the header when logging. Useful when sitting
-    -- behind a reverse proxy.
+    -- ^ Get the IP address from the header when logging.
     , appDetailedRequestLogging :: Bool
     -- ^ Use detailed request logging system
     , appShouldLogAll           :: Bool
@@ -75,9 +74,7 @@ instance FromJSON AppSettings where
 
         return AppSettings {..}
 
--- | Settings for 'widgetFile', such as which template languages to support and
--- default Hamlet settings.
---
+-- | which template languages to support and default Hamlet settings.
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
 widgetFileSettings = def

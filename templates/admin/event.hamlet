@@ -1,0 +1,9 @@
+<div .container>
+  <div .row>
+    <div .col-lg-12>
+      <div .bs-callout bs-callout-info well>
+        <form .form-horizontal method=post action=@{EventR}#forms>
+          ^{formWidget}
+
+          <button .btn.btn-primary type="submit">
+            Post it!

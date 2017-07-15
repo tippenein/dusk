@@ -9,18 +9,20 @@ module Model where
 
 import ClassyPrelude.Yesod hiding (on, (==.))
 import Model.BCrypt
--- import Model.Instances
+import Model.Instances
 import Database.Esqueleto
-import Database.Persist.Sql ()
-
--- import qualified Data.ByteString.Char8 as B8
--- import qualified Data.UUID as UUID
-
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User sql=users
     ident Text
+    name Text Maybe
     UniqueUser ident
+    deriving Show
+
+UserRole sql=user_roles
+    user_id UserId
+    role Role
+    UniqueUserRole user_id role
     deriving Show
 
 Password sql=passwords
@@ -49,8 +51,10 @@ Event sql=events
     name Text
     description Text Maybe
     asset_id Text
-    day_only Bool default=False
-    start_time UTCTime Maybe default=now()
+    owner_id UserId
+    start_day Day
+    end_day Day Maybe
+    start_time UTCTime Maybe
     end_time UTCTime Maybe
 |]
 
@@ -65,6 +69,14 @@ getUserPassword email = fmap listToMaybe $
   where_ (user ^. UserIdent ==. val email)
   return (user, pass)
 
+getUsersWithRole :: Role -> DB ([Entity User])
+getUsersWithRole role =
+  select $
+  from $ \(user `InnerJoin` userRole) -> do
+  on (user ^. UserId ==. userRole ^. UserRoleUser_id)
+  where_ (userRole ^. UserRoleRole ==. val role)
+  return user
+
 getUserEntity :: Text -> DB (Maybe (Entity User))
 getUserEntity email = fmap listToMaybe $
   select $
@@ -74,7 +86,7 @@ getUserEntity email = fmap listToMaybe $
 
 createUser :: Text -> Text -> DB (Entity User)
 createUser email pass = do
-  let newUser = User email
+  let newUser = User email Nothing
   userId <- insert $ newUser
   h <- liftIO $ hashPassword pass
   _ <- insert $ Password h userId

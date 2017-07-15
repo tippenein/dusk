@@ -36,7 +36,8 @@ import Handler.Common
 import Handler.Home
 import Handler.Profile
 import Handler.Event
-import Handler.AdminEvent
+import Handler.Curator
+import Handler.Admin.Event
 
 mkYesodDispatch "App" resourcesApp
 
@@ -77,7 +78,6 @@ makeFoundation appSettings = do
 makeApplication :: App -> IO Application
 makeApplication foundation = do
     logWare <- makeLogWare foundation
-    -- Create the WAI application and apply middlewares
     appPlain <- toWaiAppPlain foundation
     return $ logWare $ defaultMiddlewaresNoLogging appPlain
 
@@ -86,11 +86,10 @@ makeLogWare foundation =
     mkRequestLogger def
         { outputFormat =
             if appDetailedRequestLogging $ appSettings foundation
-                then Detailed True
-                else Apache
-                        (if appIpFromHeader $ appSettings foundation
-                            then FromFallback
-                            else FromSocket)
+            then Detailed True
+            else Apache (if appIpFromHeader $ appSettings foundation
+                         then FromFallback
+                         else FromSocket)
         , destination = Logger $ loggerSet $ appLogger foundation
         }
 

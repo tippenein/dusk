@@ -21,10 +21,12 @@ mkYesodData "App" [parseRoutes|
 
 /auth         AuthR Auth   getAuth
 
-/             HomeR GET
-/events       EventR GET
-/admin/events AdminEventR GET POST
-/profile      ProfileR GET
+/                  HomeR GET
+/events            EventR GET
+/admin/events      AdminEventR GET POST
+/profile           ProfileR GET
+/curators          CuratorsR GET
+/curators/#UserId  CuratorR GET
 |]
 
 -- /signup      SignupR  GET POST

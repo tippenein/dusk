@@ -19,3 +19,8 @@ instance PersistField UUID where
 
 instance PersistFieldSql UUID where
   sqlType _ = SqlOther "uuid"
+
+data Role = Admin | Curator | Fan
+  deriving (Show, Read, Eq)
+
+derivePersistField "Role"

@@ -10,7 +10,7 @@ import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
 
 -- Used only when in "auth-dummy-login" setting is enabled.
--- import Yesod.Auth.Dummy
+import Yesod.Auth.Dummy
 
 import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
 import Yesod.Default.Util   (addStaticContentExternal)
@@ -117,12 +117,17 @@ instance Yesod App where
                     }
                 , NavbarLeft $ MenuItem
                     { menuItemLabel = "Curators"
-                    , menuItemRoute = ProfileR
-                    , menuItemAccessCallback = isJust muser
+                    , menuItemRoute = CuratorsR
+                    , menuItemAccessCallback = isNothing muser
                     }
                 , NavbarLeft $ MenuItem
                     { menuItemLabel = "Events"
-                    , menuItemRoute = EventR
+                    , menuItemRoute = AdminEventR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = userIdent $ snd $ fromMaybe (error "no user") muser
+                    , menuItemRoute = ProfileR
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
@@ -143,7 +148,6 @@ instance Yesod App where
         let navbarLeftFilteredMenuItems = [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
         let navbarRightFilteredMenuItems = [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
 
-        -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
         -- value passed to hamletToRepHtml cannot be a widget, this allows
@@ -157,12 +161,13 @@ instance Yesod App where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
-    -- Routes not requiring authentication.
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
+    isAuthorized (CuratorR _) _ = return Authorized
+    isAuthorized CuratorsR _ = return Authorized
 
     isAuthorized ProfileR _ = isAuthenticated
     isAuthorized EventR _ = return Authorized -- isAuthenticated
@@ -206,7 +211,8 @@ instance YesodBreadcrumbs App where
   breadcrumb (AuthR _) = return ("Login", Just HomeR)
   breadcrumb ProfileR = return ("Profile", Just HomeR)
   breadcrumb EventR = return ("Events", Just HomeR)
-  breadcrumb  _ = return ("home", Nothing)
+  breadcrumb AdminEventR = return ("Events", Just HomeR)
+  breadcrumb  _ = return ("Home", Nothing)
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -220,12 +226,10 @@ instance YesodPersistRunner App where
 instance YesodAuth App where
     type AuthId App = UserId
 
-    -- Where to send a user after successful login
     loginDest _ = HomeR
-    -- Where to send a user after logout
     logoutDest _ = HomeR
     -- Override the above two destinations when a Referer: header is present
-    redirectToReferer _ = True
+    redirectToReferer _ = False
 
     authenticate creds = runDB $ do
         x <- getBy $ UniqueUser $ credsIdent creds
@@ -233,15 +237,16 @@ instance YesodAuth App where
             Just (Entity uid _) -> return $ Authenticated uid
             Nothing -> Authenticated <$> insert User
                 { userIdent = credsIdent creds
+                , userName = Nothing
                 }
 
-    authPlugins app = [authGoogleEmail authKey authSecret]
+    authPlugins app = [authGoogleEmail authKey authSecret] ++ extraAuthPlugins
       where
         settings = appSettings app
         authKey = appGoogleAuthKey settings
         authSecret = appGoogleAuthSecret settings
-        -- Enable authDummy login if enabled.
-        -- where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
+
+        extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 
     authHttpManager = getHttpManager
 
@@ -277,11 +282,6 @@ runDBor404 dba = do
     Nothing -> notFound
     Just a -> return a
 
-
--- Note: Some functionality previously present in the scaffolding has been
--- moved to documentation in the Wiki. Following are some hopefully helpful
--- links:
---
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding

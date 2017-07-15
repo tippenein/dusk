@@ -39,5 +39,5 @@
 <!-- Footer -->
 <footer .footer>
     <div .container>
-        <p .text-muted>
+        <p .text-muted.pull-right>
             #{appCopyright $ appSettings master}

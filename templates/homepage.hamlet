@@ -23,5 +23,5 @@
 
     <div .row>
         <div .col-lg-12>
-            <div .footer>
-                 Footer
+            <div .footer.pull-right>
+                 AndAnd LLC

@@ -9,4 +9,5 @@ import Helpers.Forms       as Import
 import Import.NoFoundation as Import
 import Model               as Import
 import Model.BCrypt        as Import
+import Model.Instances     as Import
 import Routes              as Import
