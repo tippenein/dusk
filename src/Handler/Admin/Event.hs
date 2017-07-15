@@ -11,10 +11,9 @@ import Import
 
 getAdminEventR :: Handler Html
 getAdminEventR = do
-  events <- runDB $ selectList [] [Desc EventStart_time]
   (formWidget, _formEnctype) <- generateFormPost eventForm
   defaultLayout $ do
-    setTitle "events!"
+    setTitle' "Create Event"
     [whamlet|
 <div .container>
   <div .row>
@@ -31,7 +30,6 @@ getAdminEventR = do
 postAdminEventR :: Handler Html
 postAdminEventR = do
   ((result, formWidget), _formEnctype) <- runFormPost eventForm
-  events <- runDB $ selectList [] [Desc EventName]
   (userId, _user) <- requireAuthPair
   case result of
     FormSuccess (EventForm n d day fi)-> do

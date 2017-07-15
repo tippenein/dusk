@@ -42,10 +42,14 @@ Email sql=emails
     verkey Text Maybe
     UniqueEmail email
 
-Rsvp sql=rsvps
+Rsvper sql=fans
     email Text Maybe
     phone Text Maybe
     name Text
+
+Rsvp sql=rsvps
+    fan_id RsvperId
+    event_id EventId
 
 Event sql=events
     name Text

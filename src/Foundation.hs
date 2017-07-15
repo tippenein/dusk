@@ -170,7 +170,8 @@ instance Yesod App where
     isAuthorized CuratorsR _ = return Authorized
 
     isAuthorized ProfileR _ = isAuthenticated
-    isAuthorized EventR _ = return Authorized -- isAuthenticated
+    isAuthorized EventsR _ = return Authorized -- isAuthenticated
+    isAuthorized (EventR _) _ = return Authorized
     isAuthorized AdminEventR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
@@ -210,7 +211,8 @@ instance YesodBreadcrumbs App where
   breadcrumb HomeR = return ("Home", Nothing)
   breadcrumb (AuthR _) = return ("Login", Just HomeR)
   breadcrumb ProfileR = return ("Profile", Just HomeR)
-  breadcrumb EventR = return ("Events", Just HomeR)
+  breadcrumb EventsR = return ("Events", Nothing)
+  breadcrumb (EventR _) = return ("Event", Just EventsR)
   breadcrumb AdminEventR = return ("Events", Just HomeR)
   breadcrumb  _ = return ("Home", Nothing)
 
@@ -281,6 +283,9 @@ runDBor404 dba = do
   case ma of
     Nothing -> notFound
     Just a -> return a
+
+setTitle' :: MonadWidget m => Text -> m ()
+setTitle' t = setTitle $ toHtml $ "RSVP - " <> t
 
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain

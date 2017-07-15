@@ -4,9 +4,9 @@ import Import
 
 getCuratorR :: UserId -> Handler Html
 getCuratorR i = do
-  Just u <- runDB $ get i
+  u <- runDBor404 $ get i
   defaultLayout $ do
-    setTitle $ toHtml $ uname u
+    setTitle' $ uname u
     [whamlet|
 <div .ui.container>
     <h1>#{uname u}
@@ -19,7 +19,7 @@ getCuratorsR :: Handler Html
 getCuratorsR = do
   curators <- runDB $ getUsersWithRole Curator
   defaultLayout $ do
-    setTitle "curators"
+    setTitle' "Curators"
     [whamlet|
 <div .ui.container>
     <h1>Curators

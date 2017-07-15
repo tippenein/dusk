@@ -22,7 +22,8 @@ mkYesodData "App" [parseRoutes|
 /auth         AuthR Auth   getAuth
 
 /                  HomeR GET
-/events            EventR GET
+/events            EventsR GET
+/events/#EventId   EventR GET
 /admin/events      AdminEventR GET POST
 /profile           ProfileR GET
 /curators          CuratorsR GET

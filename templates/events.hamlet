@@ -1,5 +1,13 @@
 <div .container>
   <div .row>
     <div .col-lg-12>
-      <div .bs-callout bs-callout-info well>
-        <p>rows
+      <h1 #events>Events
+
+      <ul .list-group>
+        $forall Entity _ event <- events
+          <li .list-group-item>
+            <span>
+              <h3>#{eventName event}
+              $maybe descript <- eventDescription event
+                <h3>#{descript}
+              <img src="static/upload/#{eventAsset_id event}" height="250" width="250">

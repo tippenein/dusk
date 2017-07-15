@@ -1,13 +1,18 @@
 module Handler.Event where
 
-import Data.Time.Clock as Clock
-
-import qualified Data.Text as T
 
 import Import
 
-getEventR :: Handler Html
-getEventR = do
+
+getEventR :: EventId -> Handler Html
+getEventR event_id = do
+  event <- runDBor404 $ get event_id
+  defaultLayout $ do
+    setTitle' $ eventName event
+    $(widgetFile "event")
+
+getEventsR :: Handler Html
+getEventsR = do
   events <- runDB $ selectList [] [Desc EventStart_time]
   defaultLayout $ do
     setTitle "events!"
