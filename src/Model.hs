@@ -7,7 +7,7 @@
 
 module Model where
 
-import ClassyPrelude.Yesod hiding (on, (==.))
+import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Model.BCrypt
 import Model.Instances
 import Database.Esqueleto
@@ -72,6 +72,14 @@ getUserPassword email = fmap listToMaybe $
   on (user ^. UserId ==. pass ^. PasswordUser)
   where_ (user ^. UserIdent ==. val email)
   return (user, pass)
+
+getUserRoles :: UserId -> DB [Role]
+getUserRoles uid = do
+  v <- select $
+    from $ \userRole -> do
+    where_ (userRole ^. UserRoleUser_id ==. val uid)
+    return $ userRole ^. UserRoleRole
+  return $ map unValue v
 
 getUsersWithRole :: Role -> DB ([Entity User])
 getUsersWithRole role =

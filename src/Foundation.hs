@@ -12,7 +12,7 @@ import Text.Jasmine         (minifym)
 -- Used only when in "auth-dummy-login" setting is enabled.
 import Yesod.Auth.Dummy
 
-import Yesod.Auth.GoogleEmail2 (authGoogleEmail)
+import Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
 import Yesod.Default.Util   (addStaticContentExternal)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
@@ -20,6 +20,7 @@ import qualified Data.Text.Encoding as TE
 
 import Routes
 import AppType
+import Model.Instances
 
 data MenuItem = MenuItem
     { menuItemLabel :: Text
@@ -161,6 +162,9 @@ instance Yesod App where
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
 
+    -- isAuthorized route isWrite = do
+    --   mauth <- maybeAuthPair
+    --   mauth `isAuthorizedTo` permissionsRequiredFor route isWrite
     isAuthorized (AuthR _) _ = return Authorized
     isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
@@ -169,10 +173,10 @@ instance Yesod App where
     isAuthorized (CuratorR _) _ = return Authorized
     isAuthorized CuratorsR _ = return Authorized
 
-    isAuthorized ProfileR _ = isAuthenticated
-    isAuthorized EventsR _ = return Authorized -- isAuthenticated
+    isAuthorized ProfileR _ = isLoggedIn
+    isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = isAuthenticated
+    isAuthorized AdminEventR _ = isAdmin
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -234,13 +238,17 @@ instance YesodAuth App where
     redirectToReferer _ = False
 
     authenticate creds = runDB $ do
-        x <- getBy $ UniqueUser $ credsIdent creds
-        case x of
-            Just (Entity uid _) -> return $ Authenticated uid
-            Nothing -> Authenticated <$> insert User
-                { userIdent = credsIdent creds
-                , userName = Nothing
-                }
+      x <- getBy $ UniqueUser $ credsIdent creds
+      case x of
+        Just (Entity uid _) -> return $ Authenticated uid
+        Nothing -> do
+          user_id <- insert User
+            { userIdent = credsIdent creds
+            , userName = Nothing
+            }
+
+          _ <- insert $ UserRole user_id Fan
+          return $ Authenticated user_id
 
     authPlugins app = [authGoogleEmail authKey authSecret] ++ extraAuthPlugins
       where
@@ -252,13 +260,78 @@ instance YesodAuth App where
 
     authHttpManager = getHttpManager
 
--- | Access function to determine if a user is logged in.
-isAuthenticated :: Handler AuthResult
-isAuthenticated = do
-    muid <- maybeAuthId
-    return $ case muid of
-        Nothing -> Unauthorized "You must login to access this page"
-        Just _ -> Authorized
+    loginHandler = lift $ do
+      app <- getYesod
+      murl <- runInputGet $ iopt textField "dest"
+      mapM_ setUltDest murl
+
+      defaultLayout $ do
+        setTitle' "Login"
+        $(widgetFile "login")
+
+isLoggedIn :: Handler AuthResult
+isLoggedIn = do
+  muid <- maybeAuthId
+  return $ case muid of
+      Nothing -> Unauthorized "You must log in to access this page"
+      Just _  -> Authorized
+
+data PermissionTo = AllEvent | CreateEvent | CreateCurator
+
+-- permissionsRequiredFor :: Route App -> Bool -> [PermissionTo]
+-- permissionsRequiredFor AdminEventR   True = [CreateEvent]
+-- -- permissionsRequiredFor AdminCuratorR True = [Comment]
+-- permissionsRequiredFor _ _                = []
+
+-- hasPermissionTo :: (UserId, User)
+--                 -> PermissionTo
+--                 -> DB AuthResult
+-- hasPermissionTo (uid, _user) CreateEvent = do
+--   b <- isAdmin uid -- <|> isCurator uid
+--   return $ if b then Authorized else Unauthorized "Not allowed to Create Events"
+--   -- | otherwise      = return $ Unauthorized "Can not create events" -- Msg.NoCreateEvent
+-- hasPermissionTo (uid, _user) AllEvent = do
+--   b <- isAdmin uid
+--   return $ if b then Authorized else Unauthorized "Not allowed to Modify Events"
+-- hasPermissionTo (uid, _user) CreateCurator
+--   | _ <- isAdmin uid    = return Authorized
+--   | otherwise      = return $ Unauthorized "not an admin" -- msg.notanadmin
+
+
+-- isAuthorizedTo :: Maybe (UserId, User)
+--                -> [PermissionTo]
+--                -> Handler AuthResult
+-- isAuthorizedTo _        []     = return Authorized
+-- isAuthorizedTo Nothing  (_:_)  = return AuthenticationRequired
+-- isAuthorizedTo (Just u)   (p:ps) = do
+--   r <- runDB $ u `hasPermissionTo` p
+--   case r of
+--     Authorized -> (Just u) `isAuthorizedTo` ps
+--     _          -> return r -- unauthorized
+
+-- XXX This is overly simplistic
+-- checkRole
+--   :: Role    -- | role requested
+--   -> [Role]  -- | roles given
+--   -> AuthResult
+-- checkRole role roles =
+--   if role `elem` roles
+
+isCurator :: Handler AuthResult
+isCurator = isAuthenticated Curator
+
+isAdmin :: Handler AuthResult
+isAdmin = isAuthenticated Admin
+
+isAuthenticated :: Role -> Handler AuthResult
+isAuthenticated role = do
+  muid <- maybeAuthId
+  b <- case muid of
+    Nothing -> return False
+    Just uid -> do
+      roles <- runDB $ getUserRoles uid
+      return $ role `elem` roles
+  return $ if b then Authorized else Unauthorized $ "Must at least be a(n) " <> tshow role
 
 instance YesodAuthPersist App
 
@@ -290,3 +363,4 @@ setTitle' t = setTitle $ toHtml $ "RSVP - " <> t
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
+ 

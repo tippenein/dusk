@@ -1,0 +1,15 @@
+<div .container>
+  <div .login>
+    <h2>
+      Please sign in
+    <div .login-button>
+      <a .button.button--google href=@{AuthR forwardUrl}>
+        Sign in with Google
+
+    $if appAuthDummyLogin $ appSettings app
+      <div .login-button>
+        <strong>Development Login
+        <form method="post" action="@{AuthR $ PluginR "dummy" []}">
+          <label for="ident">Creds Identifier
+          <input type="text" name="ident">
+          <input type="submit" value="Login">

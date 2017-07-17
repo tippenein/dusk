@@ -17,3 +17,8 @@ db_test:
 
 db_user:
 	createuser -P -s -e $(base_db_name)
+
+db_reset: db_down db seed
+
+seed:
+	stack exec seed

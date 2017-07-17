@@ -42,6 +42,7 @@ data AppSettings = AppSettings
     , appAuthDummyLogin         :: Bool
     , appGoogleAuthKey          :: Text
     , appGoogleAuthSecret       :: Text
+    , appAllowDummyAuth         :: Bool
     }
 
 instance FromJSON AppSettings where

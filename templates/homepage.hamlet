@@ -1,27 +1,26 @@
 <div .masthead>
-    <div .container>
-        <div .row>
-            <h1 .header>
-                RSVP
-            <h2>
-                For Curators and Fans alike
+  <div .container>
+    <div .row>
+      <h1 .header>
+          RSVP
+      <h2>
+          For Curators and Fans alike
 
 <div .container>
-    <div .row>
-        <div .col-lg-12>
-                <h1 #events>Events
+  <div .row>
+    <div .col-lg-12>
+      <h1 #events>Events
 
-
-                <ul .list-group>
-                    $forall Entity _ event <- events
-                        <li .list-group-item>
-                          <span>
-                            <h3>#{eventName event}
-                            <img src="static/upload/#{eventAsset_id event}" height="250" width="250">
+      <ul .list-group>
+        $forall Entity _ event <- events
+          <li .list-group-item>
+            <span>
+              <h3>#{eventName event}
+              <img src="static/upload/#{eventAsset_id event}" height="250" width="250">
 
     <hr>
 
     <div .row>
-        <div .col-lg-12>
-            <div .footer.pull-right>
-                 AndAnd LLC
+      <div .col-lg-12>
+        <div .footer.pull-right>
+          AndAnd LLC

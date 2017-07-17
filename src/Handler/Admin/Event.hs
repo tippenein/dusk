@@ -34,7 +34,6 @@ postAdminEventR = do
   case result of
     FormSuccess (EventForm n d day fi)-> do
       filename <- writeToServer fi
-      -- t <- liftIO Clock.getCurrentTime
       _ <- runDB $ insert (Event n d filename userId day Nothing (Just (UTCTime day 0)) Nothing)
       setMessage "Event saved"
       defaultLayout $ do
