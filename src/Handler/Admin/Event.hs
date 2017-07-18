@@ -1,13 +1,13 @@
 module Handler.Admin.Event where
 
-import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
-import Data.Conduit.Binary (sinkLbs)
-import Data.Time.Clock as Clock
-import Data.Time.Calendar
+import           Data.Conduit.Binary (sinkLbs)
+import           Data.Time.Calendar
+import           Data.Time.Clock as Clock
+import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 
 import qualified Data.Text as T
 
-import Import
+import           Import
 
 getAdminEventR :: Handler Html
 getAdminEventR = do
@@ -34,7 +34,8 @@ postAdminEventR = do
   case result of
     FormSuccess (EventForm n d day fi)-> do
       filename <- writeToServer fi
-      _ <- runDB $ insert (Event n d filename userId day Nothing (Just (UTCTime day 0)) Nothing)
+      -- oh gawd wtf
+      _ <- runDB $ insert (Event n (fmap unTextarea d) filename userId day Nothing (Just (UTCTime day 0)) Nothing)
       setMessage "Event saved"
       defaultLayout $ do
         [whamlet|
@@ -66,7 +67,7 @@ writeToServer file = do
 data EventForm
   = EventForm
   { ef_name :: Text
-  , ef_description :: Maybe Text
+  , ef_description :: Maybe Textarea
   , ef_eventStartDay :: Day
   , ef_fileInfo :: FileInfo
   }
@@ -74,8 +75,8 @@ data EventForm
 eventForm :: Form EventForm
 eventForm = renderBootstrap3 BootstrapBasicForm $
   EventForm
-    <$> areq textField (textSettings "name") Nothing
-    <*> aopt textField (textSettings "description") Nothing
+    <$> areq textField (textSettings "name" "Your Event's name") Nothing
+    <*> aopt textareaField (textSettings "description" "Describe your event") Nothing
     <*> areq dayField (daySettings "start day") Nothing
     <*> fileAFormReq "Choose an Event Image"
   where
@@ -89,13 +90,13 @@ eventForm = renderBootstrap3 BootstrapBasicForm $
               , ("placeholder", "placeholder")
               ]
           }
-    textSettings t = FieldSettings
+    textSettings t p = FieldSettings
           { fsLabel = t
           , fsTooltip = Nothing
           , fsId = Nothing
           , fsName = Nothing
           , fsAttrs =
               [ ("class", "form-control")
-              , ("placeholder", "placeholder")
+              , ("placeholder", p)
               ]
           }

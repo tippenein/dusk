@@ -8,9 +8,12 @@
 module Model where
 
 import ClassyPrelude.Yesod hiding (on, (==.), Value)
+import Database.Esqueleto
 import Model.BCrypt
 import Model.Instances
-import Database.Esqueleto
+
+type Validated a = Either [Text] a
+type Validation a = a -> Validated a
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User sql=users
@@ -62,47 +65,6 @@ Event sql=events
     end_time UTCTime Maybe
 |]
 
--- Curator vs User ?
--- are Users who log into the site different than curators who throw the parties?
-
-getUserPassword :: Text -> DB (Maybe (Entity User, Entity Password))
-getUserPassword email = fmap listToMaybe $
-  select $
-  from $ \(user `InnerJoin` pass) -> do
-  on (user ^. UserId ==. pass ^. PasswordUser)
-  where_ (user ^. UserIdent ==. val email)
-  return (user, pass)
-
-getUserRoles :: UserId -> DB [Role]
-getUserRoles uid = do
-  v <- select $
-    from $ \userRole -> do
-    where_ (userRole ^. UserRoleUser_id ==. val uid)
-    return $ userRole ^. UserRoleRole
-  return $ map unValue v
-
-getUsersWithRole :: Role -> DB ([Entity User])
-getUsersWithRole role =
-  select $
-  from $ \(user `InnerJoin` userRole) -> do
-  on (user ^. UserId ==. userRole ^. UserRoleUser_id)
-  where_ (userRole ^. UserRoleRole ==. val role)
-  return user
-
-getUserEntity :: Text -> DB (Maybe (Entity User))
-getUserEntity email = fmap listToMaybe $
-  select $
-  from $ \user -> do
-  where_ (user ^. UserIdent ==. val email)
-  return user
-
-createUser :: Text -> Text -> DB (Entity User)
-createUser email pass = do
-  let newUser = User email Nothing
-  userId <- insert $ newUser
-  h <- liftIO $ hashPassword pass
-  _ <- insert $ Password h userId
-  return (Entity userId newUser)
 
 
 type ControlIO m = (MonadIO m, MonadBaseControl IO m)

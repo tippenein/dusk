@@ -1,7 +1,7 @@
-{-# LANGUAGE CPP #-}
 module Import.NoFoundation
     ( module Import
     ) where
+
 
 import ClassyPrelude.Yesod   as Import
 import Control.Error.Safe    as Import (justZ)

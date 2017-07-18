@@ -4,23 +4,24 @@
 
 module Foundation where
 
-import Import.NoFoundation
-import Database.Persist.Sql (runSqlPool)
-import Text.Hamlet          (hamletFile)
-import Text.Jasmine         (minifym)
+import           Import.NoFoundation
+import           Database.Persist.Sql (runSqlPool)
+import           Text.Hamlet (hamletFile)
+import           Text.Jasmine (minifym)
 
 -- Used only when in "auth-dummy-login" setting is enabled.
-import Yesod.Auth.Dummy
+import           Yesod.Auth.Dummy
 
-import Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
-import Yesod.Default.Util   (addStaticContentExternal)
+import           Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
+import           Yesod.Default.Util (addStaticContentExternal)
 import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
 
-import Routes
-import AppType
-import Model.Instances
+import           AppType
+import           Model.User
+import           Role
+import           Routes
 
 data MenuItem = MenuItem
     { menuItemLabel :: Text
@@ -176,7 +177,12 @@ instance Yesod App where
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = isAdmin
+    isAuthorized AdminEventR _ = isAdmin'
+      where
+        isAdmin' = do
+          muid <- maybeAuthId
+          r <- runDB $ isAdmin muid
+          return $ if r then Authorized else Unauthorized "must be at least an Admin"
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -210,6 +216,14 @@ instance Yesod App where
     -- error pages
     defaultMessageWidget title body = $(widgetFile "default-message-widget")
 
+
+isLoggedIn :: Handler AuthResult
+isLoggedIn = do
+  muid <- maybeAuthId
+  return $ case muid of
+      Nothing -> Unauthorized "You must log in to access this page"
+      Just _  -> Authorized
+
 -- Define breadcrumbs.
 instance YesodBreadcrumbs App where
   breadcrumb HomeR = return ("Home", Nothing)
@@ -237,18 +251,7 @@ instance YesodAuth App where
     -- Override the above two destinations when a Referer: header is present
     redirectToReferer _ = False
 
-    authenticate creds = runDB $ do
-      x <- getBy $ UniqueUser $ credsIdent creds
-      case x of
-        Just (Entity uid _) -> return $ Authenticated uid
-        Nothing -> do
-          user_id <- insert User
-            { userIdent = credsIdent creds
-            , userName = Nothing
-            }
-
-          _ <- insert $ UserRole user_id Fan
-          return $ Authenticated user_id
+    authenticate = runDB . authenticateUser
 
     authPlugins app = [authGoogleEmail authKey authSecret] ++ extraAuthPlugins
       where
@@ -269,69 +272,6 @@ instance YesodAuth App where
         setTitle' "Login"
         $(widgetFile "login")
 
-isLoggedIn :: Handler AuthResult
-isLoggedIn = do
-  muid <- maybeAuthId
-  return $ case muid of
-      Nothing -> Unauthorized "You must log in to access this page"
-      Just _  -> Authorized
-
-data PermissionTo = AllEvent | CreateEvent | CreateCurator
-
--- permissionsRequiredFor :: Route App -> Bool -> [PermissionTo]
--- permissionsRequiredFor AdminEventR   True = [CreateEvent]
--- -- permissionsRequiredFor AdminCuratorR True = [Comment]
--- permissionsRequiredFor _ _                = []
-
--- hasPermissionTo :: (UserId, User)
---                 -> PermissionTo
---                 -> DB AuthResult
--- hasPermissionTo (uid, _user) CreateEvent = do
---   b <- isAdmin uid -- <|> isCurator uid
---   return $ if b then Authorized else Unauthorized "Not allowed to Create Events"
---   -- | otherwise      = return $ Unauthorized "Can not create events" -- Msg.NoCreateEvent
--- hasPermissionTo (uid, _user) AllEvent = do
---   b <- isAdmin uid
---   return $ if b then Authorized else Unauthorized "Not allowed to Modify Events"
--- hasPermissionTo (uid, _user) CreateCurator
---   | _ <- isAdmin uid    = return Authorized
---   | otherwise      = return $ Unauthorized "not an admin" -- msg.notanadmin
-
-
--- isAuthorizedTo :: Maybe (UserId, User)
---                -> [PermissionTo]
---                -> Handler AuthResult
--- isAuthorizedTo _        []     = return Authorized
--- isAuthorizedTo Nothing  (_:_)  = return AuthenticationRequired
--- isAuthorizedTo (Just u)   (p:ps) = do
---   r <- runDB $ u `hasPermissionTo` p
---   case r of
---     Authorized -> (Just u) `isAuthorizedTo` ps
---     _          -> return r -- unauthorized
-
--- XXX This is overly simplistic
--- checkRole
---   :: Role    -- | role requested
---   -> [Role]  -- | roles given
---   -> AuthResult
--- checkRole role roles =
---   if role `elem` roles
-
-isCurator :: Handler AuthResult
-isCurator = isAuthenticated Curator
-
-isAdmin :: Handler AuthResult
-isAdmin = isAuthenticated Admin
-
-isAuthenticated :: Role -> Handler AuthResult
-isAuthenticated role = do
-  muid <- maybeAuthId
-  b <- case muid of
-    Nothing -> return False
-    Just uid -> do
-      roles <- runDB $ getUserRoles uid
-      return $ role `elem` roles
-  return $ if b then Authorized else Unauthorized $ "Must at least be a(n) " <> tshow role
 
 instance YesodAuthPersist App
 

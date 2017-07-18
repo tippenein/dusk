@@ -1,6 +1,7 @@
 module Handler.Curator where
 
 import Import
+import Model.User
 
 getCuratorR :: UserId -> Handler Html
 getCuratorR i = do

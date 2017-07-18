@@ -27,10 +27,12 @@ library
           AppType
           Foundation
           Helpers.Forms
+          Role
           Import
           Import.NoFoundation
           Model
           Model.BCrypt
+          Model.User
           Model.Instances
           Settings
           Settings.StaticFiles

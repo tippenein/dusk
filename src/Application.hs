@@ -30,8 +30,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 
--- Import all relevant handler modules here.
--- Don't forget to add new modules to your cabal file!
+-- * Handlers * ----------------------------
 import Handler.Common
 import Handler.Home
 import Handler.Profile
