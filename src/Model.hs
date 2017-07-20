@@ -59,10 +59,9 @@ Event sql=events
     description Text Maybe
     asset_id Text
     owner_id UserId
-    start_day Day
-    end_day Day Maybe
-    start_time UTCTime Maybe
-    end_time UTCTime Maybe
+    all_day Bool default=False
+    start_datetime UTCTime
+    end_datetime UTCTime Maybe
 |]
 
 

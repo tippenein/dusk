@@ -14,41 +14,22 @@ getAdminEventR = do
   (formWidget, _formEnctype) <- generateFormPost eventForm
   defaultLayout $ do
     setTitle' "Create Event"
-    [whamlet|
-<div .container>
-  <div .row>
-    <div .col-lg-6>
-      <div .bs-callout bs-callout-info well>
-        <form .form-horizontal method=post action=@{AdminEventR}#forms>
-          ^{formWidget}
-
-          <button .btn.btn-primary type="submit">
-            Post it!
-    <div .col-lg-6>
-|]
+    $(widgetFile "admin/events")
 
 postAdminEventR :: Handler Html
 postAdminEventR = do
   ((result, formWidget), _formEnctype) <- runFormPost eventForm
   (userId, _user) <- requireAuthPair
   case result of
-    FormSuccess (EventForm n d day fi)-> do
+    FormSuccess (EventForm n d day_str fi)-> do
+      let day = undefined
       filename <- writeToServer fi
-      -- oh gawd wtf
-      _ <- runDB $ insert (Event n (fmap unTextarea d) filename userId day Nothing (Just (UTCTime day 0)) Nothing)
+      _ <- runDB $ insert (
+        Event n (fmap unTextarea d) filename userId False day Nothing)
       setMessage "Event saved"
       defaultLayout $ do
-        [whamlet|
-<div .container>
-  <div .row>
-    <div .col-lg-12>
-      <div .bs-callout bs-callout-info well>
-        <form .form-horizontal method=post action=@{AdminEventR}#forms>
-          ^{formWidget}
+        $(widgetFile "admin/events")
 
-          <button .btn.btn-primary type="submit">
-            Post it!
-|]
     FormFailure reasons -> defaultLayout $ do
       setMessage $ toHtml $ unlines reasons
     _ -> defaultLayout $ do
@@ -68,7 +49,7 @@ data EventForm
   = EventForm
   { ef_name :: Text
   , ef_description :: Maybe Textarea
-  , ef_eventStartDay :: Day
+  , ef_eventStartDay :: Text
   , ef_fileInfo :: FileInfo
   }
 
@@ -77,13 +58,13 @@ eventForm = renderBootstrap3 BootstrapBasicForm $
   EventForm
     <$> areq textField (textSettings "name" "Your Event's name") Nothing
     <*> aopt textareaField (textSettings "description" "Describe your event") Nothing
-    <*> areq dayField (daySettings "start day") Nothing
+    <*> areq textField (daySettings "start day") Nothing
     <*> fileAFormReq "Choose an Event Image"
   where
     daySettings t = FieldSettings
           { fsLabel = t
           , fsTooltip = Nothing
-          , fsId = Nothing
+          , fsId = Just "datetimepicker_start_time"
           , fsName = Nothing
           , fsAttrs =
               [ ("class", "form-control")

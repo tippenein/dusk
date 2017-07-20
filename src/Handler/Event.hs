@@ -13,7 +13,7 @@ getEventR event_id = do
 
 getEventsR :: Handler Html
 getEventsR = do
-  events <- runDB $ selectList [] [Desc EventStart_time]
+  events <- runDB $ selectList [] [Desc EventStart_datetime]
   defaultLayout $ do
     setTitle "events!"
     $(widgetFile "events")

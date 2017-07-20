@@ -3,7 +3,7 @@ $(function () {
     $('#datetimepicker7').datetimepicker({
         useCurrent: false //Important! See issue #1075
     });
-    $("#datetimepicker-start_time").on("dp.change", function (e) {
+    $("#datetimepicker_start_time").on("dp.change", function (e) {
         $('#datetimepicker-start_date').data("DateTimePicker").minDate(e.date);
     });
     $("#datetimepicker-end_time").on("dp.change", function (e) {

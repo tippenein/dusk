@@ -23,6 +23,13 @@ isCurator = isAuthenticated Curator
 isAdmin :: Maybe UserId -> DB Bool
 isAdmin = isAuthenticated Admin
 
+canCreateEvent :: Maybe UserId -> DB Bool
+canCreateEvent Nothing = return False
+canCreateEvent (Just uid) = do
+  r <- isAdmin (Just uid)
+  r' <- isCurator (Just uid)
+  return $ r || r'
+
 isAuthenticated :: Role -> Maybe UserId -> DB Bool
 isAuthenticated role muid = do
   case muid of

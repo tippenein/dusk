@@ -177,11 +177,11 @@ instance Yesod App where
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = isAdmin'
+    isAuthorized AdminEventR _ = canCreateEvent'
       where
-        isAdmin' = do
+        canCreateEvent' = do
           muid <- maybeAuthId
-          r <- runDB $ isAdmin muid
+          r <- runDB $ canCreateEvent muid
           return $ if r then Authorized else Unauthorized "must be at least an Admin"
 
     -- This function creates static content files in the static folder

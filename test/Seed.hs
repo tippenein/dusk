@@ -10,8 +10,9 @@ insertUser (ident, role) = do
 
 users :: [(Text, Role)]
 users =
-  [ ("bob", Admin)
+  [ ("tippenein@gmail.com", Admin)
   , ("rufus", Curator)
+  , ("a fan", Fan)
   ]
 
 main :: IO ()
