@@ -1,12 +1,10 @@
 $(function () {
-    $('#datetimepicker6').datetimepicker();
-    $('#datetimepicker7').datetimepicker({
-        useCurrent: false //Important! See issue #1075
+    $('#datetimepicker_start_time').datetimepicker({
+        useCurrent: false,
+        format: 'Y-M-D\\TH:m:s'
     });
-    $("#datetimepicker_start_time").on("dp.change", function (e) {
-        $('#datetimepicker-start_date').data("DateTimePicker").minDate(e.date);
-    });
-    $("#datetimepicker-end_time").on("dp.change", function (e) {
-        $('#datetimepicker-end_date').data("DateTimePicker").maxDate(e.date);
+    $('#datetimepicker_end_time').datetimepicker({
+        useCurrent: false, //Important! See issue #1075
+        format: 'Y-M-D\\TH:m:s'
     });
 });

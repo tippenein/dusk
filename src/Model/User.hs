@@ -52,7 +52,6 @@ getUserEntity email = fmap listToMaybe $
 --  _ <- insert $ Password h userId
 --  return (Entity userId newUser)
 
-
 authenticateUser :: AuthId m ~ UserId => Creds m -> DB (AuthenticationResult m)
 authenticateUser Creds{..} = do
   x <- getBy $ UniqueUser $ credsIdent

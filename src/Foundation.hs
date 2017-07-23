@@ -41,45 +41,6 @@ data MenuTypes
 -- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
 
-navLayout :: Maybe (Entity User) -> Widget
-navLayout user =
-  [whamlet|
-<div class="top-bar">
-  <div class="top-bar-left">
-    <ul class="menu">
-      <li .menu-logo>
-        <a href="@{HomeR}" .plain>RSVP
-  <div class="top-bar-right">
-    <ul class="menu">
-      $maybe _ <- user
-        <li>
-          <a href="@{ProfileR}">Signout
-      $nothing
-        <li>
-          <a href="@{AuthR LoginR}">Login
-|]
-
-baseLayout :: Html -> Maybe (Entity User) -> WidgetT App IO () -> Handler Html
-baseLayout title user content = do
-  defaultLayout $ do
-    setTitle title
-    [whamlet|
-^{navLayout user}
-^{content}
-|]
-
-errorFragment' :: Maybe Text -> Text -> Widget
-errorFragment' mmsg t =
-  [whamlet|
-<div #error-block .container-lg>
-  <h1 .error-title>#{t}
-  $maybe msg <- mmsg
-    <h2 .error-explanation>
-      #{msg}
-|]
-
-errorFragment :: Text -> Widget
-errorFragment = errorFragment' Nothing
 
 instance Yesod App where
     -- Controls the base of generated URLs. For more information on modifying,

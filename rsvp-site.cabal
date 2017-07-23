@@ -79,6 +79,7 @@ library
         , fast-logger >=2.2 && <2.5
         , wai-logger >=2.2 && <2.4
         , file-embed
+        , iso8601-time
         , bcrypt
         , safe
         , errors
