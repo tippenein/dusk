@@ -5,7 +5,7 @@
 
       <ul .list-group>
         $forall Entity _ event <- events
-          <li .list-group-item>
+          <li .list-group-item.events-list>
             <span>
               <h3>#{eventName event}
               $maybe descript <- eventDescription event

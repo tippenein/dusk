@@ -27,12 +27,10 @@ library
           AppType
           Foundation
           Helpers.Forms
-          Role
           Import
           Import.NoFoundation
           Model
           Model.BCrypt
-          Model.User
           Model.Instances
           Settings
           Settings.StaticFiles
@@ -43,6 +41,8 @@ library
           Handler.Curator
           Handler.Event
     other-modules:
+          Model.User
+          Role
           Paths_rsvp_site
     default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
     default-language: Haskell2010
@@ -79,7 +79,6 @@ library
         , fast-logger >=2.2 && <2.5
         , wai-logger >=2.2 && <2.4
         , file-embed
-        , iso8601-time
         , bcrypt
         , safe
         , errors
@@ -89,6 +88,7 @@ library
         , time
         , transformers
         , uuid
+        , iso8601-time
         , case-insensitive
         , wai
     if (flag(dev)) || (flag(library-only))

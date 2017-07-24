@@ -1,4 +1,5 @@
 base_db_name = rsvp_site
+docker_container = tippenein/rsvp-site
 
 ghci:
 	stack ghci --ghci-options -fobject-code rsvp-site:lib
@@ -22,3 +23,6 @@ db_reset: db_down db seed
 
 seed:
 	stack exec seed
+
+publish:
+	stack image container && docker push $(docker_container)

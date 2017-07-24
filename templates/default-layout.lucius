@@ -8,6 +8,11 @@
     border-bottom: 2px solid white;
 }
 
+.events-list {
+    line-height: 2em;
+    font-size: 16px
+}
+
 .navbar-nav {
     padding-bottom: 1em;
 }
