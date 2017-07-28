@@ -1,10 +1,10 @@
 $(function () {
     $('#datetimepicker_start_time').datetimepicker({
         useCurrent: false,
-        format: 'Y-M-D\\TH:m:s'
+        format: 'Y-M-D H:m'
     });
     $('#datetimepicker_end_time').datetimepicker({
         useCurrent: false, //Important! See issue #1075
-        format: 'Y-M-D\\TH:m:s'
+        format: 'Y-M-D H:m'
     });
 });

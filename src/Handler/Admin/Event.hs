@@ -1,7 +1,6 @@
 module Handler.Admin.Event where
 
 import           Data.Conduit.Binary (sinkLbs)
-import           Data.Time.ISO8601
 import           Data.Time.Clock as Clock
 import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 
@@ -19,31 +18,34 @@ getAdminEventR = do
 postAdminEventR :: Handler Html
 postAdminEventR = do
   ((result, formWidget), _formEnctype) <- runFormPost eventForm
-  (userId, _user) <- requireAuthPair
+  userId  <- requireAuthId
   case result of
-    FormSuccess (EventForm n d dt_start mdt_end fi)-> do
+    FormSuccess (EventForm n d dt_start mdt_end fi) -> do
       case parseDatetime dt_start of
         Left _msg -> do
-          defaultLayout $ do
-            $(widgetFile "admin/events")
+          setMessage "invalid date input"
+          redirect $ AdminEventR
         Right dt -> do
           filename <- writeToServer fi
           _ <- runDB $ insert (
             Event n (fmap unTextarea d) filename userId False dt Nothing)
 
           setMessage "Event saved"
-          defaultLayout $ do
-            $(widgetFile "admin/events")
+          redirect $ AdminEventR
 
     FormFailure reasons -> defaultLayout $ do
       setMessage $ toHtml $ unlines reasons
+      $(widgetFile "admin/events")
     _ -> defaultLayout $ do
       setMessage "something went wrong"
+      redirect $ AdminEventR
 
 
--- | Parses a 'Day' from a 'String'.
+parseISO8601 :: Text -> Maybe UTCTime
+parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
+
 parseDatetime :: Text -> Either FormMessage UTCTime
-parseDatetime = maybe (Left MsgInvalidDay) Right . parseISO8601 . unpack
+parseDatetime = maybe (Left MsgInvalidDay) Right . parseISO8601
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do

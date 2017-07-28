@@ -7,14 +7,18 @@ $newline never
 <html class="no-js" lang="en"> <!--<![endif]-->
   <head>
     <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <link rel="shortcut icon" type="image/ico" href="/assets/favicon.ico" />
+    <link rel="icon" type="image/ico" href="/assets/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
 
     <title>#{pageTitle pc}
-    <meta name="description" content="">
-    <meta name="author" content="">
 
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-
-    ^{pageHead pc}
+r   ^{pageHead pc}
 
     \<!--[if lt IE 9]>
     \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
