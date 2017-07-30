@@ -3,9 +3,6 @@ module Role where
 
 import Import.NoFoundation
 import Model.Instances
-import Yesod.Auth
-import AppType
-import Routes
 import Model.User
 
 

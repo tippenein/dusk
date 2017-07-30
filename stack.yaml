@@ -19,16 +19,16 @@ extra-package-dbs: []
 # system-ghc: true
 system-ghc: false
 
-docker:
-  enable: true
+# docker:
+#   enable: true
 
-image:
-  container:
-    # New image will be called snoyberg/yesodweb
-    name: tippenein/rsvp-site
-    # Base it on the stack-run images
-    base: fpco/stack-run
-    # Include some config and static files in the image
-    add:
-      config: /app/config
-      static: /app/static
+# image:
+#   container:
+#     # New image will be called snoyberg/yesodweb
+#     name: tippenein/rsvp-site
+#     # Base it on the stack-run images
+#     base: fpco/stack-run
+#     # Include some config and static files in the image
+#     add:
+#       config: /app/config
+#       static: /app/static

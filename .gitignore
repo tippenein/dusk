@@ -19,3 +19,4 @@ cabal.sandbox.config
 *.swp
 *.keter
 *.#*
+.env

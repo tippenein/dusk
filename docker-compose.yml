@@ -1,0 +1,23 @@
+version: '2'
+
+volumes:
+  pg:
+
+services:
+  app:
+    restart: always  # ensures if app crashes, restarts everything
+    image: tippenein/rsvp_site
+    ports:
+      - "80:8081"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER     = rsvp_site
+      - POSTGRES_PASSWORD = rsvp_site
+    volumes:
+      - pg:/var/lib/postgresql/data # reads/writes to this volume
+    ports:
+      - "5432:5432"

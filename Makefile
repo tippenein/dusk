@@ -1,5 +1,6 @@
 base_db_name = rsvp_site
 docker_container = tippenein/rsvp-site
+scp_path = root@brontasaur.us
 
 ghci:
 	stack ghci --ghci-options -fobject-code rsvp-site:lib
@@ -25,4 +26,6 @@ seed:
 	stack exec seed
 
 publish:
-	stack image container && docker push $(docker_container)
+	stack image container && \
+	  docker push $(docker_container) && \
+	  scp docker-compose.yml .env $(scp_path):/home/doc/

@@ -1,9 +1,4 @@
 {-# Language CPP #-}
--- | Settings are centralized, as much as possible, into this file. This
--- includes database connection settings, static file locations, etc.
--- In addition, you can configure a number of different aspects of Yesod
--- by overriding methods in the Yesod typeclass. That instance is
--- declared in the Foundation.hs file.
 module Settings where
 
 import ClassyPrelude.Yesod
@@ -106,8 +101,7 @@ compileTimeAppSettings =
         Error e -> error e
         Success settings -> settings
 
--- The following two functions can be used to combine multiple CSS or JS files
--- at compile time to decrease the number of http requests.
+-- combine multiple CSS or JS files at compile time
 -- Sample usage (inside a Widget):
 --
 -- > $(combineStylesheets 'StaticR [style1_css, style2_css])

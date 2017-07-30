@@ -4,8 +4,8 @@
 
 module Foundation where
 
-import           Import.NoFoundation
 import           Database.Persist.Sql (runSqlPool)
+import           Import.NoFoundation
 import           Text.Hamlet (hamletFile)
 import           Text.Jasmine (minifym)
 
