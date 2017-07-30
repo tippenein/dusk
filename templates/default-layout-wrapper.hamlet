@@ -18,7 +18,7 @@ $newline never
 
     <title>#{pageTitle pc}
 
-r   ^{pageHead pc}
+    ^{pageHead pc}
 
     \<!--[if lt IE 9]>
     \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>

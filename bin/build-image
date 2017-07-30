@@ -38,10 +38,13 @@ libraries+=('/bin/sh')
 # Create temporary directory for building up new container.
 run_container_dir=$(mktemp -d 2>/dev/null || mktemp -d -t "${exe_name}")
 
-cp -r "static/" "${run_container_dir}/static"
+cp -r "./static" "${run_container_dir}/static"
+docker cp "${run_container_dir}/static" "${build_container}:/usr/local/bin/static"
 
 # Copy executable and all needed libraries into temporary directory.
 cp "${binary_path}" "${run_container_dir}/${exe_name}"
+
+
 for lib in "${libraries[@]}"; do
     mkdir -p "${run_container_dir}/$(dirname "$lib")"
     # Need -L to get actual libraries & binaries, not symlinks

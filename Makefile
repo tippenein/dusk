@@ -57,5 +57,7 @@ image:
 		$(IMAGE_TAG)
 image_push:
 	docker push "$(IMAGE_NAME):$(IMAGE_TAG)"
+	docker push "$(IMAGE_NAME):latest"
 
-# stack image container --stack-yaml=stack-docker.yaml && \
+fat_image:
+	stack image container --stack-yaml=stack-docker.yaml

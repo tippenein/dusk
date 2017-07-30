@@ -2,7 +2,7 @@
   <div .row>
     <div .col-lg-6>
       <div .bs-callout bs-callout-info well>
-        <form .form-horizontal method=post action=@{AdminEventR}#forms enctype=#{formEncType}>>
+        <form .form-horizontal method=post action=@{AdminEventR}#forms enctype=#{formEncType}>
           ^{formWidget}
 
           <button .btn.btn-primary type="submit">
