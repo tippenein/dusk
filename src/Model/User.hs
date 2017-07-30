@@ -11,7 +11,6 @@ module Model.User where
 import Database.Esqueleto
 import Import.NoFoundation hiding (on, (==.), Value)
 import Model.Instances
-import Yesod.Auth.GoogleEmail2
 
 getUserPassword :: Text -> DB (Maybe (Entity User, Entity Password))
 getUserPassword email = fmap listToMaybe $

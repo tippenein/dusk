@@ -10,42 +10,54 @@ import           Import
 
 getAdminEventR :: Handler Html
 getAdminEventR = do
-  (formWidget, _formEnctype) <- generateFormPost eventForm
+  (formWidget, formEncType) <- generateFormPost eventForm
   defaultLayout $ do
     setTitle' "Create Event"
     $(widgetFile "admin/events")
 
 postAdminEventR :: Handler Html
 postAdminEventR = do
-  ((result, formWidget), _formEnctype) <- runFormPost eventForm
+  ((result, formWidget), formEncType) <- runFormPost eventForm
   userId  <- requireAuthId
   case result of
-    FormSuccess (EventForm n d dt_start mdt_end fi) -> do
-      case parseDatetime dt_start of
-        Left _msg -> do
-          setMessage "invalid date input"
+    FormSuccess ef@(EventForm{..}) -> do
+      filename <- writeToServer ef_fileInfo
+      case eventFormToEvent ef userId filename of
+        Left msg -> do
+          setMessage $ toHtml msg
           redirect $ AdminEventR
-        Right dt -> do
-          filename <- writeToServer fi
-          _ <- runDB $ insert (
-            Event n (fmap unTextarea d) filename userId False dt Nothing)
+        Right e -> do
+          _ <- runDB $ insert e
 
           setMessage "Event saved"
           redirect $ AdminEventR
 
     FormFailure reasons -> defaultLayout $ do
       setMessage $ toHtml $ unlines reasons
-      $(widgetFile "admin/events")
+      redirect $ AdminEventR
     _ -> defaultLayout $ do
       setMessage "something went wrong"
       redirect $ AdminEventR
 
+eventFormToEvent :: EventForm -> UserId -> Text -> Either Text Event
+eventFormToEvent EventForm{..} uid filename = do
+  let dt_end = case ef_eventEndDatetime of
+        Nothing -> Nothing
+        Just j -> parseISO8601 j
 
-parseISO8601 :: Text -> Maybe UTCTime
-parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
+  case parseDatetime ef_eventStartDatetime of
+    Left _ -> Left "invalid start date"
+    Right start -> do
+      Right $ Event {
+          eventName = ef_name
+        , eventDescription = (fmap unTextarea ef_description)
+        , eventAsset_id = filename
+        , eventOwner_id = uid
+        , eventAll_day = False
+        , eventStart_datetime = start
+        , eventEnd_datetime = dt_end
+        }
 
-parseDatetime :: Text -> Either FormMessage UTCTime
-parseDatetime = maybe (Left MsgInvalidDay) Right . parseISO8601
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
@@ -94,3 +106,9 @@ eventForm = renderBootstrap3 BootstrapBasicForm $
               , ("placeholder", p)
               ]
           }
+
+parseISO8601 :: Text -> Maybe UTCTime
+parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
+
+parseDatetime :: Text -> Either FormMessage UTCTime
+parseDatetime = maybe (Left MsgInvalidDay) Right . parseISO8601
