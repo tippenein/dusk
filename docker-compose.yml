@@ -5,8 +5,10 @@ volumes:
 
 services:
   app:
-    restart: always  # ensures if app crashes, restarts everything
-    image: tippenein/rsvp_site
+    restart: always
+    image: tippenein/rsvp-site
+    env_file:
+      - app.env
     ports:
       - "80:8081"
     depends_on:
@@ -18,6 +20,6 @@ services:
       - POSTGRES_USER     = rsvp_site
       - POSTGRES_PASSWORD = rsvp_site
     volumes:
-      - pg:/var/lib/postgresql/data # reads/writes to this volume
+      - pg:/var/lib/postgresql/data
     ports:
       - "5432:5432"

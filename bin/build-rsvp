@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+path="`stack path --local-install-root`/bin/rsvp-site"
+tag=`git rev-parse --short HEAD`
+image_name="tippenein/rsvp-site"
+echo "calling with ${path} ${image_name} ${tag}"
+./build-image "${path}" "${image_name}" "${tag}"

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+
+docker pull tippenein/rsvp-site
+docker stop rsvp_site
+./start
