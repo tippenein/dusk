@@ -38,8 +38,9 @@ libraries+=('/bin/sh')
 # Create temporary directory for building up new container.
 run_container_dir=$(mktemp -d 2>/dev/null || mktemp -d -t "${exe_name}")
 
-cp -r "./static" "${run_container_dir}/static"
-docker cp "${run_container_dir}/static" "${build_container}:/usr/local/bin/static"
+mkdir "${run_container_dir}/app"
+cp -r "./static" "${run_container_dir}/app/static"
+cp -r "./config" "${run_container_dir}/app/config"
 
 # Copy executable and all needed libraries into temporary directory.
 cp "${binary_path}" "${run_container_dir}/${exe_name}"

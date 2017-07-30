@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-
-docker pull tippenein/rsvp-site
-docker stop rsvp_site
-./start
+docker pull tippenein/rsvp-site && \
+  docker stop rsvp_app && \
+  docker rm rsvp_app && \
+  docker run -d -w /app --link postgres:postgres --env-file app.env --name rsvp_app -p 80:3000 tippenein/rsvp-site /bin/bash -c 'PGHOST=$POSTGRES_PORT_5432_TCP_ADDR PGPASS=$POSTGRES_ENV_POSTGRES_PASSWORD /usr/local/bin/rsvp-site'
