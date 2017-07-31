@@ -1,4 +1,3 @@
 <div .ui.container>
-
-    <h1>
-      Hello <strong><span class="username">#{userIdent user}</span></strong>!
+  <h1>
+    Hello <strong><span .username>#{userIdent user}</span></strong>!

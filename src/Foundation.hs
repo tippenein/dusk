@@ -23,6 +23,8 @@ import           Model.User
 import           Role
 import           Routes
 
+data NavItem =  SingleNav (Route App) | Dropdown [Route App]
+
 data MenuItem = MenuItem
     { menuItemLabel :: Text
     , menuItemRoute :: Route App
@@ -81,17 +83,18 @@ instance Yesod App where
                 , NavbarLeft $ MenuItem
                     { menuItemLabel = "Curators"
                     , menuItemRoute = CuratorsR
-                    , menuItemAccessCallback = isNothing muser
+                    , menuItemAccessCallback = True
                     }
-                , NavbarLeft $ MenuItem
-                    { menuItemLabel = "Events"
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Announce"
                     , menuItemRoute = AdminEventR
                     , menuItemAccessCallback = isJust muser
                     }
                 , NavbarRight $ MenuItem
                     { menuItemLabel = userIdent $ snd $ fromMaybe (error "no user") muser
                     , menuItemRoute = ProfileR
-                    , menuItemAccessCallback = isJust muser
+                    , menuItemAccessCallback =
+                      isJust muser && not (mcurrentRoute == Just (ProfileR))
                     }
                 , NavbarRight $ MenuItem
                     { menuItemLabel = "Login"
@@ -101,7 +104,7 @@ instance Yesod App where
                 , NavbarRight $ MenuItem
                     { menuItemLabel = "Logout"
                     , menuItemRoute = AuthR LogoutR
-                    , menuItemAccessCallback = isJust muser
+                    , menuItemAccessCallback = isJust muser && mcurrentRoute == Just (ProfileR)
                     }
                 ]
 

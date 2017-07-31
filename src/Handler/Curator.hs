@@ -25,5 +25,5 @@ getCuratorsR = do
 <div .ui.container>
   <h1>Curators
   $forall Entity curatorId curator <- curators
-    <a href=@{CuratorR curatorId}>#{uname curator}>
+    <a href=@{CuratorR curatorId}>#{uname curator}
 |]

@@ -89,7 +89,6 @@ library:
   - time
   - transformers
   - uuid
-  - iso8601-time
   - case-insensitive
   - wai
   when:
