@@ -9,18 +9,23 @@
 <div .container>
   <div .row>
     <div .col-lg-12>
-      <h1 #events>Events
+        $forall Entity eventId event <- events
+          <div .row>
+            <div .col-sm-3>
+              <h3 .event-time>
+                <p>#{showTime $ eventStart_datetime event}
 
-      <ul .list-group>
-        $forall Entity _ event <- events
-          <li .list-group-item>
-            <span>
-              <h3>#{eventName event}
-              <img src="static/upload/#{eventAsset_id event}" height="250" width="250">
+            <div .col-sm-3>
+              <a  href="@{EventR eventId}" .event-image>
+                <img src="./static/upload/#{eventAsset_id event}" height="250" width="250">
+            <div .col-sm-6>
+              <div .event-info>
+                <h2>#{eventName event}
+                <p>#{fromMaybe "" $ eventDescription event}
 
     <hr>
 
     <div .row>
       <div .col-lg-12>
         <div .footer.pull-right>
-          RSVP LLC
+          RSVP ◎ 2017

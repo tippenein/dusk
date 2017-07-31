@@ -1,2 +1,12 @@
 <div .container>
-  <p>#{eventName event}
+  <div class="hero-unit">
+    <div class="row-fluid">
+      <div .col-sm-3>
+        <img src="../static/upload/#{eventAsset_id event}" height="250" width="250" .event-image>
+      <div .col-sm-3>
+        <h3 .event-time>
+          <p>#{showTime $ eventStart_datetime event}
+      <div .col-sm-6>
+        <div .event-info>
+          <h2>#{eventName event}
+          <p>#{fromMaybe "" $ eventDescription event}

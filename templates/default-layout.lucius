@@ -48,11 +48,13 @@ input:required {
     padding-bottom: 1em;
 }
 
+.event-info {
+}
 .masthead {
     margin-top: -21px;
     color: white;
     text-align: center;
-    min-height: 500px;
+    min-height: 400px;
 }
 
 .masthead .header {

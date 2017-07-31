@@ -27,6 +27,7 @@ library
           AppType
           Foundation
           Helpers.Forms
+          Helpers.Presentation
           Import
           Import.NoFoundation
           Model

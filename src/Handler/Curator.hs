@@ -10,7 +10,7 @@ getCuratorR i = do
     setTitle' $ uname u
     [whamlet|
 <div .ui.container>
-    <h1>#{uname u}
+  <h1>#{uname u}
 |]
 
 uname :: User -> Text
@@ -23,7 +23,7 @@ getCuratorsR = do
     setTitle' "Curators"
     [whamlet|
 <div .ui.container>
-    <h1>Curators
-    $forall Entity curatorId curator <- curators
-        <li><a href=@{CuratorR curatorId}>#{uname curator}
+  <h1>Curators
+  $forall Entity curatorId curator <- curators
+    <a href=@{CuratorR curatorId}>#{uname curator}>
 |]
