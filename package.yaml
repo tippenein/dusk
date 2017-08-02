@@ -126,6 +126,7 @@ executables:
     source-dirs:    test
     dependencies:
     - base
+    - time
     - rsvp-site
     - monad-logger
     - persistent

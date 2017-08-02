@@ -37,5 +37,5 @@ database:
 
 google_auth_key: "_env:GOOGLE_OAUTH_KEY:"
 google_auth_secret: "_env:GOOGLE_OAUTH_SECRET:"
-copyright: "2017"
+copyright: "Dusk ◎ 2017"
 #analytics: UA-YOURCODE
