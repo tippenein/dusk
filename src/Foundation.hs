@@ -126,17 +126,9 @@ instance Yesod App where
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = canCreateEvent'
-      where
-        canCreateEvent' = do
-          muid <- maybeAuthId
-          r <- runDB $ canCreateEvent muid
-          return $ if r then Authorized else Unauthorized "must be at least an Admin"
+    isAuthorized AdminEventR _ = checkAuth canCreateEvent
+    isAuthorized AdminCuratorR _ = checkAuth canCreateCurator
 
-    -- This function creates static content files in the static folder
-    -- and names them based on a hash of their content. This allows
-    -- expiration dates to be set far in the future without worry of
-    -- users receiving stale content.
     addStaticContent ext mime content = do
         master <- getYesod
         let staticDir = appStaticDir $ appSettings master
@@ -165,6 +157,12 @@ instance Yesod App where
     -- error pages
     defaultMessageWidget title body = $(widgetFile "default-message-widget")
 
+
+-- checkAuth :: (YesodPersist m, YesodAuth m) => Maybe UserId -> DB Bool -> m (Handler AuthResult)
+checkAuth f = do
+  muid <- maybeAuthId
+  r <- runDB $ f muid
+  return $ if r then Authorized else Unauthorized "must be at least an Admin"
 
 isLoggedIn :: Handler AuthResult
 isLoggedIn = do

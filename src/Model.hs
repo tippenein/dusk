@@ -54,6 +54,12 @@ Rsvp sql=rsvps
     fan_id RsvperId
     event_id EventId
 
+CuratorInvite sql=curator_invites
+    ident Text
+    token UUID         sqltype=uuid
+    invited_by UserId
+    sent_at UTCTime
+
 Event sql=events
     name Text
     description Text Maybe

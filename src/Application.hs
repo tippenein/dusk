@@ -13,7 +13,7 @@ module Application
     , db
     ) where
 
-import Control.Monad.Logger (liftLoc, runLoggingT)
+import Control.Monad.Logger (liftLoc, runLoggingT, runNoLoggingT)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
                                              pgPoolSize, runSqlPool)
 import Import
@@ -37,6 +37,7 @@ import Handler.Profile
 import Handler.Event
 import Handler.Curator
 import Handler.Admin.Event
+import Handler.Admin.Curator
 
 mkYesodDispatch "App" resourcesApp
 
@@ -67,8 +68,8 @@ makeFoundation appSettings = do
         (pgConnStr  $ appDatabaseConf appSettings)
         (pgPoolSize $ appDatabaseConf appSettings)
 
-    -- autorun migrations on startup
-    runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
+    flip runLoggingT logFunc $ do
+      runSqlPool (runMigration migrateAll) pool
 
     return $ mkFoundation pool
 

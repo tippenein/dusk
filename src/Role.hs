@@ -20,6 +20,10 @@ isCurator = isAuthenticated Curator
 isAdmin :: Maybe UserId -> DB Bool
 isAdmin = isAuthenticated Admin
 
+canCreateCurator :: Maybe UserId -> DB Bool
+canCreateCurator Nothing = return False
+canCreateCurator (Just uid) = isAdmin (Just uid)
+
 canCreateEvent :: Maybe UserId -> DB Bool
 canCreateEvent Nothing = return False
 canCreateEvent (Just uid) = do

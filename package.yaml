@@ -45,6 +45,7 @@ library:
   - Handler.Home
   - Handler.Profile
   - Handler.Admin.Event
+  - Handler.Admin.Curator
   - Handler.Curator
   - Handler.Event
   dependencies:
