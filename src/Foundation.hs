@@ -158,7 +158,6 @@ instance Yesod App where
     defaultMessageWidget title body = $(widgetFile "default-message-widget")
 
 
--- checkAuth :: (YesodPersist m, YesodAuth m) => Maybe UserId -> DB Bool -> m (Handler AuthResult)
 checkAuth f = do
   muid <- maybeAuthId
   r <- runDB $ f muid
@@ -170,7 +169,6 @@ isLoggedIn = do
   return $ case muid of
       Nothing -> Unauthorized "You must log in to access this page"
       Just _  -> Authorized
-
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -236,9 +234,8 @@ runDBor404 dba = do
     Just a -> return a
 
 setTitle' :: MonadWidget m => Text -> m ()
-setTitle' t = setTitle $ toHtml $ "Dusk - " <> t
+setTitle' t = setTitle $ toHtml $ t <> " - Dusk"
 
--- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
  
