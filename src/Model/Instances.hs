@@ -1,6 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Model.Instances where
+module Model.Instances
+  ( Role(..)
+  , UUID
+  ) where
 
 import ClassyPrelude.Yesod
 

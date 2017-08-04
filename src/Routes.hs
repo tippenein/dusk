@@ -17,7 +17,7 @@ imageFilePath f = uploadDirectory </> f
 mkYesodData "App" [parseRoutes|
 /static       StaticR Static appStatic
 /favicon.ico  FaviconR GET
-/robots.txt   RobotsR GET
+/robots.txt   RobotsR  GET
 
 /auth         AuthR Auth   getAuth
 
@@ -25,6 +25,7 @@ mkYesodData "App" [parseRoutes|
 /events            EventsR GET
 /events/#EventId   EventR GET
 /admin/events      AdminEventR GET POST
+/admin/curators    AdminCuratorR POST
 /profile           ProfileR GET
 /curators          CuratorsR GET
 /curators/#UserId  CuratorR GET

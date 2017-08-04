@@ -35,7 +35,9 @@ database:
   database: "_env:PGDATABASE:rsvp_site"
   poolsize: "_env:PGPOOLSIZE:10"
 
+bucketname: "_env:BUCKETNAME:duskhost"
 google_auth_key: "_env:GOOGLE_OAUTH_KEY:"
 google_auth_secret: "_env:GOOGLE_OAUTH_SECRET:"
 copyright: "Dusk ◎ 2017"
+send-mail: "_env:SENDMAIL:false"
 #analytics: UA-YOURCODE

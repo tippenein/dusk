@@ -126,17 +126,9 @@ instance Yesod App where
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = canCreateEvent'
-      where
-        canCreateEvent' = do
-          muid <- maybeAuthId
-          r <- runDB $ canCreateEvent muid
-          return $ if r then Authorized else Unauthorized "must be at least an Admin"
+    isAuthorized AdminEventR _ = checkAuth canCreateEvent
+    isAuthorized AdminCuratorR _ = checkAuth canCreateCurator
 
-    -- This function creates static content files in the static folder
-    -- and names them based on a hash of their content. This allows
-    -- expiration dates to be set far in the future without worry of
-    -- users receiving stale content.
     addStaticContent ext mime content = do
         master <- getYesod
         let staticDir = appStaticDir $ appSettings master
@@ -166,13 +158,17 @@ instance Yesod App where
     defaultMessageWidget title body = $(widgetFile "default-message-widget")
 
 
+checkAuth f = do
+  muid <- maybeAuthId
+  r <- runDB $ f muid
+  return $ if r then Authorized else Unauthorized "must be at least an Admin"
+
 isLoggedIn :: Handler AuthResult
 isLoggedIn = do
   muid <- maybeAuthId
   return $ case muid of
       Nothing -> Unauthorized "You must log in to access this page"
       Just _  -> Authorized
-
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -238,9 +234,8 @@ runDBor404 dba = do
     Just a -> return a
 
 setTitle' :: MonadWidget m => Text -> m ()
-setTitle' t = setTitle $ toHtml $ "Dusk - " <> t
+setTitle' t = setTitle $ toHtml $ t <> " - Dusk"
 
--- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
  

@@ -26,6 +26,8 @@ library
           Routes
           AppType
           Foundation
+          Helpers.Util
+          SendMail
           Helpers.Forms
           Helpers.Presentation
           Import
@@ -35,10 +37,12 @@ library
           Model.Instances
           Settings
           Settings.StaticFiles
+          S3
           Handler.Common
           Handler.Home
           Handler.Profile
           Handler.Admin.Event
+          Handler.Admin.Curator
           Handler.Curator
           Handler.Event
     other-modules:
@@ -79,6 +83,7 @@ library
         , monad-logger >=0.3 && <0.4
         , fast-logger >=2.2 && <2.5
         , wai-logger >=2.2 && <2.4
+        , resourcet
         , file-embed
         , bcrypt
         , safe
@@ -87,8 +92,13 @@ library
         , containers
         , vector
         , time
+        , amazonka
+        , amazonka-s3
+        , amazonka-core
         , transformers
+        , lens
         , uuid
+        , mime-mail
         , case-insensitive
         , wai
     if (flag(dev)) || (flag(library-only))
