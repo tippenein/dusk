@@ -13,7 +13,7 @@ module Application
     , db
     ) where
 
-import Control.Monad.Logger (liftLoc, runLoggingT, runNoLoggingT)
+import Control.Monad.Logger (liftLoc, runLoggingT)
 import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
                                              pgPoolSize, runSqlPool)
 import Import

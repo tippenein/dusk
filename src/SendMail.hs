@@ -6,29 +6,27 @@ module SendMail
     , Mail(..)
     ) where
 
-import Import
+import           Import
 
-import Control.Concurrent (forkIO)
-import Network.Mail.Mime (Address(..), Mail(..), renderMail')
--- import Network.Mail.RecipientOverride (overrideRecipients)
--- import Network.Mail.SendGrid (sendMailWithSendGridEnv)
-
-overrideRecipients = undefined
-sendMailWithSendGridEnv = undefined
+import           Api.V3.MailGun
+import           Control.Concurrent (forkIO)
+import           Network.Mail.Mime (Address(..), Mail(..), renderMail')
+import           System.Environment (getEnv)
 
 sendMail :: Mail -> Handler ()
-sendMail m = send =<< liftIO (overrideRecipients m)
-
+sendMail = send
   where
     send = if appSendMail compileTimeAppSettings
-        then sendViaSendGrid
+        then sendViaMailGun
         else sendToLog
 
-sendViaSendGrid :: Mail -> Handler ()
-sendViaSendGrid = void . liftIO . forkIO . sendMailWithSendGridEnv
+sendViaMailGun :: Mail -> Handler ()
+sendViaMailGun m = do
+  manager <- appHttpManager <$> getYesod
+  mailgunKey <- liftIO $ getEnv "MAILGUN_KEY"
+  void $ liftIO $ forkIO $ void $ sendMailGun "dusk.host" mailgunKey manager m
 
 sendToLog :: Mail -> Handler ()
 sendToLog mail = do
     rendered <- liftIO $ renderMail' mail
-
     void $ $(logDebug) $ toStrict $ decodeUtf8 rendered
