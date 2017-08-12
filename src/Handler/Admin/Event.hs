@@ -6,7 +6,6 @@ import           Data.Conduit
 import           Data.Text               (Text)
 import           Data.Time
 import           Control.Monad.Trans.AWS
-import           Network.AWS.S3 hiding (Event, redirect)
 import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 
 import           Import
@@ -21,7 +20,7 @@ getAdminEventR = do
 
 postAdminEventR :: Handler Html
 postAdminEventR = do
-  ((result, formWidget), formEncType) <- runFormPost eventForm
+  ((result, _formWidget), formEncType) <- runFormPost eventForm
   userId  <- requireAuthId
   case result of
     FormSuccess ef@(EventForm{..}) -> do

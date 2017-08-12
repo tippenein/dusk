@@ -10,17 +10,13 @@ module Model where
 
 import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Database.Esqueleto
-import Model.BCrypt
 import Model.Instances
 import Elm
-import Elm.Export.Persist
+import Elm.Export.Persist ()
 import Elm.Export.Persist.BackendKey ()
 
 type Validated a = Either [Text] a
 type Validation a = a -> Validated a
-
--- instance (ElmType a) => ElmType (Key a)
--- instance (Generic a) => Generic (Key a)
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User json sql=users

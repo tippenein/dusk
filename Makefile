@@ -1,15 +1,12 @@
-.PHONY: check clean docs seed publish image deploy frontend
+.PHONY: check clean docs seed publish image_push deploy frontend
 
 BUILD_IMAGE = "fpco/stack-build:lts-8.18"
 IMAGE_NAME := tippenein/rsvp-site
-IMAGE_TAG := $(shell ./bin/image-tag)
 EXE_NAME := rsvp-site
 base_db_name = rsvp_site
-scp_path = root@brontasaur.us
 
 FRONTEND_DIR = frontend
-LOCAL_BINARY_PATH = $(shell stack path --local-install-root)
-LINUX_BINARY_PATH = $(shell stack --docker path --local-install-root)
+
 all: check frontend publish
 
 frontend:
@@ -35,14 +32,6 @@ db_user:
 
 db_reset: db_down db seed
 
-seed:
-	stack exec seed
-
-deploy: fat_image image_push publish
-
-publish:
-	scp app.env $(scp_path):/home/doc/
-
 check:
 	stack test --fast
 
@@ -50,17 +39,16 @@ clean:
 	stack clean
 	stack --docker clean
 
-image:
-	stack --docker build
-	./bin/build-image \
-		$(BUILD_IMAGE) \
-		$(LINUX_BINARY_PATH)/bin/$(EXE_NAME) \
-		$(IMAGE_NAME) \
-		$(IMAGE_TAG)
+seed:
+	stack exec seed
+
+deploy: fat_image image_push publish
+
+publish:
+	scp app.env root@dusk.host:/home/doc/
 
 image_push:
 	docker push "$(IMAGE_NAME):latest"
-	docker push "$(IMAGE_NAME):$(IMAGE_TAG)"
 
 fat_image:
 	stack image container --stack-yaml=stack-docker.yaml

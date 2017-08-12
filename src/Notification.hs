@@ -1,12 +1,12 @@
 module Notification where
 
 import Import
-import Model.User
-import SendMail
+-- import Model.User
+-- import SendMail
 
-import Data.Text.Lazy.Builder (toLazyText)
-import Network.Mail.Mime (simpleMail')
-import Text.Shakespeare.Text (textFile)
+-- import Data.Text.Lazy.Builder (toLazyText)
+-- import Network.Mail.Mime (simpleMail')
+-- import Text.Shakespeare.Text (textFile)
 
 data Notification = CuratorInvite CuratorInvite
 
