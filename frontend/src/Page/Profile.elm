@@ -41,7 +41,7 @@ init session username =
 
         handleLoadError _ =
             "Profile is currently unavailable."
-                |> pageLoadError (Page.Profile username)
+                |> pageLoadError (Page.Home)
     in
     Task.map (Model []) loadProfile
         |> Task.mapError handleLoadError

@@ -30,9 +30,9 @@ type Page
     | NotFound
     | Errored PageLoadError
     | Home Home.Model
-    | Settings Settings.Model
-    | Login Login.Model
-    | Profile Username Profile.Model
+    -- | Settings Settings.Model
+    -- | Login Login.Model
+    -- | Profile Username Profile.Model
 
 
 type PageState
@@ -106,25 +106,25 @@ viewPage session isLoading page =
             Errored.view session subModel
                 |> frame Page.Other
 
-        Settings subModel ->
-            Settings.view session subModel
-                |> frame Page.Other
-                |> Html.map SettingsMsg
+        -- Settings subModel ->
+        --     Settings.view session subModel
+        --         |> frame Page.Other
+        --         |> Html.map SettingsMsg
 
         Home subModel ->
             Home.view session subModel
                 |> frame Page.Home
                 |> Html.map HomeMsg
 
-        Login subModel ->
-            Login.view session subModel
-                |> frame Page.Other
-                |> Html.map LoginMsg
+        -- Login subModel ->
+        --     Login.view session subModel
+        --         |> frame Page.Other
+        --         |> Html.map LoginMsg
 
-        Profile username subModel ->
-            Profile.view session subModel
-                |> frame (Page.Profile username)
-                |> Html.map ProfileMsg
+        -- Profile username subModel ->
+        --     Profile.view session subModel
+        --         |> frame (Page.Profile username)
+        --         |> Html.map ProfileMsg
 
 
 -- SUBSCRIPTIONS --
@@ -134,11 +134,11 @@ viewPage session isLoading page =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ pageSubscriptions (getPage model.pageState)
-        , Sub.map SetUser sessionChange
-        ]
+subscriptions model = Sub.none
+    -- Sub.batch
+    --     [ pageSubscriptions (getPage model.pageState)
+    --     -- , Sub.map SetUser sessionChange
+    --     ]
 
 
 sessionChange : Sub (Maybe User)
@@ -168,16 +168,7 @@ pageSubscriptions page =
         NotFound ->
             Sub.none
 
-        Settings _ ->
-            Sub.none
-
         Home _ ->
-            Sub.none
-
-        Login _ ->
-            Sub.none
-
-        Profile _ _ ->
             Sub.none
 
 
@@ -188,12 +179,12 @@ pageSubscriptions page =
 type Msg
     = SetRoute (Maybe Route)
     | HomeLoaded (Result PageLoadError Home.Model)
-    | ProfileLoaded Username (Result PageLoadError Profile.Model)
+    -- | ProfileLoaded Username (Result PageLoadError Profile.Model)
     | HomeMsg Home.Msg
-    | SettingsMsg Settings.Msg
-    | SetUser (Maybe User)
-    | LoginMsg Login.Msg
-    | ProfileMsg Profile.Msg
+    -- | SettingsMsg Settings.Msg
+    -- | SetUser (Maybe User)
+    -- | LoginMsg Login.Msg
+    -- | ProfileMsg Profile.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -210,33 +201,33 @@ setRoute maybeRoute model =
         Nothing ->
             { model | pageState = Loaded NotFound } => Cmd.none
 
-        Just Route.Settings ->
-            case model.session.user of
-                Just user ->
-                    { model | pageState = Loaded (Settings (Settings.init user)) } => Cmd.none
+        -- Just Route.Settings ->
+        --     case model.session.user of
+        --         Just user ->
+        --             { model | pageState = Loaded (Settings (Settings.init user)) } => Cmd.none
 
-                Nothing ->
-                    errored Page.Settings "You must be signed in to access your settings."
+        --         Nothing ->
+        --             errored Page.Settings "You must be signed in to access your settings."
 
         Just Route.Home ->
             transition HomeLoaded (Home.init model.session)
 
-        Just Route.Login ->
-            { model | pageState = Loaded (Login Login.initialModel) } => Cmd.none
+        -- Just Route.Login ->
+        --     { model | pageState = Loaded (Login Login.initialModel) } => Cmd.none
 
-        Just Route.Logout ->
-            let
-                session =
-                    model.session
-            in
-            { model | session = { session | user = Nothing } }
-                => Cmd.batch
-                    [ Ports.storeSession Nothing
-                    , Route.modifyUrl Route.Home
-                    ]
+        -- Just Route.Logout ->
+        --     let
+        --         session =
+        --             model.session
+        --     in
+        --     { model | session = { session | user = Nothing } }
+        --         => Cmd.batch
+        --             [ Ports.storeSession Nothing
+        --             , Route.modifyUrl Route.Home
+        --             ]
 
-        Just (Route.Profile username) ->
-            transition (ProfileLoaded username) (Profile.init model.session username)
+        -- Just (Route.Profile username) ->
+        --     transition (ProfileLoaded username) (Profile.init model.session username)
 
 
 pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )
@@ -279,72 +270,72 @@ updatePage page msg model =
         ( HomeLoaded (Err error), _ ) ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( ProfileLoaded username (Ok subModel), _ ) ->
-            { model | pageState = Loaded (Profile username subModel) } => Cmd.none
+        -- ( ProfileLoaded username (Ok subModel), _ ) ->
+        --     { model | pageState = Loaded (Profile username subModel) } => Cmd.none
 
-        ( ProfileLoaded username (Err error), _ ) ->
-            { model | pageState = Loaded (Errored error) } => Cmd.none
+        -- ( ProfileLoaded username (Err error), _ ) ->
+        --     { model | pageState = Loaded (Errored error) } => Cmd.none
 
-        ( SetUser user, _ ) ->
-            let
-                session =
-                    model.session
+        -- ( SetUser user, _ ) ->
+        --     let
+        --         session =
+        --             model.session
 
-                cmd =
-                    -- If we just signed out, then redirect to Home.
-                    if session.user /= Nothing && user == Nothing then
-                        Route.modifyUrl Route.Home
-                    else
-                        Cmd.none
-            in
-            { model | session = { session | user = user } }
-                => cmd
+        --         cmd =
+        --             -- If we just signed out, then redirect to Home.
+        --             if session.user /= Nothing && user == Nothing then
+        --                 Route.modifyUrl Route.Home
+        --             else
+        --                 Cmd.none
+        --     in
+        --     { model | session = { session | user = user } }
+        --         => cmd
 
-        ( SettingsMsg subMsg, Settings subModel ) ->
-            let
-                ( ( pageModel, cmd ), msgFromPage ) =
-                    Settings.update model.session subMsg subModel
+        -- ( SettingsMsg subMsg, Settings subModel ) ->
+        --     let
+        --         ( ( pageModel, cmd ), msgFromPage ) =
+        --             Settings.update model.session subMsg subModel
 
-                newModel =
-                    case msgFromPage of
-                        Settings.NoOp ->
-                            model
+        --         newModel =
+        --             case msgFromPage of
+        --                 Settings.NoOp ->
+        --                     model
 
-                        Settings.SetUser user ->
-                            let
-                                session =
-                                    model.session
-                            in
-                            { model | session = { user = Just user } }
-            in
-            { newModel | pageState = Loaded (Settings pageModel) }
-                => Cmd.map SettingsMsg cmd
+        --                 Settings.SetUser user ->
+        --                     let
+        --                         session =
+        --                             model.session
+        --                     in
+        --                     { model | session = { user = Just user } }
+        --     in
+        --     { newModel | pageState = Loaded (Settings pageModel) }
+        --         => Cmd.map SettingsMsg cmd
 
-        ( LoginMsg subMsg, Login subModel ) ->
-            let
-                ( ( pageModel, cmd ), msgFromPage ) =
-                    Login.update subMsg subModel
+        -- ( LoginMsg subMsg, Login subModel ) ->
+        --     let
+        --         ( ( pageModel, cmd ), msgFromPage ) =
+        --             Login.update subMsg subModel
 
-                newModel =
-                    case msgFromPage of
-                        Login.NoOp ->
-                            model
+        --         newModel =
+        --             case msgFromPage of
+        --                 Login.NoOp ->
+        --                     model
 
-                        Login.SetUser user ->
-                            let
-                                session =
-                                    model.session
-                            in
-                            { model | session = { user = Just user } }
-            in
-            { newModel | pageState = Loaded (Login pageModel) }
-                => Cmd.map LoginMsg cmd
+        --                 Login.SetUser user ->
+        --                     let
+        --                         session =
+        --                             model.session
+        --                     in
+        --                     { model | session = { user = Just user } }
+        --     in
+        --     { newModel | pageState = Loaded (Login pageModel) }
+        --         => Cmd.map LoginMsg cmd
 
         ( HomeMsg subMsg, Home subModel ) ->
             toPage Home HomeMsg (Home.update session) subMsg subModel
 
-        ( ProfileMsg subMsg, Profile username subModel ) ->
-            toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
+        -- ( ProfileMsg subMsg, Profile username subModel ) ->
+        --     toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
 
         ( _, NotFound ) ->
             -- Disregard incoming messages when we're on the

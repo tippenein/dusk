@@ -105,6 +105,7 @@ library:
   - http-client
   - case-insensitive
   - wai
+  - wai-cors
   when:
   - condition: (flag(dev)) || (flag(library-only))
     then:

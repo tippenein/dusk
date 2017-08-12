@@ -16,7 +16,7 @@ $newline never
     <link rel="icon" type="image/ico" href="/assets/favicon.ico" />
     <link href="//fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
 
-    <title>#{pageTitle pc}
+    <title>Dusk
 
     ^{pageHead pc}
 
@@ -27,29 +27,11 @@ $newline never
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.3/js.cookie.min.js">
 
     <script>
-      /* The `defaultCsrfMiddleware` Middleware added in Foundation.hs adds a CSRF token the request cookies. */
-      /* AJAX requests should add that token to a header to be validated by the server. */
-      /* See the CSRF documentation in the Yesod.Core.Handler module of the yesod-core package for details. */
-      var csrfHeaderName = "#{TE.decodeUtf8 $ CI.foldedCase defaultCsrfHeaderName}";
-
-      var csrfCookieName = "#{TE.decodeUtf8 defaultCsrfCookieName}";
-      var csrfToken = Cookies.get(csrfCookieName);
-
-
-      if (csrfToken) {
-      \  $.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
-      \      if (!options.crossDomain) {
-      \          jqXHR.setRequestHeader(csrfHeaderName, csrfToken);
-      \      }
-      \  });
-      }
-
-    <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
     <style>/* Loading spinner courtesy of loader.io */
       .sk-three-bounce { margin-right: 10px; } .sk-three-bounce .sk-child { width: 14px; height: 14px; background-color: #333; border-radius: 100%; display: inline-block; -webkit-animation: sk-three-bounce 1.4s ease-in-out 0s infinite both; animation: sk-three-bounce 1.4s ease-in-out 0s infinite both; } .sk-three-bounce .sk-bounce1 { -webkit-animation-delay: 0.28s; animation-delay: 0.28s; } .sk-three-bounce .sk-bounce2 { -webkit-animation-delay: 0.44s; animation-delay: 0.44s; } .sk-three-bounce .sk-bounce3 { -webkit-animation-delay: 0.6s; animation-delay: 0.6s; } @-webkit-keyframes sk-three-bounce { 0%, 80%, 100% { -webkit-transform: scale(0); transform: scale(0); } 40% { -webkit-transform: scale(1); transform: scale(1); } } @keyframes sk-three-bounce { 0%, 80%, 100% { -webkit-transform: scale(0); transform: scale(0); } 40% { -webkit-transform: scale(1); transform: scale(1); } }
 
-    <script src="static/js/elm.js"></script>
+    <script src="static/js/app.js"></script>
 
   <body id="page-body">
     <script>

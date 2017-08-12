@@ -12,11 +12,11 @@ import           Text.Jasmine (minifym)
 -- Used only when in "auth-dummy-login" setting is enabled.
 import           Yesod.Auth.Dummy
 
-import           Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
-import           Yesod.Default.Util (addStaticContentExternal)
-import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
+import           Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
+import qualified Yesod.Core.Unsafe as Unsafe
+import           Yesod.Default.Util (addStaticContentExternal)
 
 import           AppType
 import           Model.User
@@ -54,7 +54,7 @@ instance Yesod App where
         120    -- timeout in minutes
         "config/client_session_key.aes"
 
-    yesodMiddleware = defaultYesodMiddleware . defaultCsrfMiddleware
+    yesodMiddleware = defaultYesodMiddleware
 
     defaultLayout widget = do
         master <- getYesod

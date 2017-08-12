@@ -23,9 +23,9 @@ under Other.
 type ActivePage
     = Other
     | Home
-    | Login
-    | Settings
-    | Profile Username
+    -- | Login
+    -- | Settings
+    -- | Profile Username
 
 
 {-| Take a page's Html and frame it with a header and footer.
@@ -64,19 +64,19 @@ viewSignIn : ActivePage -> Maybe User -> List (Html msg)
 viewSignIn page user =
     case user of
         Nothing ->
-            [ navbarLink (page == Login) Route.Login [ text "Sign in" ]
-            ]
+            [ text "cool" ] -- navbarLink (page == Login) Route.Login [ text "Sign in" ]
 
         Just user ->
-            [ navbarLink (page == Settings) Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
-            , navbarLink
-                (page == Profile user.username)
-                (Route.Profile user.username)
-                [ img [ class "user-pic", UserPhoto.src user.image ] []
-                , User.usernameToHtml user.username
-                ]
-            , navbarLink False Route.Logout [ text "Sign out" ]
-            ]
+            [ text "cool" ]
+            -- [ navbarLink (page == Settings) Route.Settings [ i [ class "ion-gear-a" ] [], text " Settings" ]
+            -- , navbarLink
+            --     (page == Profile user.username)
+            --     (Route.Profile user.username)
+            --     [ img [ class "user-pic", UserPhoto.src user.image ] []
+            --     , User.usernameToHtml user.username
+            --     ]
+            -- , navbarLink False Route.Logout [ text "Sign out" ]
+            -- ]
 
 
 viewFooter : Html msg

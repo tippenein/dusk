@@ -1,7 +1,6 @@
 module Page.Home exposing (Model, Msg, init, update, view)
 
-{-| The homepage. You can get here via either the / or /#/ routes.
--}
+{-| The homepage. You can get here via either the / or /#/ routes. -}
 
 import Data.Session as Session exposing (Session)
 import Html exposing (..)
@@ -19,7 +18,6 @@ import Data.Gen
 -- MODEL --
 type alias Model =
     { events : List Data.Gen.Event
-    -- , event : Data.Gen.Event
     }
 
 
@@ -30,14 +28,13 @@ init session =
             session.user
                 |> Maybe.map .token
 
-        loadHome = Request.Event.authEvents maybeAuthToken
-                   |> Http.toTask
+        loadEvents = Request.Event.events |> Http.toTask
 
         handleLoadError _ =
             "Profile is currently unavailable."
                 |> pageLoadError Page.Home
     in
-    Task.map Model loadHome
+    Task.map Model loadEvents
         |> Task.mapError handleLoadError
 
 -- VIEW --
@@ -52,7 +49,7 @@ view session model =
                 [ div [ class "col-md-12" ]
                     [ div [ class "sidebar" ]
                         [ p [] [ text "Popular Events" ]
-                        , p [] [text "events here"]
+                        , p [] [ text "events here" ]
                         ]
                     ]
                 ]
@@ -64,8 +61,8 @@ viewBanner : Html msg
 viewBanner =
     div [ class "banner" ]
         [ div [ class "container" ]
-            [ h1 [ class "logo-font" ] [ text "conduit" ]
-            , p [] [ text "A place to share your knowledge." ]
+            [ h1 [ class "logo-font" ] [ text "dusk" ]
+            , p [] [ text "Curated events" ]
             ]
         ]
 

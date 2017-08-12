@@ -106,6 +106,7 @@ library
         , http-client
         , case-insensitive
         , wai
+        , wai-cors
     if (flag(dev)) || (flag(library-only))
         ghc-options: -Wall -fwarn-tabs -O0
         cpp-options: -DDEVELOPMENT

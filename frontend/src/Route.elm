@@ -12,20 +12,20 @@ import UrlParser as Url exposing ((</>), Parser, oneOf, parseHash, s, string)
 
 type Route
     = Home
-    | Login
-    | Logout
-    | Settings
-    | Profile Username
+    -- | Login
+    -- | Logout
+    -- | Settings
+    -- | Profile Username
 
 
 route : Parser (Route -> a) a
 route =
     oneOf
         [ Url.map Home (s "")
-        , Url.map Login (s "login")
-        , Url.map Logout (s "logout")
-        , Url.map Settings (s "settings")
-        , Url.map Profile (s "profile" </> User.usernameParser)
+        -- , Url.map Login (s "login")
+        -- , Url.map Logout (s "logout")
+        -- , Url.map Settings (s "settings")
+        -- , Url.map Profile (s "profile" </> User.usernameParser)
         ]
 
 
@@ -41,17 +41,17 @@ routeToString page =
                 Home ->
                     []
 
-                Login ->
-                    [ "login" ]
+                -- Login ->
+                --     [ "login" ]
 
-                Logout ->
-                    [ "logout" ]
+                -- Logout ->
+                --     [ "logout" ]
 
-                Settings ->
-                    [ "settings" ]
+                -- Settings ->
+                --     [ "settings" ]
 
-                Profile username ->
-                    [ "profile", User.usernameToString username ]
+                -- Profile username ->
+                --     [ "profile", User.usernameToString username ]
     in
     "#/" ++ String.join "/" pieces
 

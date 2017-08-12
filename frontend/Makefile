@@ -1,7 +1,7 @@
 all: js copy
 
 js:
-	elm make src/Main.elm --output=elm.js
+	elm make src/Main.elm --output=app.js
 
 copy:
-	mv elm.js ../static/js/elm.js
+	mv app.js ../static/js/app.js
