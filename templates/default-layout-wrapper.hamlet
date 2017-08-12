@@ -14,7 +14,7 @@ $newline never
 
     <link rel="shortcut icon" type="image/ico" href="/assets/favicon.ico" />
     <link rel="icon" type="image/ico" href="/assets/favicon.ico" />
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+    <link href="//fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
 
     <title>#{pageTitle pc}
 
@@ -23,8 +23,8 @@ $newline never
     \<!--[if lt IE 9]>
     \<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     \<![endif]-->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js">
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.3/js.cookie.min.js">
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js">
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.0.3/js.cookie.min.js">
 
     <script>
       /* The `defaultCsrfMiddleware` Middleware added in Foundation.hs adds a CSRF token the request cookies. */
@@ -46,16 +46,20 @@ $newline never
 
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
-  <body>
-    ^{pageBody pc}
+    <link rel="stylesheet" href="//demo.productionready.io/main.css">
+    <style>/* Loading spinner courtesy of loader.io */
+      .sk-three-bounce { margin-right: 10px; } .sk-three-bounce .sk-child { width: 14px; height: 14px; background-color: #333; border-radius: 100%; display: inline-block; -webkit-animation: sk-three-bounce 1.4s ease-in-out 0s infinite both; animation: sk-three-bounce 1.4s ease-in-out 0s infinite both; } .sk-three-bounce .sk-bounce1 { -webkit-animation-delay: 0.28s; animation-delay: 0.28s; } .sk-three-bounce .sk-bounce2 { -webkit-animation-delay: 0.44s; animation-delay: 0.44s; } .sk-three-bounce .sk-bounce3 { -webkit-animation-delay: 0.6s; animation-delay: 0.6s; } @-webkit-keyframes sk-three-bounce { 0%, 80%, 100% { -webkit-transform: scale(0); transform: scale(0); } 40% { -webkit-transform: scale(1); transform: scale(1); } } @keyframes sk-three-bounce { 0%, 80%, 100% { -webkit-transform: scale(0); transform: scale(0); } 40% { -webkit-transform: scale(1); transform: scale(1); } }
 
-    $maybe analytics <- appAnalytics $ appSettings master
-      <script>
-        if(!window.location.href.match(/localhost/)){
-          window._gaq = [['_setAccount','#{analytics}'],['_trackPageview'],['_trackPageLoadTime']];
-          (function() {
-          \  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-          \  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-          \  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-          })();
+    <script src="static/js/elm.js"></script>
+
+  <body id="page-body">
+    <script>
+      var app = Elm.Main.fullscreen(localStorage.session || null);
+      app.ports.storeSession.subscribe(function(session) {
+        localStorage.session = session;
+      });
+      window.addEventListener("storage", function(event) {
+        if (event.storageArea === localStorage && event.key === "session") {
+          app.ports.onSessionChange.send(event.newValue);
         }
+      }, false);

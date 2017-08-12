@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -11,33 +12,28 @@ import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Database.Esqueleto
 import Model.BCrypt
 import Model.Instances
+import Elm
+import Elm.Export.Persist
+import Elm.Export.Persist.BackendKey ()
 
 type Validated a = Either [Text] a
 type Validation a = a -> Validated a
 
+-- instance (ElmType a) => ElmType (Key a)
+-- instance (Generic a) => Generic (Key a)
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-User sql=users
+User json sql=users
     ident Text
     name Text Maybe
     UniqueUser ident
-    deriving Show
+    deriving Show Generic
 
 UserRole sql=user_roles
     user_id UserId
     role Role
     UniqueUserRole user_id role
     deriving Show
-
-Password sql=passwords
-    hash BCrypt
-    user UserId
-    UniquePasswordUser user
-    deriving Show
-
-PasswordReset sql=password_resets
-    token Text
-    created UTCTime
-    user UserId
 
 Email sql=emails
     email Text
@@ -60,17 +56,24 @@ CuratorInvite sql=curator_invites
     invited_by UserId
     sent_at UTCTime
 
-Event sql=events
-    name Text
-    description Text Maybe
-    asset_id Text
-    owner_id UserId
-    all_day Bool default=False
+Event json sql=events
+    name           Text
+    description    Text Maybe
+    asset_id       Text
+    owner_id       UserId
+    all_day        Bool          default=False
     start_datetime UTCTime
-    end_datetime UTCTime Maybe
+    end_datetime   UTCTime Maybe
+    deriving Show Generic
 |]
 
+instance ElmType Event
 
+deriving instance ElmType EventId
+
+instance ElmType User
+
+deriving instance ElmType UserId
 
 type ControlIO m = (MonadIO m, MonadBaseControl IO m)
 

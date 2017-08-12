@@ -48,6 +48,7 @@ library
           Handler.Event
     other-modules:
           Model.User
+          Notification
           Role
           Paths_rsvp_site
     default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
@@ -97,6 +98,8 @@ library
         , amazonka-s3
         , amazonka-core
         , transformers
+        , elm-export
+        , elm-export-persistent
         , lens
         , uuid
         , mime-mail
@@ -110,6 +113,26 @@ library
               foreign-store
     else
         ghc-options: -Wall -fwarn-tabs -O2
+
+executable gen
+    main-is: Main.hs
+    hs-source-dirs:
+          gen
+    default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
+    build-depends:
+          base
+        , rsvp-site
+        , elm-export
+        , uuid
+        , persistent
+        , bytestring
+        , classy-prelude-yesod
+        , text
+        , bcrypt
+        , safe
+        , esqueleto
+        , elm-export-persistent
+    default-language: Haskell2010
 
 executable rsvp-site
     main-is: main.hs

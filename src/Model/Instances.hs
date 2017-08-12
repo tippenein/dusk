@@ -5,12 +5,21 @@ module Model.Instances
   , UUID
   ) where
 
-import ClassyPrelude.Yesod
+import           ClassyPrelude.Yesod
 
-import Data.ByteString.Char8 as B8
-import Database.Persist.Sql
-import           Data.UUID   (UUID)
+import qualified Data.ByteString.Char8 as B8
+import           Data.UUID (UUID)
 import qualified Data.UUID as UUID
+import           Database.Persist.Sql
+
+instance ToJSON UUID where
+  toJSON = String . pack . UUID.toString
+
+instance FromJSON UUID where
+  parseJSON (String s) = case UUID.fromString $ unpack s of
+    Nothing -> error "invalid UUID"
+    Just a -> return a
+  parseJSON _ = error "invalid UUID"
 
 instance PersistField UUID where
   toPersistValue u = PersistDbSpecific . B8.pack . UUID.toString $ u
@@ -22,6 +31,9 @@ instance PersistField UUID where
 
 instance PersistFieldSql UUID where
   sqlType _ = SqlOther "uuid"
+
+-- instance ElmType UUID where
+--   toElmType _ = ElmDatatype "UUID" (NamedConstructor "uuid" (ElmPrimitiveRef EString))
 
 data Role = Admin | Curator | Fan
   deriving (Show, Read, Eq)

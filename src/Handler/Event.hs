@@ -4,17 +4,14 @@ module Handler.Event where
 import Import
 
 
-getEventR :: EventId -> Handler Html
+getEventR :: EventId -> Handler Value
 getEventR event_id = do
   event <- runDBor404 $ get event_id
-  defaultLayout $ do
-    setTitle' $ eventName event
-    $(widgetFile "event")
+  return $ object ["event" .= event]
 
-getEventsR :: Handler Html
+
+getEventsR :: Handler Value
 getEventsR = do
   events <- runDB $ selectList [] [Asc EventStart_datetime]
-  defaultLayout $ do
-    setTitle "events!"
-    $(widgetFile "events")
+  return $ object ["events" .= events]
 

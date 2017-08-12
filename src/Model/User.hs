@@ -12,14 +12,6 @@ import Database.Esqueleto
 import Import.NoFoundation hiding (on, (==.), Value)
 import Model.Instances
 
-getUserPassword :: Text -> DB (Maybe (Entity User, Entity Password))
-getUserPassword email = fmap listToMaybe $
-  select $
-  from $ \(user `InnerJoin` pass) -> do
-  on (user ^. UserId ==. pass ^. PasswordUser)
-  where_ (user ^. UserIdent ==. val email)
-  return (user, pass)
-
 getUserRoles :: UserId -> DB [Role]
 getUserRoles uid = do
   v <- select $
@@ -42,14 +34,6 @@ getUserEntity email = fmap listToMaybe $
   from $ \user -> do
   where_ (user ^. UserIdent ==. val email)
   return user
-
--- createUser :: Text -> Text -> DB (Entity User)
--- createUser email pass = do
---  let newUser = User email Nothing
---  userId <- insert $ newUser
---  h <- liftIO $ hashPassword pass
---  _ <- insert $ Password h userId
---  return (Entity userId newUser)
 
 authenticateUser :: AuthId m ~ UserId => Creds m -> DB (AuthenticationResult m)
 authenticateUser Creds{..} = do

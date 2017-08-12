@@ -1,4 +1,4 @@
-.PHONY: check clean docs seed publish image deploy
+.PHONY: check clean docs seed publish image deploy frontend
 
 BUILD_IMAGE = "fpco/stack-build:lts-8.18"
 IMAGE_NAME := tippenein/rsvp-site
@@ -7,8 +7,13 @@ EXE_NAME := rsvp-site
 base_db_name = rsvp_site
 scp_path = root@brontasaur.us
 
+FRONTEND_DIR = frontend
 LOCAL_BINARY_PATH = $(shell stack path --local-install-root)
 LINUX_BINARY_PATH = $(shell stack --docker path --local-install-root)
+all: check frontend publish
+
+frontend:
+	$(MAKE) -C $(FRONTEND_DIR)
 
 ghci:
 	stack ghci --ghci-options -fobject-code rsvp-site:lib
@@ -33,7 +38,7 @@ db_reset: db_down db seed
 seed:
 	stack exec seed
 
-deploy: image publish
+deploy: fat_image image_push publish
 
 publish:
 	scp app.env $(scp_path):/home/doc/
@@ -45,9 +50,6 @@ clean:
 	stack clean
 	stack --docker clean
 
-docs:
-	stack haddock
-
 image:
 	stack --docker build
 	./bin/build-image \
@@ -55,9 +57,10 @@ image:
 		$(LINUX_BINARY_PATH)/bin/$(EXE_NAME) \
 		$(IMAGE_NAME) \
 		$(IMAGE_TAG)
+
 image_push:
-	docker push "$(IMAGE_NAME):$(IMAGE_TAG)"
 	docker push "$(IMAGE_NAME):latest"
+	docker push "$(IMAGE_NAME):$(IMAGE_TAG)"
 
 fat_image:
 	stack image container --stack-yaml=stack-docker.yaml
