@@ -6,13 +6,14 @@ import Data.Session as Session exposing (Session)
 import Html exposing (..)
 import Request.Event
 import Html.Attributes exposing (attribute, class, classList, href, id, placeholder)
--- import Html.Events exposing (onClick)
+import Html.Events exposing (onClick)
 import Http
 import Page.Errored as Errored exposing (PageLoadError, pageLoadError)
 import Task exposing (Task)
 import Views.Page as Page
-import Util exposing ((=>))
+import Util exposing ((=>), formatDate)
 import Data.Gen
+import Date exposing (..)
 
 
 -- MODEL --
@@ -49,8 +50,8 @@ view session model =
             [ div [ class "row" ]
                 [ div [ class "col-md-12" ]
                     [ div [ class "sidebar" ]
-                        [ p [] [ text "Popular Events" ]
-                        , p [] [ text "events here" ]
+                        [ p [] [ text "Events" ]
+                        , viewEvents model.events
                         ]
                     ]
                 ]
@@ -58,7 +59,7 @@ view session model =
         ]
 
 
-viewBanner : Html msg
+viewBanner : Html Msg
 viewBanner =
     div [ class "banner" ]
         [ div [ class "container" ]
@@ -74,13 +75,24 @@ viewEvents events =
 
 
 viewEvent : Data.Gen.Event -> Html Msg
-viewEvent eventName =
-    a
-        [ class "event-pill event-default"
-        , href "javascript:void(0)"
-        -- , onClick (SelectEvent eventName)
-        ]
-        [ ]
+viewEvent event =
+    div [ class "row" ]
+        [ div [ class "col-sm-3" ]
+              [ h3 [class "event-time" ]
+                   [ p [] [ text (formatDate event.eventStart_datetime) ] ]
+              ]
+        , div [ class "col-sm-3" ]
+              [ a
+                  [ class "event-image event-default"
+                  , Html.Attributes.height 250
+                  , Html.Attributes.width 250
+                  , href "javascript:void(0)"
+                  , onClick (SelectEvent event.eventId)
+                  ]
+                  [ text event.eventName ]
+              ]
+         ]
+
 
 
 
@@ -88,7 +100,7 @@ viewEvent eventName =
 
 
 type Msg
-    = SelectEvent Data.Gen.Event
+    = SelectEvent Int
 
 
 update : Session -> Msg -> Model -> ( Model, Cmd Msg )

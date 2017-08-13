@@ -1,8 +1,9 @@
-module Util exposing ((=>), appendErrors, onClickStopPropagation, pair, viewIf)
+module Util exposing (..)
 
 import Html exposing (Attribute, Html)
 import Html.Events exposing (defaultOptions, onWithOptions)
 import Json.Decode as Decode
+import Date exposing (..)
 
 
 (=>) : a -> b -> ( a, b )
@@ -48,3 +49,35 @@ onClickStopPropagation msg =
 appendErrors : { model | errors : List error } -> List error -> { model | errors : List error }
 appendErrors model errors =
     { model | errors = model.errors ++ errors }
+
+-- Thurs, Jan 1
+formatDate : Date -> String
+formatDate d =
+    dayToString (dayOfWeek d)
+    ++ ", "
+    ++ monthToString (month d)
+    ++ " "
+    ++ toString (day d)
+
+monthToString m = case m of
+  Jan -> "Jan"
+  Feb -> "Feb"
+  Mar -> "Mar"
+  Apr -> "Apr"
+  May -> "May"
+  Jun -> "Jun"
+  Jul -> "Jul"
+  Aug -> "Aug"
+  Sep -> "Sep"
+  Oct -> "Oct"
+  Nov -> "Nov"
+  Dec -> "Dec"
+
+dayToString d = case d of
+  Mon -> "Mon"
+  Tue -> "Tue"
+  Wed -> "Wed"
+  Thu -> "Thu"
+  Fri -> "Fri"
+  Sat -> "Sat"
+  Sun -> "Sun"
