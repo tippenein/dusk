@@ -63,12 +63,13 @@ Event json sql=events
     deriving Show Generic
 |]
 
-instance ElmType Event
+-- instance ToJSON a => ToJSON (Entity a) where
+--   toJSON (Entity k a) = object $ [ "id" .= (String $ toPathPiece k) <> toJSON a]
 
+instance ElmType Event
 deriving instance ElmType EventId
 
 instance ElmType User
-
 deriving instance ElmType UserId
 
 type ControlIO m = (MonadIO m, MonadBaseControl IO m)

@@ -28,10 +28,11 @@ init session =
             session.user
                 |> Maybe.map .token
 
-        loadEvents = Request.Event.events |> Http.toTask
+        loadEvents =
+            Request.Event.events |> Http.toTask
 
         handleLoadError _ =
-            "Profile is currently unavailable."
+            "Events failed to load"
                 |> pageLoadError Page.Home
     in
     Task.map Model loadEvents

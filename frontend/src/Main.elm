@@ -8,7 +8,6 @@ import Json.Decode as Decode exposing (Value)
 import Navigation exposing (Location)
 import Page.Errored as Errored exposing (PageLoadError)
 import Page.Home as Home
-import Page.Profile as Profile
 import Page.Login as Login
 import Page.NotFound as NotFound
 import Page.Settings as Settings
@@ -32,7 +31,6 @@ type Page
     | Home Home.Model
     -- | Settings Settings.Model
     -- | Login Login.Model
-    -- | Profile Username Profile.Model
 
 
 type PageState
@@ -121,10 +119,6 @@ viewPage session isLoading page =
         --         |> frame Page.Other
         --         |> Html.map LoginMsg
 
-        -- Profile username subModel ->
-        --     Profile.view session subModel
-        --         |> frame (Page.Profile username)
-        --         |> Html.map ProfileMsg
 
 
 -- SUBSCRIPTIONS --
@@ -179,12 +173,10 @@ pageSubscriptions page =
 type Msg
     = SetRoute (Maybe Route)
     | HomeLoaded (Result PageLoadError Home.Model)
-    -- | ProfileLoaded Username (Result PageLoadError Profile.Model)
     | HomeMsg Home.Msg
     -- | SettingsMsg Settings.Msg
     -- | SetUser (Maybe User)
     -- | LoginMsg Login.Msg
-    -- | ProfileMsg Profile.Msg
 
 
 setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
@@ -226,8 +218,6 @@ setRoute maybeRoute model =
         --             , Route.modifyUrl Route.Home
         --             ]
 
-        -- Just (Route.Profile username) ->
-        --     transition (ProfileLoaded username) (Profile.init model.session username)
 
 
 pageErrored : Model -> ActivePage -> String -> ( Model, Cmd msg )
@@ -269,12 +259,6 @@ updatePage page msg model =
 
         ( HomeLoaded (Err error), _ ) ->
             { model | pageState = Loaded (Errored error) } => Cmd.none
-
-        -- ( ProfileLoaded username (Ok subModel), _ ) ->
-        --     { model | pageState = Loaded (Profile username subModel) } => Cmd.none
-
-        -- ( ProfileLoaded username (Err error), _ ) ->
-        --     { model | pageState = Loaded (Errored error) } => Cmd.none
 
         -- ( SetUser user, _ ) ->
         --     let
@@ -333,9 +317,6 @@ updatePage page msg model =
 
         ( HomeMsg subMsg, Home subModel ) ->
             toPage Home HomeMsg (Home.update session) subMsg subModel
-
-        -- ( ProfileMsg subMsg, Profile username subModel ) ->
-        --     toPage (Profile username) ProfileMsg (Profile.update model.session) subMsg subModel
 
         ( _, NotFound ) ->
             -- Disregard incoming messages when we're on the

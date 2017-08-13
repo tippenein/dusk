@@ -15,7 +15,6 @@ type Route
     -- | Login
     -- | Logout
     -- | Settings
-    -- | Profile Username
 
 
 route : Parser (Route -> a) a
@@ -25,7 +24,6 @@ route =
         -- , Url.map Login (s "login")
         -- , Url.map Logout (s "logout")
         -- , Url.map Settings (s "settings")
-        -- , Url.map Profile (s "profile" </> User.usernameParser)
         ]
 
 
@@ -50,10 +48,8 @@ routeToString page =
                 -- Settings ->
                 --     [ "settings" ]
 
-                -- Profile username ->
-                --     [ "profile", User.usernameToString username ]
     in
-    "#/" ++ String.join "/" pieces
+      "#/" ++ String.join "/" pieces
 
 
 
