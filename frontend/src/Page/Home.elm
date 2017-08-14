@@ -13,10 +13,12 @@ import Task exposing (Task)
 import Views.Page as Page
 import Util exposing ((=>), formatDate)
 import Data.Gen
-import Date exposing (..)
+import Maybe exposing (withDefault)
 
 
 -- MODEL --
+
+
 type alias Model =
     { events : List Data.Gen.Event
     }
@@ -36,8 +38,10 @@ init session =
             "Events failed to load"
                 |> pageLoadError Page.Home
     in
-    Task.map Model loadEvents
-        |> Task.mapError handleLoadError
+        Task.map Model loadEvents
+            |> Task.mapError handleLoadError
+
+
 
 -- VIEW --
 
@@ -61,10 +65,12 @@ view session model =
 
 viewBanner : Html Msg
 viewBanner =
-    div [ class "banner" ]
+    div [ class "masthead" ]
         [ div [ class "container" ]
-            [ h1 [ class "logo-font" ] [ text "dusk" ]
-            , p [] [ text "Curated events" ]
+            [ div [ class "row" ]
+                [ h1 [ class "header" ] [ text "Dusk" ]
+                , h2 [] [ text "Curated Nightlife" ]
+                ]
             ]
         ]
 
@@ -78,21 +84,31 @@ viewEvent : Data.Gen.Event -> Html Msg
 viewEvent event =
     div [ class "row" ]
         [ div [ class "col-sm-3" ]
-              [ h3 [class "event-time" ]
-                   [ p [] [ text (formatDate event.eventStart_datetime) ] ]
-              ]
+            [ h3 [ class "event-time" ]
+                [ p [] [ text (formatDate event.eventStart_datetime) ] ]
+            ]
         , div [ class "col-sm-3" ]
-              [ a
-                  [ class "event-image event-default"
-                  , Html.Attributes.height 250
-                  , Html.Attributes.width 250
-                  , href "javascript:void(0)"
-                  , onClick (SelectEvent event.eventId)
-                  ]
-                  [ text event.eventName ]
-              ]
-         ]
-
+            [ a
+                [ class "event-image event-default"
+                , href "javascript:void(0)"
+                , onClick (SelectEvent event.eventId)
+                ]
+                []
+            , img
+                [ Html.Attributes.src event.eventName
+                , Html.Attributes.height 250
+                , Html.Attributes.width 250
+                ]
+                []
+            ]
+        , div [ class "col-sm-6" ]
+            [ div
+                [ class "event-info" ]
+                [ h2 [] [ text event.eventName ]
+                , p [] [ text (withDefault "" event.eventDescription) ]
+                ]
+            ]
+        ]
 
 
 
@@ -108,4 +124,3 @@ update session msg model =
     case msg of
         SelectEvent eventId ->
             model => Cmd.none
-                    -- (Maybe.map .token session.user) -- eventId

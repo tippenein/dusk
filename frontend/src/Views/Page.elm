@@ -81,10 +81,11 @@ viewSignIn page user =
 
 viewFooter : Html msg
 viewFooter =
-    footer []
-        [ div [ class "container" ]
-            [ a [ class "logo-font", href "/" ] [ text "dusk" ]
-            ]
+    div [ class "row" ]
+        [ div [ class "col-lg-12" ]
+              [ div [ class "footer pull-right"]
+                    [ text "dusk" ]
+              ]
         ]
 
 
