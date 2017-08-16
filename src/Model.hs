@@ -11,9 +11,6 @@ module Model where
 import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Database.Esqueleto
 import Model.Instances
-import Elm
-import Elm.Export.Persist ()
-import Elm.Export.Persist.BackendKey ()
 
 type Validated a = Either [Text] a
 type Validation a = a -> Validated a
@@ -65,12 +62,6 @@ Event json sql=events
 
 -- instance ToJSON a => ToJSON (Entity a) where
 --   toJSON (Entity k a) = object $ [ "id" .= (String $ toPathPiece k) <> toJSON a]
-
-instance ElmType Event
-deriving instance ElmType EventId
-
-instance ElmType User
-deriving instance ElmType UserId
 
 type ControlIO m = (MonadIO m, MonadBaseControl IO m)
 

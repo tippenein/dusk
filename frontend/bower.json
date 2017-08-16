@@ -1,0 +1,36 @@
+{
+  "name": "frontend",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^3.1.0",
+    "purescript-console": "^3.0.0",
+    "purescript-pux": "^10.0.0",
+    "purescript-aff": "^3.1.0",
+    "purescript-smolder": "^9.0.0",
+    "purescript-affjax": "^4.0.0",
+    "purescript-argonaut": "^3.0.0",
+    "purescript-arrays": "^4.1.2",
+    "purescript-dom": "^4.5.0",
+    "purescript-echarts": "^5.0.0",
+    "purescript-foldable-traversable": "^3.4.0",
+    "purescript-aff-coroutines": "^5.0.0",
+    "purescript-parallel": "^3.0.0",
+    "purescript-halogen-css": "^6.0.0",
+    "purescript-css": "^3.0.0",
+    "purescript-dom-classy": "^2.1.0",
+    "purescript-formatters": "^2.1.0",
+    "purescript-datetime": "^3.3.0",
+    "purescript-now": "^3.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^3.0.0",
+    "purescript-test-unit": "^11.0.0",
+    "purescript-foreign-generic": "^4.2.0",
+    "purescript-generics": "^4.0.0"
+  }
+}

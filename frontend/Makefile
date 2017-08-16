@@ -1,7 +1,7 @@
 all: js copy
 
 js:
-	elm make src/Main.elm --output=app.js
+	npm run build
 
 copy:
-	mv app.js ../static/js/app.js
+	mv output/bundle.js ../static/js/bundle.js

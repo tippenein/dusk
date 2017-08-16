@@ -12,8 +12,6 @@ import           Text.Jasmine (minifym)
 -- Used only when in "auth-dummy-login" setting is enabled.
 import           Yesod.Auth.Dummy
 
-import qualified Data.CaseInsensitive as CI
-import qualified Data.Text.Encoding as TE
 import           Yesod.Auth.GoogleEmail2 (forwardUrl, authGoogleEmail)
 import qualified Yesod.Core.Unsafe as Unsafe
 import           Yesod.Default.Util (addStaticContentExternal)
@@ -57,52 +55,13 @@ instance Yesod App where
     yesodMiddleware = defaultYesodMiddleware
 
     defaultLayout widget = do
-        master <- getYesod
-        mmsg <- getMessage
+        _master <- getYesod
+        _mmsg <- getMessage
 
-        muser <- maybeAuthPair
-        mcurrentRoute <- getCurrentRoute
+        _muser <- maybeAuthPair
+        _mcurrentRoute <- getCurrentRoute
 
         -- Define the menu items of the header.
-        let menuItems =
-                [ NavbarLeft $ MenuItem
-                    { menuItemLabel = "Events"
-                    , menuItemRoute = HomeR
-                    , menuItemAccessCallback = True
-                    }
-                , NavbarLeft $ MenuItem
-                    { menuItemLabel = "Curators"
-                    , menuItemRoute = CuratorsR
-                    , menuItemAccessCallback = True
-                    }
-                , NavbarRight $ MenuItem
-                    { menuItemLabel = "➕ Announce ➕"
-                    , menuItemRoute = AdminEventR
-                    , menuItemAccessCallback = isJust muser
-                    }
-                , NavbarRight $ MenuItem
-                    { menuItemLabel = userIdent $ snd $ fromMaybe (error "no user") muser
-                    , menuItemRoute = ProfileR
-                    , menuItemAccessCallback =
-                      isJust muser && not (mcurrentRoute == Just (ProfileR))
-                    }
-                , NavbarRight $ MenuItem
-                    { menuItemLabel = "Login"
-                    , menuItemRoute = AuthR LoginR
-                    , menuItemAccessCallback = isNothing muser
-                    }
-                , NavbarRight $ MenuItem
-                    { menuItemLabel = "Logout"
-                    , menuItemRoute = AuthR LogoutR
-                    , menuItemAccessCallback = isJust muser && mcurrentRoute == Just (ProfileR)
-                    }
-                ]
-
-        let navbarLeftMenuItems = [x | NavbarLeft x <- menuItems]
-        let navbarRightMenuItems = [x | NavbarRight x <- menuItems]
-
-        let navbarLeftFilteredMenuItems = [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
-        let navbarRightFilteredMenuItems = [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
 
         pc <- widgetToPageContent $ do
             addStylesheet $ StaticR css_bootstrap_css

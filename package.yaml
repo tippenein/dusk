@@ -146,22 +146,6 @@ executables:
     - monad-logger
     - persistent
     - persistent-postgresql
-  gen:
-    main: Main.hs
-    source-dirs:    gen
-    dependencies:
-    - base
-    - rsvp-site
-    - elm-export
-    - uuid
-    - persistent
-    - bytestring
-    - classy-prelude-yesod
-    - text
-    - bcrypt
-    - safe
-    - esqueleto
-    - elm-export-persistent
 
 tests:
   test:

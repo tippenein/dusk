@@ -21,5 +21,7 @@ cabal.sandbox.config
 *.#*
 .env
 app.env
-static/js/app.js
-frontend/elm-stuff
+static/js/bundle.js
+frontend/bower_components
+frontend/node_modules
+frontend/output

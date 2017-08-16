@@ -32,9 +32,6 @@ instance PersistField UUID where
 instance PersistFieldSql UUID where
   sqlType _ = SqlOther "uuid"
 
--- instance ElmType UUID where
---   toElmType _ = ElmDatatype "UUID" (NamedConstructor "uuid" (ElmPrimitiveRef EString))
-
 data Role = Admin | Curator | Fan
   deriving (Show, Read, Eq)
 
