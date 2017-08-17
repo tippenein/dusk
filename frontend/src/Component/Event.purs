@@ -64,7 +64,7 @@ render st =
     [ viewBanner
     , div [ styleClass "container page" ]
       [ div [ styleClass "row" ]
-        [ div [ styleClass "col-md-12" ]
+        [ div [ styleClass "col-lg-12" ]
           [ text (if st.loading then "loading..." else "") ]
           , viewEvents st.events
           ]
@@ -72,25 +72,38 @@ render st =
     ]
 
 viewBanner =
-    div [ styleClass "banner" ]
+    div [ styleClass "banner masthead" ]
         [ div [ styleClass "container" ]
-            [ h1 [ styleClass "logo-font" ] [ text "dusk" ]
-            , p_ [ text "Curated events" ]
+          [ div [ styleClass "row" ]
+            [ h1 [ styleClass "header logo-font" ] [ text "Dusk" ]
+            , h2_ [ text "Curated Nightlife" ]
             ]
+          ]
         ]
 
 
 viewEvents events =
   div [ styleClass "event-list" ] (map viewEvent events)
+
+viewEvent (Event event) = eventRow timeContent b c
   where
-  viewEvent (Event event) =
-    div_
-      [ a [ styleClass "event-link event-default"
+  timeContent = [ p_ [ text "Monday, Jun 1st" ] ]
+  b = [ a [ styleClass "event-image event-default"
           , HP.href "javascript:void(0)"
           , HE.onClick (HE.input_ (SelectEvent event.id)) ]
-        [ text event.name ]
+        [ img [ HP.src ("logo/" <> event.asset_id), HP.height 250, HP.width 250 ]  ]
       ]
+  c = [ h2_ [ text event.name ], p_ [ text event.description] ]
 
+eventRow a b c =
+  div [ styleClass "row" ]
+    [ div [ styleClass "col-sm-3" ]
+      [ h3 [ styleClass "event-time" ] a ]
+    , div [ styleClass "col-sm-3" ]
+      [ h3_ b ]
+    , div [ styleClass "col-sm-6" ]
+      [ h3 [ styleClass "event-info" ] c ]
+    ]
 styleClass = HP.class_ <<< ClassName
 
 -- view model =

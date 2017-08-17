@@ -25,3 +25,4 @@ static/js/bundle.js
 frontend/bower_components
 frontend/node_modules
 frontend/output
+frontend/*.log
