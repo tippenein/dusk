@@ -25,15 +25,11 @@ postAdminEventR = do
   case result of
     FormSuccess ef@(EventForm{..}) -> do
       filename <- writeToServer ef_fileInfo
-      case eventFormToEvent ef userId filename of
-        Left msg -> do
-          setMessage $ toHtml msg
-          redirect $ AdminEventR
-        Right e -> do
-          _ <- runDB $ insert e
+      let e = eventFormToEvent ef userId filename
+      _ <- runDB $ insert e
 
-          setMessage "Event saved"
-          redirect $ AdminEventR
+      setMessage "Event saved"
+      redirect $ AdminEventR
 
     FormFailure reasons -> defaultLayout $ do
       setMessage $ toHtml $ unlines reasons
@@ -42,25 +38,27 @@ postAdminEventR = do
       setMessage "something went wrong"
       redirect $ AdminEventR
 
-eventFormToEvent :: EventForm -> UserId -> Text -> Either Text Event
+eventFormToEvent :: EventForm -> UserId -> Text -> Event
 eventFormToEvent EventForm{..} uid filename = do
   let dt_end = case ef_eventEndDatetime of
         Nothing -> Nothing
         Just j -> parseISO8601 j
 
-  case parseDatetime ef_eventStartDatetime of
-    Left _ -> Left "invalid start date"
-    Right start -> do
-      Right $ Event {
-          eventName = ef_name
-        , eventDescription = (fmap unTextarea ef_description)
-        , eventAsset_id = filename
-        , eventOwner_id = uid
-        , eventAll_day = False
-        , eventStart_datetime = start
-        , eventEnd_datetime = dt_end
-        }
-
+  let dt_start = case ef_eventStartDatetime of
+        Nothing -> Nothing
+        Just j -> parseISO8601 j
+  Event {
+      eventName = ef_name
+    , eventDescription = (fmap unTextarea ef_description)
+    , eventAsset_id = filename
+    , eventOwner_id = uid
+    , eventAll_day = False
+    , eventStart_datetime = dt_start
+    , eventEnd_datetime = dt_end
+    }
+fromRight :: Either a b -> Maybe b
+fromRight (Right a) = Just a
+fromRight (Left a) = Nothing
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
@@ -77,7 +75,7 @@ data EventForm
   = EventForm
   { ef_name :: Text
   , ef_description :: Maybe Textarea
-  , ef_eventStartDatetime :: Text
+  , ef_eventStartDatetime :: Maybe Text
   , ef_eventEndDatetime :: Maybe Text
   , ef_fileInfo :: FileInfo
   }
@@ -87,7 +85,7 @@ eventForm = renderBootstrap3 BootstrapBasicForm $
   EventForm
     <$> areq textField (textSettings "name" "Your Event's name") Nothing
     <*> aopt textareaField (textSettings "description" "Describe your event") Nothing
-    <*> areq textField (daySettings "start") Nothing
+    <*> aopt textField (daySettings "start") Nothing
     <*> aopt textField (daySettings "end") Nothing
     <*> fileAFormReq "Choose an Event Image"
   where

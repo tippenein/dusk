@@ -3,16 +3,20 @@ module Component.Event where
 import Prelude hiding (div)
 
 import Control.Monad.Aff (Aff)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
+import Data.Either (Either(..), hush)
+import Data.Maybe (Maybe(..), maybe, fromMaybe)
 import Halogen as H
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
+import Data.Formatter.DateTime as FD
+import Data.DateTime as DateTime
 
 import App.Data.Event (Event(..), Events(..), decodeEvents)
 
+formatDateTime ∷ DateTime.DateTime -> Maybe String
+formatDateTime x = hush $ FD.formatDateTime "AA, MMM D" x
 
 type State =
   { loading :: Boolean
@@ -59,9 +63,9 @@ apiUrl = "http://localhost:3000"
 
 render :: State -> H.ComponentHTML Query
 render st =
-  -- loaded <- ?liftAff AffUtil.awaitLoad
   div [ HP.class_ $ ClassName "home-page" ]
     [ viewBanner
+    , viewErrors st.error
     , div [ styleClass "container page" ]
       [ div [ styleClass "row" ]
         [ div [ styleClass "col-lg-12" ]
@@ -70,6 +74,12 @@ render st =
           ]
       ]
     ]
+
+viewErrors (Just error) = 
+  div [ styleClass "container" ]
+    [ div [ styleClass "row" ]
+      [ div [styleClass "alert alert-warning"] [ text error]]]
+viewErrors Nothing = text ""
 
 viewBanner =
     div [ styleClass "banner masthead" ]
@@ -85,13 +95,14 @@ viewBanner =
 viewEvents events =
   div [ styleClass "event-list" ] (map viewEvent events)
 
+viewEvent :: forall t. Event -> HTML t (Query Unit)
 viewEvent (Event event) = eventRow timeContent b c
   where
-  timeContent = [ p_ [ text "Monday, Jun 1st" ] ]
+  timeContent = [ p_ [ text (fromMaybe "TBD" (formatDateTime =<< event.start_datetime))] ]
   b = [ a [ styleClass "event-image event-default"
           , HP.href "javascript:void(0)"
           , HE.onClick (HE.input_ (SelectEvent event.id)) ]
-        [ img [ HP.src ("logo/" <> event.asset_id), HP.height 250, HP.width 250 ]  ]
+        [ img [ HP.src event.asset_id, HP.height 250, HP.width 250 ]  ]
       ]
   c = [ h2_ [ text event.name ], p_ [ text event.description] ]
 
@@ -105,18 +116,3 @@ eventRow a b c =
       [ h3 [ styleClass "event-info" ] c ]
     ]
 styleClass = HP.class_ <<< ClassName
-
--- view model =
---     div_ [ class "home-page" ]
---         [ viewBanner
---         , div [ class "container page" ]
---             [ div [ class "row" ]
---                 [ div [ class "col-md-12" ]
---                     [ div [ class "sidebar" ]
---                         [ p [] [ text "Popular Events" ]
---                         , p [] [ text "events here" ]
---                         ]
---                     ]
---                 ]
---             ]
---         ]

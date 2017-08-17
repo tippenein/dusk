@@ -7,7 +7,7 @@ import Import
 getEventR :: EventId -> Handler Value
 getEventR event_id = do
   event <- runDBor404 $ get event_id
-  return $ object ["event" .= event]
+  return $ object ["event" .= (Entity event_id event)]
 
 
 getEventsR :: Handler Value

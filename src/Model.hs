@@ -11,6 +11,7 @@ module Model where
 import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Database.Esqueleto
 import Model.Instances
+import Helpers.Util (presign)
 
 type Validated a = Either [Text] a
 type Validation a = a -> Validated a
@@ -49,19 +50,31 @@ CuratorInvite sql=curator_invites
     invited_by UserId
     sent_at UTCTime
 
-Event json sql=events
+Event sql=events
     name           Text
     description    Text Maybe
     asset_id       Text
     owner_id       UserId
     all_day        Bool          default=False
-    start_datetime UTCTime
+    start_datetime UTCTime Maybe
     end_datetime   UTCTime Maybe
     deriving Show Generic
 |]
 
--- instance ToJSON a => ToJSON (Entity a) where
---   toJSON (Entity k a) = object $ [ "id" .= (String $ toPathPiece k) <> toJSON a]
+formatDateTime :: UTCTime -> Text
+formatDateTime = pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%MZ"
+
+instance ToJSON (Entity Event) where
+  toJSON (Entity i Event{..}) = object [
+      "id" .= i
+    , "name" .= eventName
+    , "description" .= eventDescription
+    , "asset_id" .= presign eventAsset_id
+    , "owner_id" .= toJSON eventOwner_id
+    , "all_day" .= toJSON eventAll_day
+    , "start_datetime" .= (formatDateTime <$> eventStart_datetime)
+    , "end_datetime" .= (formatDateTime <$> eventStart_datetime)
+    ]
 
 type ControlIO m = (MonadIO m, MonadBaseControl IO m)
 

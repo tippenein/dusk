@@ -9,7 +9,7 @@ type EventTuple = (Text, Text, Text, UserId, Integer)
 insertEvent :: MonadIO m => EventTuple-> ReaderT SqlBackend m ()
 insertEvent (name, description, asset, uid, daysFromNow)= do
   (s,e) <- liftIO $ addDays daysFromNow
-  insert_ $ Event name (Just description) asset uid False s (Just e)
+  insert_ $ Event name (Just description) asset uid False (Just s) (Just e)
 
 insertUser :: MonadIO m => (Text, Role) -> ReaderT SqlBackend m ()
 insertUser (ident, role) = do
