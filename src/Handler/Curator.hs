@@ -16,14 +16,7 @@ getCuratorR i = do
 uname :: User -> Text
 uname = fromMaybe "Anonymous" . userName
 
-getCuratorsR :: Handler Html
+getCuratorsR :: Handler Value
 getCuratorsR = do
   curators <- runDB $ getUsersWithRole Curator
-  defaultLayout $ do
-    setTitle' "Curators"
-    [whamlet|
-<div .ui.container>
-  <h1>Curators
-  $forall Entity curatorId curator <- curators
-    <a href=@{CuratorR curatorId}>#{uname curator}
-|]
+  return $ object ["curators" .= curators]

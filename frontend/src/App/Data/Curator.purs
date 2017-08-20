@@ -7,6 +7,7 @@ import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, json
 newtype Curator = Curator
   { id :: Int
   , name :: String
+  , ident :: String
   }
 
 instance decodeJsonCurator :: DecodeJson Curator where
@@ -14,15 +15,18 @@ instance decodeJsonCurator :: DecodeJson Curator where
     obj <- decodeJson json
     id <- obj .? "id"
     name <- obj .? "name"
+    ident <- obj .? "ident"
     pure $ Curator {
         id
       , name
+      , ident
       }
 
 instance encodeCurator :: EncodeJson Curator where
   encodeJson (Curator curator)
      = "id" := curator.id
     ~> "name" := curator.name
+    ~> "ident" := curator.ident
     ~> jsonEmptyObject
 
 

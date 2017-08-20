@@ -17,6 +17,7 @@ import Data.String as Str
 
 import Import hiding (div)
 import Component.Event as Event
+import Component.Curator as Curator
 import Component.Profile as Profile
 
 data Location
@@ -54,11 +55,13 @@ data CRUD
 routing :: Match Location
 routing =
   events <|>
+  curators <|>
   event  <|>
   home
   where
     home = HomeR <$ lit ""
     events = EventsR <$ lit "events"
+    curators = CuratorsR <$ lit "curators"
     event = EventR <$> (homeSlash *> lit "events" *> int)
 
 
@@ -67,11 +70,14 @@ type State =
   , error :: Maybe String
   }
 
-type ChildQuery = Coproduct Profile.Input Event.Input
-type ChildSlot = Either Profile.Slot Event.Slot
+type ChildQuery = Coproduct Curator.Input Event.Input
+type ChildSlot = Either Curator.Slot Event.Slot
 
-pathToProfile :: ChildPath Profile.Input ChildQuery Profile.Slot ChildSlot
-pathToProfile = cpL
+-- pathToProfile :: ChildPath Profile.Input ChildQuery Profile.Slot ChildSlot
+-- pathToProfile = cpL
+
+pathToCurators :: ChildPath Curator.Input ChildQuery Curator.Slot ChildSlot
+pathToCurators = cpL
 
 pathToEvents :: ChildPath Event.Input ChildQuery Event.Slot ChildSlot
 pathToEvents = cpR
@@ -96,10 +102,12 @@ ui = H.lifecycleParentComponent
     init = { currentPage: HomeR, error: Nothing }
 
     -- viewPage :: String -> H.ParentHTML Input ChildQuery ChildSlot m
-    viewPage Profile =
-      HH.slot' pathToProfile Profile.Slot Profile.ui unit absurd
+    -- viewPage Profile =
+    --   HH.slot' pathToProfile Profile.Slot Profile.ui unit absurd
     viewPage EventsR = do
       HH.slot' pathToEvents Event.Slot Event.ui unit absurd
+    viewPage CuratorsR = do
+      HH.slot' pathToCurators Curator.Slot Curator.ui unit absurd
     viewPage _ =
       HH.div_ [ HH.text "Not Found"]
 
