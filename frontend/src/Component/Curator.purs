@@ -1,16 +1,14 @@
 module Component.Curator where
 
 import Control.Monad.Aff (Aff)
-import Data.Either (Either(..), hush)
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Traversable (for)
 import Halogen as H
 import Halogen.HTML hiding (map)
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
-import Prelude hiding (div)
+import Data.Generic (gShow)
 
+import Helper (apiUrl, styleClass, placeholder)
+import Import hiding (div)
 import App.Data.Curator (Curator(..), Curators(..), decodeCurators)
 
 data Slot = Slot
@@ -58,9 +56,6 @@ ui =
           H.modify (_ { error = Nothing, loading = false, curators = res})
       pure next
 
-apiUrl :: String
-apiUrl = "http://localhost:3000"
-
 render :: State -> H.ComponentHTML Input
 render st =
   div [ styleClass "container page" ]
@@ -70,13 +65,18 @@ render st =
         , viewCurators st.curators
         ]
     ]
+  where
+    viewCurators curators =
+      div [ styleClass "curator-list" ] (map viewCurator curators)
 
 
-viewCurators curators =
-  div [ styleClass "curator-list" ] (map viewCurator curators)
 
 viewCurator :: forall t. Curator -> HTML t (Input Unit)
 viewCurator (Curator curator) =
-  div_ [ h2_ [ text curator.name ], p_ [ text curator.ident ] ]
+  div [ styleClass "curator-profile row" ]
+    [ div [ styleClass "col-sm-3" ]
+      [ placeholder 200 200 ]
+    , div [ styleClass "col-sm-6" ]
+      [ h2_ [ text curator.name ] ]
+    ]
 
-styleClass = HP.class_ <<< ClassName

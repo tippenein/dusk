@@ -2,17 +2,15 @@ module Component.Event where
 
 import Control.Monad.Aff (Aff)
 import Data.DateTime as DateTime
-import Data.Either (Either(..), hush)
 import Data.Formatter.DateTime as FD
-import Data.Maybe (Maybe(..), fromMaybe, maybe)
-import Data.Traversable (for)
 import Halogen as H
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
-import Prelude hiding (div)
 
+import Import hiding (div)
+import Helper
 import App.Data.Event (Event(..), Events(..), decodeEvents)
 
 
@@ -68,9 +66,6 @@ ui =
     SelectEvent _ next -> do
       pure next
 
-apiUrl :: String
-apiUrl = "http://localhost:3000"
-
 render :: State -> H.ComponentHTML Input
 render st =
   div [ styleClass "container page" ]
@@ -80,15 +75,16 @@ render st =
         , viewEvents st.events
         ]
     ]
+  where
+    viewEvents events =
+      div [ styleClass "event-list" ] (map viewEvent events)
 
 
-viewEvents events =
-  div [ styleClass "event-list" ] (map viewEvent events)
 
 viewEvent :: forall t. Event -> HTML t (Input Unit)
 viewEvent (Event event) = eventRow timeContent b c
   where
-  timeContent = [ p_ [ text (fromMaybe "TBD" (formatDateTime =<< event.start_datetime))] ]
+  timeContent = [ p_ [ text (fromMaybe "TBA" (formatDateTime =<< event.start_datetime))] ]
   b = [ a [ styleClass "event-image event-default"
           , HP.href "javascript:void(0)"
           , HE.onClick (HE.input_ (SelectEvent event.id)) ]
@@ -96,14 +92,12 @@ viewEvent (Event event) = eventRow timeContent b c
       ]
   c = [ h2_ [ text event.name ], p_ [ text event.description] ]
 
-eventRow a b c =
-  div [ styleClass "row" ]
-    [ div [ styleClass "col-sm-3" ]
-      [ h3 [ styleClass "event-time" ] a ]
-    , div [ styleClass "col-sm-3" ]
-      [ h3_ b ]
-    , div [ styleClass "col-sm-6" ]
-      [ h3 [ styleClass "event-info" ] c ]
-    ]
-styleClass = HP.class_ <<< ClassName
-
+  eventRow leftCol middleCol rightCol =
+    div [ styleClass "row" ]
+      [ div [ styleClass "col-sm-3" ]
+        [ h3 [ styleClass "event-time" ] leftCol ]
+      , div [ styleClass "col-sm-3" ]
+        [ h3_ middleCol ]
+      , div [ styleClass "col-sm-6" ]
+        [ h3 [ styleClass "event-info" ] rightCol ]
+      ]

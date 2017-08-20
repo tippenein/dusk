@@ -2,7 +2,7 @@ module App.Router where
 
 import Routing (matchesAff)
 import Routing.Match (Match)
-import Routing.Match.Class (num, int, lit)
+import Routing.Match.Class (num, int, lit, fail)
 import Halogen as H
 import Network.HTTP.Affjax as AX
 import Halogen.Aff as HA
@@ -16,9 +16,11 @@ import Data.String as Str
 
 
 import Import hiding (div)
+import Helper (styleClass)
 import Component.Event as Event
 import Component.Curator as Curator
 import Component.Profile as Profile
+import Component.NotFound as NotFound
 
 data Location
   = HomeR
@@ -26,8 +28,8 @@ data Location
   | CuratorsR
   | EventsR
   | EventR Int
+  | NotFoundR String
 
--- derive instance genericLocation :: Generic Location _
 
 instance showLocation :: Show Location where
   show HomeR = "home"
@@ -35,6 +37,7 @@ instance showLocation :: Show Location where
   show CuratorsR = "curators"
   show EventsR = "events"
   show (EventR _) = "events"
+  show (NotFoundR s) = s
 
 instance eqLocation :: Eq Location where
   eq a b = show a == show b
@@ -54,15 +57,17 @@ data CRUD
 
 routing :: Match Location
 routing =
-  events <|>
+  events   <|>
   curators <|>
-  event  <|>
-  home
+  event    <|>
+  home     <|>
+  notFound
   where
     home = HomeR <$ lit ""
     events = EventsR <$ lit "events"
-    curators = CuratorsR <$ lit "curators"
     event = EventR <$> (homeSlash *> lit "events" *> int)
+    curators = CuratorsR <$ lit "curators"
+    notFound = NotFoundR <$> fail "Not Found"
 
 
 type State =
@@ -70,11 +75,11 @@ type State =
   , error :: Maybe String
   }
 
-type ChildQuery = Coproduct Curator.Input Event.Input
-type ChildSlot = Either Curator.Slot Event.Slot
 
 -- pathToProfile :: ChildPath Profile.Input ChildQuery Profile.Slot ChildSlot
 -- pathToProfile = cpL
+type ChildQuery = Coproduct Curator.Input Event.Input
+type ChildSlot = Either Curator.Slot Event.Slot
 
 pathToCurators :: ChildPath Curator.Input ChildQuery Curator.Slot ChildSlot
 pathToCurators = cpL
@@ -99,7 +104,7 @@ ui = H.lifecycleParentComponent
       mainBody st (viewPage st.currentPage)
 
     init :: State
-    init = { currentPage: HomeR, error: Nothing }
+    init = { currentPage: EventsR, error: Nothing }
 
     -- viewPage :: String -> H.ParentHTML Input ChildQuery ChildSlot m
     -- viewPage Profile =
@@ -108,8 +113,7 @@ ui = H.lifecycleParentComponent
       HH.slot' pathToEvents Event.Slot Event.ui unit absurd
     viewPage CuratorsR = do
       HH.slot' pathToCurators Curator.Slot Curator.ui unit absurd
-    viewPage _ =
-      HH.div_ [ HH.text "Not Found"]
+    viewPage s = NotFound.view (show s)
 
     eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void  (Aff (ajax :: AX.AJAX | eff ))
     eval (Goto Profile next) = do
@@ -126,6 +130,9 @@ ui = H.lifecycleParentComponent
       pure next
     eval (Goto HomeR next) = do
       modify (_ { currentPage = HomeR })
+      pure next
+    eval (Goto (NotFoundR s) next) = do
+      modify (_ { currentPage = (NotFoundR s) })
       pure next
 
 routeSignal :: forall eff. H.HalogenIO Input Void (Aff (HA.HalogenEffects eff))
@@ -149,8 +156,6 @@ viewErrors (Just error) =
       [ div [styleClass "alert alert-warning"] [ text error]]]
 viewErrors Nothing = text ""
 
-styleClass = HP.class_ <<< ClassName
-
 viewBanner =
     div [ styleClass "banner masthead" ]
         [ div [ styleClass "container" ]
@@ -160,7 +165,6 @@ viewBanner =
             ]
           ]
         ]
-
 
 mainBody st sub =
   div [ HP.class_ $ ClassName "home-page" ]
@@ -187,11 +191,11 @@ navbar st =
         ]
       ]
     ]
+  where
+    checkActive st r = if st.currentPage == r then styleClass "active" else styleClass ""
 
-checkActive st r = if st.currentPage == r then styleClass "active" else styleClass ""
-
-navbarItems st routes = map f routes
-  where f = (\(Tuple route routeName) ->
-              [li
-               [ checkActive st route ]
-               [ a [ HP.href (Str.toLower routeName)] [text routeName] ]])
+-- navbarItems st routes = map f routes
+--   where f = (\(Tuple route routeName) ->
+--               [li
+--                [ checkActive st route ]
+--                [ a [ HP.href (Str.toLower routeName)] [text routeName] ]])

@@ -1,4 +1,4 @@
-RSVP
+DUSK
 ====
 
 ## deploying
@@ -17,3 +17,4 @@ this will:
 from here, logging in to the `doc` user on the box and running the restart
 script should reload the site.
 
+Obviously that sucks and should be replaced with real devops eventually

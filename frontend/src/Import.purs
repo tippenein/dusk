@@ -22,6 +22,7 @@ module Import
   , module Data.Foldable
   , module Data.Functor
   , module Data.Functor.Coproduct
+  , module Data.Generic
   , module Data.Generic.Rep
   , module Data.Generic.Rep.Show
   , module Data.Lens.Iso.Newtype
@@ -61,6 +62,7 @@ import Data.Either (Either(..), either, isLeft, isRight, fromRight, note, hush)
 import Data.Foldable (class Foldable, traverse_, for_, foldMap, foldl, foldr, fold)
 import Data.Functor (($>), (<$))
 import Data.Functor.Coproduct (Coproduct, coproduct, left, right)
+import Data.Generic
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Lens.Iso.Newtype (_Newtype)
