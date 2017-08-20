@@ -1,19 +1,25 @@
 module Component.Event where
 
-import Prelude hiding (div)
-
 import Control.Monad.Aff (Aff)
+import Data.DateTime as DateTime
 import Data.Either (Either(..), hush)
-import Data.Maybe (Maybe(..), maybe, fromMaybe)
+import Data.Formatter.DateTime as FD
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
+import Data.Traversable (for)
 import Halogen as H
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
-import Data.Formatter.DateTime as FD
-import Data.DateTime as DateTime
+import Prelude hiding (div)
 
 import App.Data.Event (Event(..), Events(..), decodeEvents)
+
+
+data Slot = Slot
+
+derive instance eqSlot :: Eq Slot
+derive instance ordSlot :: Ord Slot
 
 formatDateTime ∷ DateTime.DateTime -> Maybe String
 formatDateTime x = hush $ FD.formatDateTime "AA, MMM D" x
@@ -24,14 +30,17 @@ type State =
   , error :: Maybe String
   }
 
-data Query a
-  = GetEventList a
+data Input a
+  = Noop a
+  | GetEventList a
   | SelectEvent Int a
 
-ui :: forall eff. H.Component HTML Query Unit Void (Aff (ajax :: AX.AJAX | eff))
+ui :: forall eff. H.Component HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff))
 ui =
-  H.component
+  H.lifecycleComponent
     { initialState: const initialState
+    , initializer: Just (H.action GetEventList)
+    , finalizer: Nothing
     , render
     , eval
     , receiver: const Nothing
@@ -41,8 +50,9 @@ ui =
   initialState :: State
   initialState = { loading: false, events: [], error: Nothing }
 
-  eval :: Query ~> H.ComponentDSL State Query Void (Aff (ajax :: AX.AJAX | eff))
+  eval :: Input ~> H.ComponentDSL State Input Void (Aff (ajax :: AX.AJAX | eff))
   eval = case _ of
+    Noop next -> pure next
     GetEventList next -> do
       events <- H.gets _.events
       H.modify (_ { loading = true })
@@ -61,41 +71,21 @@ ui =
 apiUrl :: String
 apiUrl = "http://localhost:3000"
 
-render :: State -> H.ComponentHTML Query
+render :: State -> H.ComponentHTML Input
 render st =
-  div [ HP.class_ $ ClassName "home-page" ]
-    [ viewBanner
-    , viewErrors st.error
-    , div [ styleClass "container page" ]
-      [ div [ styleClass "row" ]
-        [ div [ styleClass "col-lg-12" ]
-          [ text (if st.loading then "loading..." else "") ]
-          , viewEvents st.events
-          ]
-      ]
-    ]
-
-viewErrors (Just error) = 
-  div [ styleClass "container" ]
+  div [ styleClass "container page" ]
     [ div [ styleClass "row" ]
-      [ div [styleClass "alert alert-warning"] [ text error]]]
-viewErrors Nothing = text ""
-
-viewBanner =
-    div [ styleClass "banner masthead" ]
-        [ div [ styleClass "container" ]
-          [ div [ styleClass "row" ]
-            [ h1 [ styleClass "header logo-font" ] [ text "Dusk" ]
-            , h2_ [ text "Curated Nightlife" ]
-            ]
-          ]
+      [ div [ styleClass "col-lg-12" ]
+        [ text (if st.loading then "loading..." else "") ]
+        , viewEvents st.events
         ]
+    ]
 
 
 viewEvents events =
   div [ styleClass "event-list" ] (map viewEvent events)
 
-viewEvent :: forall t. Event -> HTML t (Query Unit)
+viewEvent :: forall t. Event -> HTML t (Input Unit)
 viewEvent (Event event) = eventRow timeContent b c
   where
   timeContent = [ p_ [ text (fromMaybe "TBD" (formatDateTime =<< event.start_datetime))] ]
@@ -116,3 +106,4 @@ eventRow a b c =
       [ h3 [ styleClass "event-info" ] c ]
     ]
 styleClass = HP.class_ <<< ClassName
+

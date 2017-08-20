@@ -2,10 +2,8 @@ module App.Data.Event where
 
 import Data.DateTime (DateTime)
 import Data.DateTime as DateTime
-import Data.Either (hush, Either)
-import Data.Maybe (Maybe)
 import Data.Formatter.DateTime as FD
-import Prelude
+import Import
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
 
