@@ -1,4 +1,4 @@
-module Helpers.Util where
+module Helper.Util where
 
 import ClassyPrelude ((.), Text)
 import System.IO.Unsafe (unsafePerformIO)

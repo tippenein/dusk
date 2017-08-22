@@ -11,7 +11,8 @@ module Model where
 import ClassyPrelude.Yesod hiding (on, (==.), Value)
 import Database.Esqueleto
 import Model.Instances
-import Helpers.Util (presign)
+import Helper.Util (presign)
+import Text.Email.Validate
 
 type Validated a = Either [Text] a
 type Validation a = a -> Validated a
@@ -45,7 +46,7 @@ Rsvp sql=rsvps
     event_id EventId
 
 CuratorInvite sql=curator_invites
-    ident Text
+    ident EmailAddress
     token UUID         sqltype=uuid
     invited_by UserId
     sent_at UTCTime

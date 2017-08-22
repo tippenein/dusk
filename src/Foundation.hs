@@ -18,24 +18,9 @@ import           Yesod.Default.Util (addStaticContentExternal)
 
 import           AppType
 import           Model.User
-import           Role
-import           Routes
+import qualified Role as Role
 
-data NavItem =  SingleNav (Route App) | Dropdown [Route App]
-
-data MenuItem = MenuItem
-    { menuItemLabel :: Text
-    , menuItemRoute :: Route App
-    , menuItemAccessCallback :: Bool
-    }
-
-data MenuTypes
-    = NavbarLeft MenuItem
-    | NavbarRight MenuItem
-
--- | A convenient synonym for creating forms.
-type Form x = Html -> MForm (HandlerT App IO) (FormResult x, Widget)
-
+mkYesodData "App" $(parseRoutesFile "config/routes")
 
 -- http://www.yesodweb.com/book/scaffolding-and-the-site-template#scaffolding-and-the-site-template_foundation_and_application_modules
 instance Yesod App where
@@ -56,12 +41,6 @@ instance Yesod App where
 
     defaultLayout widget = do
         _master <- getYesod
-        _mmsg <- getMessage
-
-        _muser <- maybeAuthPair
-        _mcurrentRoute <- getCurrentRoute
-
-        -- Define the menu items of the header.
 
         pc <- widgetToPageContent $ do
             addStylesheet $ StaticR css_bootstrap_css
@@ -85,8 +64,8 @@ instance Yesod App where
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = checkAuth canCreateEvent
-    isAuthorized AdminCuratorR _ = checkAuth canCreateCurator
+    isAuthorized AdminEventR _ = checkAuth Role.canCreateEvent
+    isAuthorized AdminCuratorR _ = checkAuth Role.canInvite
 
     addStaticContent ext mime content = do
         master <- getYesod
@@ -189,7 +168,7 @@ runDBor404 :: DB (Maybe a) -> Handler a
 runDBor404 dba = do
   ma <- runDB dba
   case ma of
-    Nothing -> notFound
+    Nothing -> notFound -- return $ sendResponseStatus status404 ("ERROR" :: Text)
     Just a -> return a
 
 setTitle' :: MonadWidget m => Text -> m ()

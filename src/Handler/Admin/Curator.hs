@@ -1,41 +1,36 @@
 module Handler.Admin.Curator where
 
-import           Yesod.Form.Bootstrap3 (BootstrapFormLayout(..), renderBootstrap3)
 import qualified Data.UUID.V4 as UUID
 
 import           Import
+import Data.Aeson.Types
+import qualified Text.Email.Validate as Email
+import Helper.Validation (mkEmailAddress)
 
-postAdminCuratorR :: Handler Html
+respond201 :: Handler ()
+respond201 = sendResponseStatus status201 ("CREATED" :: Text)
+
+postAdminCuratorR :: Handler ()
 postAdminCuratorR = do
-  ((result, _formWidget), _formEncType) <- runFormPost curatorForm
-  userId  <- requireAuthId
-  case result of
-    FormSuccess (CuratorForm email) -> do
-      invite <- liftIO $ curatorFormToInvite email userId
-      case invite of
-        Left msg -> do
-          setMessage $ toHtml msg
-          redirect $ AdminCuratorR
-        Right c -> do
-          _ <- runDB $ insert c
-          setMessage "Curator Invite Sent"
-          redirect $ AdminCuratorR
+  uid <- requireAuthId
+  curatorPost <- requireJsonBody :: Handler CuratorForm
+  now <- liftIO getCurrentTime
+  tok <- liftIO UUID.nextRandom
+  let invite = CuratorInvite (invitee curatorPost) tok uid now
+  _ <- runDB $ insert invite
+  respond201
 
-    FormFailure reasons -> defaultLayout $ do
-      setMessage $ toHtml $ unlines reasons
-      redirect $ AdminCuratorR
-    _ -> defaultLayout $ do
-      setMessage "something went wrong"
-      redirect $ AdminCuratorR
+data CuratorForm
+  = CuratorForm
+  { invitee :: Email.EmailAddress }
+  deriving Show
 
-curatorFormToInvite :: Text -> UserId -> IO (Either String CuratorInvite)
-curatorFormToInvite email uid = do
-  now <- getCurrentTime
-  tok <- UUID.nextRandom
-  return $ Right $ CuratorInvite email tok uid now
-
-data CuratorForm = CuratorForm Text
-
-curatorForm :: Form CuratorForm
-curatorForm = renderBootstrap3 BootstrapBasicForm $
-  CuratorForm <$> areq textField (named "email" "email") Nothing
+instance FromJSON CuratorForm where
+  parseJSON (Object v) = do
+    email <- do
+      e <- v .: "email"
+      case mkEmailAddress e of
+        Nothing -> fail "invalid email"
+        Just m -> return m
+    return (CuratorForm email)
+  parseJSON x = typeMismatch "CuratorInvite" x

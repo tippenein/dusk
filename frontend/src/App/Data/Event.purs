@@ -7,6 +7,8 @@ import Import
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
 
+data CreateResponse e a = Failure e | Success (Tuple Int a)
+
 newtype Event = Event
   { id :: Int
   , name :: String

@@ -1,4 +1,4 @@
-module Helpers.Presentation where
+module Helper.Presentation where
 
 import Import.NoFoundation
 

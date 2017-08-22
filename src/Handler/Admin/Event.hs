@@ -6,59 +6,39 @@ import           Data.Conduit
 import           Data.Text               (Text)
 import           Data.Time
 import           Control.Monad.Trans.AWS
-import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3)
 
 import           Import
 import qualified S3
 
-getAdminEventR :: Handler Html
+getAdminEventR :: Handler Value
 getAdminEventR = do
-  (formWidget, formEncType) <- generateFormPost eventForm
-  defaultLayout $ do
-    setTitle' "Create Event"
-    $(widgetFile "admin/events")
+  _ <- requireAuthId
+  return $ object [ "status" .= String "ok" ]
 
-postAdminEventR :: Handler Html
+postAdminEventR :: Handler ()
 postAdminEventR = do
-  ((result, _formWidget), formEncType) <- runFormPost eventForm
+  ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
-  case result of
-    FormSuccess ef@(EventForm{..}) -> do
-      filename <- writeToServer ef_fileInfo
-      let e = eventFormToEvent ef userId filename
-      _ <- runDB $ insert e
-
-      setMessage "Event saved"
-      redirect $ AdminEventR
-
-    FormFailure reasons -> defaultLayout $ do
-      setMessage $ toHtml $ unlines reasons
-      redirect $ AdminEventR
-    _ -> defaultLayout $ do
-      setMessage "something went wrong"
-      redirect $ AdminEventR
+  filename <- writeToServer (ef_fileInfo ef)
+  let e = eventFormToEvent ef userId filename
+  _ <- runDB $ insert e
+  sendResponseStatus status201 ("CREATED" :: Text)
 
 eventFormToEvent :: EventForm -> UserId -> Text -> Event
 eventFormToEvent EventForm{..} uid filename = do
-  let dt_end = case ef_eventEndDatetime of
-        Nothing -> Nothing
-        Just j -> parseISO8601 j
-
-  let dt_start = case ef_eventStartDatetime of
-        Nothing -> Nothing
-        Just j -> parseISO8601 j
   Event {
       eventName = ef_name
-    , eventDescription = (fmap unTextarea ef_description)
+    , eventDescription = ef_description
     , eventAsset_id = filename
     , eventOwner_id = uid
     , eventAll_day = False
-    , eventStart_datetime = dt_start
-    , eventEnd_datetime = dt_end
+    , eventStart_datetime = ef_eventStartDatetime
+    , eventEnd_datetime = ef_eventEndDatetime
     }
+
 fromRight :: Either a b -> Maybe b
 fromRight (Right a) = Just a
-fromRight (Left a) = Nothing
+fromRight (Left _) = Nothing
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
@@ -74,41 +54,44 @@ writeToServer file = do
 data EventForm
   = EventForm
   { ef_name :: Text
-  , ef_description :: Maybe Textarea
-  , ef_eventStartDatetime :: Maybe Text
-  , ef_eventEndDatetime :: Maybe Text
+  , ef_description :: Maybe Text
+  , ef_eventStartDatetime :: Maybe UTCTime
+  , ef_eventEndDatetime :: Maybe UTCTime
   , ef_fileInfo :: FileInfo
   }
 
-eventForm :: Form EventForm
-eventForm = renderBootstrap3 BootstrapBasicForm $
-  EventForm
-    <$> areq textField (textSettings "name" "Your Event's name") Nothing
-    <*> aopt textareaField (textSettings "description" "Describe your event") Nothing
-    <*> aopt textField (daySettings "start") Nothing
-    <*> aopt textField (daySettings "end") Nothing
-    <*> fileAFormReq "Choose an Event Image"
-  where
-    daySettings t = FieldSettings
-          { fsLabel = SomeMessage t
-          , fsTooltip = Nothing
-          , fsId = Just $ "datetimepicker_" <> t <> "_time"
-          , fsName = Nothing
-          , fsAttrs =
-              [ ("class", "form-control")
-              , ("placeholder", "placeholder")
-              ]
-          }
-    textSettings t p = FieldSettings
-          { fsLabel = t
-          , fsTooltip = Nothing
-          , fsId = Nothing
-          , fsName = Nothing
-          , fsAttrs =
-              [ ("class", "form-control")
-              , ("placeholder", p)
-              ]
-          }
+instance FromJSON EventForm where
+  parseJSON = undefined
+
+-- eventForm :: Form EventForm
+-- eventForm = renderBootstrap3 BootstrapBasicForm $
+--   EventForm
+--     <$> areq textField (textSettings "name" "Your Event's name") Nothing
+--     <*> aopt textareaField (textSettings "description" "Describe your event") Nothing
+--     <*> aopt textField (daySettings "start") Nothing
+--     <*> aopt textField (daySettings "end") Nothing
+--     <*> fileAFormReq "Choose an Event Image"
+--   where
+--     daySettings t = FieldSettings
+--           { fsLabel = SomeMessage t
+--           , fsTooltip = Nothing
+--           , fsId = Just $ "datetimepicker_" <> t <> "_time"
+--           , fsName = Nothing
+--           , fsAttrs =
+--               [ ("class", "form-control")
+--               , ("placeholder", "placeholder")
+--               ]
+--           }
+--     textSettings t p = FieldSettings
+--           { fsLabel = t
+--           , fsTooltip = Nothing
+--           , fsId = Nothing
+--           , fsName = Nothing
+--           , fsAttrs =
+--               [ ("class", "form-control")
+--               , ("placeholder", p)
+--               ]
+--           }
 
 parseISO8601 :: Text -> Maybe UTCTime
 parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack

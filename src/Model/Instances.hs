@@ -11,6 +11,7 @@ import qualified Data.ByteString.Char8 as B8
 import           Data.UUID (UUID)
 import qualified Data.UUID as UUID
 import           Database.Persist.Sql
+import qualified Text.Email.Validate as Email
 
 instance ToJSON UUID where
   toJSON = String . pack . UUID.toString
@@ -36,3 +37,14 @@ data Role = Admin | Curator | Fan
   deriving (Show, Read, Eq)
 
 derivePersistField "Role"
+
+instance PersistField Email.EmailAddress where
+  toPersistValue e = PersistDbSpecific . Email.toByteString $ e
+  fromPersistValue (PersistDbSpecific t) =
+    case (Email.emailAddress =<< Email.canonicalizeEmail t) of
+      Just x -> Right x
+      Nothing -> Left "Invalid UUID"
+  fromPersistValue _ = Left "Not PersistDBSpecific"
+
+instance PersistFieldSql Email.EmailAddress where
+  sqlType _ = SqlOther "text"

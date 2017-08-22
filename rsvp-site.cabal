@@ -4,7 +4,7 @@
 
 name:              rsvp-site
 version:           0.0.0
-license:           UnspecifiedLicense
+license:           MIT
 cabal-version:     >= 1.10
 build-type:        Simple
 
@@ -23,13 +23,11 @@ library
           src
     exposed-modules:
           Application
-          Routes
           AppType
           Foundation
-          Helpers.Util
-          SendMail
-          Helpers.Forms
-          Helpers.Presentation
+          Helper.Util
+          Helper.Validation
+          Helper.Presentation
           Api.V3.MailGun
           Import
           Import.NoFoundation
@@ -39,6 +37,7 @@ library
           Settings
           Settings.StaticFiles
           S3
+          SendMail
           Handler.Common
           Handler.Home
           Handler.Profile
@@ -70,6 +69,7 @@ library
         , persistent-template >=2.0 && <2.7
         , esqueleto
         , template-haskell
+        , email-validate
         , shakespeare >=2.0 && <2.1
         , hjsmin >=0.1 && <0.3
         , monad-control >=0.3 && <1.1

@@ -1,41 +1,48 @@
 module App.Router where
 
+import Control.Monad.Aff (Aff)
+import Control.Monad.State.Class (modify)
+import Data.Either.Nested (Either4)
+import Data.Functor.Coproduct.Nested (Coproduct4)
+import Halogen as H
+import Halogen.Aff as HA
+import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
+import Halogen.HTML as HH
+import Halogen.HTML hiding (map)
+import Halogen.HTML.Properties as HP
+import Network.HTTP.Affjax as AX
 import Routing (matchesAff)
 import Routing.Match (Match)
 import Routing.Match.Class (num, int, lit, fail)
-import Halogen as H
-import Network.HTTP.Affjax as AX
-import Halogen.Aff as HA
-import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
-import Control.Monad.Aff (Aff)
-import Control.Monad.State.Class (modify)
-import Halogen.Component.ChildPath (ChildPath, cpR, cpL)
-import Halogen.HTML hiding (map)
-import Data.String as Str
 
-
-import Import hiding (div)
 import Helper (styleClass)
-import Component.Event as Event
+import Import hiding (div)
+import Component.Admin.Event as AdminEvent
+import Component.Auth as Auth
 import Component.Curator as Curator
-import Component.Profile as Profile
+import Component.Event as Event
 import Component.NotFound as NotFound
+import Component.Profile as Profile
 
 data Location
   = HomeR
   | Profile
   | CuratorsR
   | EventsR
+  | LoginR
+  | AdminEventsR
   | EventR Int
   | NotFoundR String
+
 
 
 instance showLocation :: Show Location where
   show HomeR = "home"
   show Profile = "profile"
   show CuratorsR = "curators"
+  show LoginR = "login"
   show EventsR = "events"
+  show AdminEventsR = "events"
   show (EventR _) = "events"
   show (NotFoundR s) = s
 
@@ -57,14 +64,19 @@ data CRUD
 
 routing :: Match Location
 routing =
-  events   <|>
-  curators <|>
-  event    <|>
-  home     <|>
+  events      <|>
+  adminEvents <|>
+  login       <|>
+  curators    <|>
+  event       <|>
+  home        <|>
   notFound
   where
     home = HomeR <$ lit ""
+    login = LoginR <$ lit "login"
     events = EventsR <$ lit "events"
+    adminEvents = AdminEventsR <$ (adminPath *> lit "events")
+    adminPath = lit "admin" *> homeSlash
     event = EventR <$> (homeSlash *> lit "events" *> int)
     curators = CuratorsR <$ lit "curators"
     notFound = NotFoundR <$> fail "Not Found"
@@ -75,20 +87,20 @@ type State =
   , error :: Maybe String
   }
 
-
--- pathToProfile :: ChildPath Profile.Input ChildQuery Profile.Slot ChildSlot
--- pathToProfile = cpL
-type ChildQuery = Coproduct Curator.Input Event.Input
-type ChildSlot = Either Curator.Slot Event.Slot
+type ChildQuery = Coproduct4 Curator.Input Event.Input Auth.Input AdminEvent.Input
+type ChildSlot = Either4 Curator.Slot Event.Slot Auth.Slot AdminEvent.Slot
 
 pathToCurators :: ChildPath Curator.Input ChildQuery Curator.Slot ChildSlot
-pathToCurators = cpL
+pathToCurators = cp1
 
 pathToEvents :: ChildPath Event.Input ChildQuery Event.Slot ChildSlot
-pathToEvents = cpR
+pathToEvents = cp2
 
-type QueryP
-  = Coproduct Input ChildQuery
+pathToAuth :: ChildPath Auth.Input ChildQuery Auth.Slot ChildSlot
+pathToAuth = cp3
+
+pathToAdminEvents :: ChildPath AdminEvent.Input ChildQuery AdminEvent.Slot ChildSlot
+pathToAdminEvents = cp4
 
 ui :: forall eff. H.Component HH.HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff ))
 ui = H.lifecycleParentComponent
@@ -109,6 +121,10 @@ ui = H.lifecycleParentComponent
     -- viewPage :: String -> H.ParentHTML Input ChildQuery ChildSlot m
     -- viewPage Profile =
     --   HH.slot' pathToProfile Profile.Slot Profile.ui unit absurd
+    viewPage AdminEventsR = do
+      HH.slot' pathToAdminEvents AdminEvent.Slot AdminEvent.ui unit absurd
+    viewPage LoginR = do
+      HH.slot' pathToAuth Auth.Slot Auth.ui unit absurd
     viewPage EventsR = do
       HH.slot' pathToEvents Event.Slot Event.ui unit absurd
     viewPage CuratorsR = do
@@ -124,6 +140,12 @@ ui = H.lifecycleParentComponent
       pure next
     eval (Goto EventsR next) = do
       modify (_ { currentPage = EventsR })
+      pure next
+    eval (Goto AdminEventsR next) = do
+      modify (_ { currentPage = AdminEventsR })
+      pure next
+    eval (Goto LoginR next) = do
+      modify (_ { currentPage = LoginR })
       pure next
     eval (Goto (EventR i) next) = do
       modify (_ { currentPage = EventR i })
@@ -169,7 +191,7 @@ viewBanner =
 mainBody st sub =
   div [ HP.class_ $ ClassName "home-page" ]
     [ navbar st
-    , viewBanner
+    , if st.currentPage == HomeR then viewBanner else p_ [text ""]
     , viewErrors st.error
     , sub ]
 

@@ -2,14 +2,7 @@ module Handler.Profile where
 
 import Import
 
-getProfileR :: Handler Html
+getProfileR :: Handler Value
 getProfileR = do
-    (_, user) <- requireAuthPair
-    defaultLayout $ do
-        setTitle' $ userIdent user <> "'s User page"
-        [whamlet|
-<div .ui.container>
-
-    <h1>
-      Hello <strong><span class="username">#{userIdent user}</span></strong>!
-|]
+  (_, user) <- requireAuthPair
+  return $ object [ "user" .= user]
