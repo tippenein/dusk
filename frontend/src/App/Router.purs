@@ -129,6 +129,8 @@ ui = H.lifecycleParentComponent
       HH.slot' pathToEvents Event.Slot Event.ui unit absurd
     viewPage CuratorsR = do
       HH.slot' pathToCurators Curator.Slot Curator.ui unit absurd
+    viewPage HomeR =
+      HH.slot' pathToEvents Event.Slot Event.ui unit absurd
     viewPage s = NotFound.view (show s)
 
     eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void  (Aff (ajax :: AX.AJAX | eff ))
@@ -182,7 +184,7 @@ viewBanner =
     div [ styleClass "banner masthead" ]
         [ div [ styleClass "container" ]
           [ div [ styleClass "row" ]
-            [ h1 [ styleClass "header logo-font" ] [ text "Dusk" ]
+            [ h1 [ styleClass "header logo" ] [ text "DUSK" ]
             , h2_ [ text "Curated Nightlife" ]
             ]
           ]
@@ -207,14 +209,17 @@ navbar st =
       , div [ HP.id_ "navbar", styleClass "collapse navbar-collapse" ]
         [ ul [ styleClass "nav navbar-nav"] 
           -- navbarItems st [(EventsR, "Events"), (CuratorsR, "Curators")]
-          [ li [ checkActive st EventsR ] [ a [ HP.href "#events"] [text "Events"] ]
+          [ li [ checkActiveLogo st HomeR ] [ a [ HP.href "/" ] [text "DUSK"] ]
+          , li [ checkActive st EventsR ] [ a [ HP.href "#events"] [text "Events"] ]
           , li [ checkActive st CuratorsR ][ a [ HP.href "#curators"] [text "Curators"] ]
           ]
         ]
       ]
     ]
   where
-    checkActive st r = if st.currentPage == r then styleClass "active" else styleClass ""
+    checkActiveLogo st r = if isActive st r then styleClass "logo" else styleClass ""
+    checkActive st r = if isActive st r then styleClass "active" else styleClass ""
+    isActive st r = st.currentPage == r
 
 -- navbarItems st routes = map f routes
 --   where f = (\(Tuple route routeName) ->
