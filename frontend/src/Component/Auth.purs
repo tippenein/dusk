@@ -1,10 +1,12 @@
 module Component.Auth where
 
+import Prelude hiding (div)
+
 import Halogen as H
-import Halogen.HTML hiding (map)
+import Halogen.HTML (HTML, a, div, text)
 import Halogen.HTML.Properties as HP
 import Helper (styleClass)
-import Import hiding (div)
+import Import (Maybe(..))
 
 authGoogleUrl :: String
 authGoogleUrl = "/auth/page/googleemail2/forward"

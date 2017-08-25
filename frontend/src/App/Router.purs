@@ -17,7 +17,7 @@ import Routing.Match.Class (num, int, lit, fail)
 
 import Helper (styleClass)
 import Import hiding (div)
-import Component.Admin.Event as AdminEvent
+import Component.Admin.Main as Admin
 import Component.Auth as Auth
 import Component.Curator as Curator
 import Component.Event as Event
@@ -30,7 +30,7 @@ data Location
   | CuratorsR
   | EventsR
   | LoginR
-  | AdminEventsR
+  | AdminR
   | EventR Int
   | NotFoundR String
 
@@ -42,7 +42,7 @@ instance showLocation :: Show Location where
   show CuratorsR = "curators"
   show LoginR = "login"
   show EventsR = "events"
-  show AdminEventsR = "events"
+  show AdminR = "admin"
   show (EventR _) = "events"
   show (NotFoundR s) = s
 
@@ -65,7 +65,7 @@ data CRUD
 routing :: Match Location
 routing =
   events      <|>
-  adminEvents <|>
+  admins      <|>
   login       <|>
   curators    <|>
   event       <|>
@@ -75,7 +75,7 @@ routing =
     home = HomeR <$ lit ""
     login = LoginR <$ lit "login"
     events = EventsR <$ lit "events"
-    adminEvents = AdminEventsR <$ (adminPath *> lit "events")
+    admins = AdminR <$ lit "admin"
     adminPath = lit "admin" *> homeSlash
     event = EventR <$> (homeSlash *> lit "events" *> int)
     curators = CuratorsR <$ lit "curators"
@@ -87,8 +87,8 @@ type State =
   , error :: Maybe String
   }
 
-type ChildQuery = Coproduct4 Curator.Input Event.Input Auth.Input AdminEvent.Input
-type ChildSlot = Either4 Curator.Slot Event.Slot Auth.Slot AdminEvent.Slot
+type ChildQuery = Coproduct4 Curator.Input Event.Input Auth.Input Admin.Input
+type ChildSlot = Either4 Curator.Slot Event.Slot Auth.Slot Admin.Slot
 
 pathToCurators :: ChildPath Curator.Input ChildQuery Curator.Slot ChildSlot
 pathToCurators = cp1
@@ -99,8 +99,8 @@ pathToEvents = cp2
 pathToAuth :: ChildPath Auth.Input ChildQuery Auth.Slot ChildSlot
 pathToAuth = cp3
 
-pathToAdminEvents :: ChildPath AdminEvent.Input ChildQuery AdminEvent.Slot ChildSlot
-pathToAdminEvents = cp4
+pathToAdmin :: ChildPath Admin.Input ChildQuery Admin.Slot ChildSlot
+pathToAdmin = cp4
 
 ui :: forall eff. H.Component HH.HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff ))
 ui = H.lifecycleParentComponent
@@ -121,8 +121,8 @@ ui = H.lifecycleParentComponent
     -- viewPage :: String -> H.ParentHTML Input ChildQuery ChildSlot m
     -- viewPage Profile =
     --   HH.slot' pathToProfile Profile.Slot Profile.ui unit absurd
-    viewPage AdminEventsR = do
-      HH.slot' pathToAdminEvents AdminEvent.Slot AdminEvent.ui unit absurd
+    viewPage AdminR = do
+      HH.slot' pathToAdmin Admin.Slot Admin.ui unit absurd
     viewPage LoginR = do
       HH.slot' pathToAuth Auth.Slot Auth.ui unit absurd
     viewPage EventsR = do
@@ -143,8 +143,8 @@ ui = H.lifecycleParentComponent
     eval (Goto EventsR next) = do
       modify (_ { currentPage = EventsR })
       pure next
-    eval (Goto AdminEventsR next) = do
-      modify (_ { currentPage = AdminEventsR })
+    eval (Goto AdminR next) = do
+      modify (_ { currentPage = AdminR })
       pure next
     eval (Goto LoginR next) = do
       modify (_ { currentPage = LoginR })
@@ -217,12 +217,12 @@ navbar st =
       ]
     ]
   where
-    checkActiveLogo st r = if isActive st r then styleClass "logo" else styleClass ""
+    checkActiveLogo st r = styleClassIf (isActive st r) "logo"
     checkActive st r = if isActive st r then styleClass "active" else styleClass ""
     isActive st r = st.currentPage == r
 
--- navbarItems st routes = map f routes
---   where f = (\(Tuple route routeName) ->
---               [li
---                [ checkActive st route ]
---                [ a [ HP.href (Str.toLower routeName)] [text routeName] ]])
+--   navbarItems st routes = map f routes
+--     where f = (\(Tuple route routeName) ->
+--                 [li
+--                  [ checkActive st route ]
+--                  [ a [ HP.href (Str.toLower routeName)] [text routeName] ]])

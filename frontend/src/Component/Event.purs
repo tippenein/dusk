@@ -4,13 +4,13 @@ import Control.Monad.Aff (Aff)
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
 import Halogen as H
-import Halogen.HTML hiding (map)
+import Halogen.HTML (HTML, a, div, h2_, h3, h3_, img, p_, text)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
 
 import Import hiding (div)
-import Helper
+import Helper (apiUrl, styleClass)
 import App.Data.Event (Event(..), Events(..), decodeEvents)
 
 

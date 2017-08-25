@@ -12,7 +12,9 @@ import Prelude
 apiUrl :: String
 apiUrl = "http://localhost:3000"
 
-styleClass = HP.class_ <<< ClassName
+styleClass = styleClassIf true
+
+styleClassIf b n = HP.class_ <<< ClassName $ if b then n else ""
 
 placeholder length width =
   img [ HP.src ("http://via.placeholder.com/" <> gShow length <> "x" <> gShow width) ]

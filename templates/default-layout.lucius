@@ -1,3 +1,4 @@
+@purple: #9b02ff;
 html {
     font-family: sans-serif;
     line-height: 1.15;
@@ -34,10 +35,9 @@ input:required {
 /*     /\* background-image: url(...); *\/ */
 /*     background-position: right top; */
 /* } */
-@purple: #9b02ff;
 .navbar-default .navbar-nav > .active > a {
     background-color: transparent;
-    border-bottom: 2px solid white;
+    border-bottom: 2px solid #{purple};
 }
 
 .logo {
