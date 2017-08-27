@@ -35,6 +35,7 @@ module Import
   , module Data.Void
   , module Debug.Trace
   , module Partial.Unsafe
+  , module Top.Monad
   , undefined
   )
   where
@@ -76,5 +77,6 @@ import Data.Tuple (Tuple(..), fst, snd, uncurry)
 import Data.Void (Void, absurd)
 import Debug.Trace (spy, trace, traceA, traceAny, traceAnyA, traceAnyM, traceShow, traceShowA, traceShowM)
 import Partial.Unsafe (unsafePartial)
+import Top.Monad
 
 undefined = bottom

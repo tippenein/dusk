@@ -3,6 +3,21 @@ module App.Data.Curator where
 import Import
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
+import Text.Email.Parser (toString)
+import Text.Email.Validate (EmailAddress)
+
+type CuratorId = Int
+
+newtype CuratorInvite = CuratorInvite
+  { invitee :: EmailAddress
+  , inviter :: CuratorId
+  }
+
+instance encodeCuratorInvite :: EncodeJson CuratorInvite where
+  encodeJson (CuratorInvite curatorInvite)
+     = "invitee" := toString curatorInvite.invitee
+    ~> "inviter" := curatorInvite.inviter
+    ~> jsonEmptyObject
 
 newtype Curator = Curator
   { id :: Int

@@ -1,17 +1,19 @@
 module Component.Event where
 
+import App.Data.Event (Event(..), Events(..), decodeEvents)
 import Control.Monad.Aff (Aff)
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
+import Data.String as Str
 import Halogen as H
-import Halogen.HTML (HTML, a, div, h2_, h3, h3_, img, p_, text)
+import Halogen.HTML (HTML, a, div, div_, h2_, h3, h3_, img, p_, text)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
 
-import Import hiding (div)
+import Top.Monad (Top)
 import Helper (apiUrl, styleClass)
-import App.Data.Event (Event(..), Events(..), decodeEvents)
+import Import hiding (div)
 
 
 data Slot = Slot
@@ -33,7 +35,7 @@ data Input a
   | GetEventList a
   | SelectEvent Int a
 
-ui :: forall eff. H.Component HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff))
+ui :: H.Component HTML Input Unit Void Top
 ui =
   H.lifecycleComponent
     { initialState: const initialState
@@ -48,7 +50,7 @@ ui =
   initialState :: State
   initialState = { loading: false, events: [], error: Nothing }
 
-  eval :: Input ~> H.ComponentDSL State Input Void (Aff (ajax :: AX.AJAX | eff))
+  eval :: Input ~> H.ComponentDSL State Input Void Top
   eval = case _ of
     Noop next -> pure next
     GetEventList next -> do
@@ -90,7 +92,7 @@ viewEvent (Event event) = eventRow timeContent b c
           , HE.onClick (HE.input_ (SelectEvent event.id)) ]
         [ img [ HP.src event.asset_id, HP.height 250, HP.width 250 ]  ]
       ]
-  c = [ h2_ [ text event.name ], p_ [ text event.description] ]
+  c = [ h2_ [ text event.name ], p_ [ truncated event.description ] ]
 
   eventRow leftCol middleCol rightCol =
     div [ styleClass "row" ]
@@ -101,3 +103,11 @@ viewEvent (Event event) = eventRow timeContent b c
       , div [ styleClass "col-sm-6" ]
         [ h3 [ styleClass "event-info" ] rightCol ]
       ]
+
+truncated s =
+  div_ [ text s', ellipsisLink "#" ]
+  where s' = if Str.length s > 140
+             then (Str.take 140 s)
+             else s
+
+ellipsisLink e = a [ HP.href e ] [ text "..."]

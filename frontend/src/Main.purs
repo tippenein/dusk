@@ -1,17 +1,30 @@
 module Main where
 
-import Halogen.Aff as HA
-import Halogen.VDom.Driver (runUI)
-import Network.HTTP.Affjax as AX
-import Control.Monad.Eff (Eff)
-import Control.Monad.Aff (forkAff)
-
-import App.Router as Router
 import Import
 
+import App.Router as Router
+import Control.Monad.Aff (Aff, forkAff)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Class (liftEff)
+import DOM.HTML (window)
+import DOM.HTML.Document (body)
+import DOM.HTML.Types (HTMLElement)
+import DOM.HTML.Window (document)
+import Halogen as H
+import Halogen.Aff as HA
+import Halogen.VDom.Driver (runUI)
+import Top.Monad (TopEffects)
 
-main :: Eff (HA.HalogenEffects (ajax :: AX.AJAX)) Unit
+-- ui' :: H.Component Html Query Unit Void (Aff TopEffects)
+ui' = H.hoist runTop Router.ui
+
+main :: Eff TopEffects Unit
 main = HA.runHalogenAff do
-  body <- HA.awaitBody
-  io <- runUI Router.ui unit body
-  forkAff $ Router.routeSignal io
+  -- ui <- runTop Router.ui
+  io <- runUI ui' unit =<< awaitBody'
+  void $ forkAff $ Router.routeSignal io
+
+awaitBody' :: Aff TopEffects HTMLElement
+awaitBody' = do
+  body <- liftEff $ window >>= document >>= body
+  maybe HA.awaitBody pure body

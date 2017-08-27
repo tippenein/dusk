@@ -1,5 +1,8 @@
 module Component.Admin.Event where
 
+import Helper
+
+import App.Data.Event as Event
 import Control.Monad.Aff (Aff)
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
@@ -7,11 +10,9 @@ import Halogen as H
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Network.HTTP.Affjax as AX
-
 import Import hiding (div)
-import Helper
-import App.Data.Event as Event
+import Network.HTTP.Affjax as AX
+import Top.Monad (Top)
 
 
 data Slot = Slot
@@ -34,7 +35,7 @@ data Input a
   | Submit a
   | SelectEvent Int a
 
-ui :: forall eff. H.Component HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff))
+ui :: H.Component HTML Input Unit Void Top
 ui =
   H.component
     { initialState: const initialState
@@ -47,7 +48,7 @@ ui =
   initialState :: State
   initialState = { loading: false, form: Nothing, error: Nothing }
 
-  eval :: Input ~> H.ComponentDSL State Input Void (Aff (ajax :: AX.AJAX | eff))
+  eval :: Input ~> H.ComponentDSL State Input Void Top
   eval = case _ of
     Noop next -> pure next
     Submit next -> do

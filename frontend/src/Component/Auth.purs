@@ -1,12 +1,12 @@
 module Component.Auth where
 
-import Prelude hiding (div)
-
 import Halogen as H
 import Halogen.HTML (HTML, a, div, text)
 import Halogen.HTML.Properties as HP
 import Helper (styleClass)
 import Import (Maybe(..))
+import Prelude hiding (div)
+import Top.Monad (Top)
 
 authGoogleUrl :: String
 authGoogleUrl = "/auth/page/googleemail2/forward"
@@ -23,7 +23,7 @@ type State =
   , error :: Maybe String
   }
 
-ui :: forall m. H.Component HTML Input Unit Void m
+ui :: H.Component HTML Input Unit Void Top
 ui =
   H.component
     { initialState: const initialState
@@ -46,5 +46,5 @@ ui =
             ]
           ]
 
-      eval :: Input ~> H.ComponentDSL State Input Void m
+      eval :: Input ~> H.ComponentDSL State Input Void Top
       eval (Noop next) = pure next

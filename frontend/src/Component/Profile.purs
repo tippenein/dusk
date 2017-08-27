@@ -4,6 +4,7 @@ import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Prelude (class Eq, class Ord, type (~>), Unit, Void, const, pure, unit)
+import Top.Monad (Top)
 
 data Input a
   = Noop a
@@ -15,7 +16,7 @@ data Slot = Slot
 derive instance eqSlot :: Eq Slot
 derive instance ordSlot :: Ord Slot
 
-ui :: forall m. H.Component HH.HTML Input Unit Void m
+ui :: H.Component HH.HTML Input Unit Void Top
 ui = H.component
   { initialState: const unit
   , render
@@ -29,5 +30,5 @@ ui = H.component
         , HH.p_ [ HH.text "what a nice profile!" ]
         ]
 
-    eval :: Input ~> H.ComponentDSL State Input Void m
+    eval :: Input ~> H.ComponentDSL State Input Void Top
     eval (Noop n) = pure n

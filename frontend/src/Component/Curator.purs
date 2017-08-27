@@ -26,7 +26,7 @@ data Input a
   = Noop a
   | GetCurators a
 
-ui :: forall eff. H.Component HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff))
+ui :: H.Component HTML Input Unit Void Top
 ui =
   H.lifecycleComponent
     { initialState: const initialState
@@ -41,7 +41,7 @@ ui =
   initialState :: State
   initialState = { loading: false, curators: [], error: Nothing }
 
-  eval :: Input ~> H.ComponentDSL State Input Void (Aff (ajax :: AX.AJAX | eff))
+  eval :: Input ~> H.ComponentDSL State Input Void Top
   eval = case _ of
     Noop next -> pure next
     GetCurators next -> do

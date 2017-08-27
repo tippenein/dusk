@@ -1,28 +1,25 @@
 module App.Router where
 
-import Control.Monad.Aff (Aff)
-import Control.Monad.State.Class (modify)
-import Data.Either.Nested (Either4)
-import Data.Functor.Coproduct.Nested (Coproduct4)
-import Halogen as H
-import Halogen.Aff as HA
-import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
-import Halogen.HTML as HH
-import Halogen.HTML hiding (map)
-import Halogen.HTML.Properties as HP
-import Network.HTTP.Affjax as AX
-import Routing (matchesAff)
-import Routing.Match (Match)
-import Routing.Match.Class (num, int, lit, fail)
-
-import Helper (styleClass)
-import Import hiding (div)
 import Component.Admin.Main as Admin
 import Component.Auth as Auth
 import Component.Curator as Curator
 import Component.Event as Event
 import Component.NotFound as NotFound
-import Component.Profile as Profile
+import Control.Monad.Aff (Aff)
+import Control.Monad.State.Class (modify)
+import Data.Either.Nested (Either4)
+import Data.Functor.Coproduct.Nested (Coproduct4)
+import Halogen as H
+import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
+import Halogen.HTML as HH
+import Halogen.HTML hiding (map)
+import Halogen.HTML.Properties as HP
+import Helper (styleClass, styleClassIf)
+import Import hiding (div)
+import Routing (matchesAff)
+import Routing.Match (Match)
+import Routing.Match.Class (int, lit, fail)
+-- import Component.Profile as Profile
 
 data Location
   = HomeR
@@ -102,7 +99,7 @@ pathToAuth = cp3
 pathToAdmin :: ChildPath Admin.Input ChildQuery Admin.Slot ChildSlot
 pathToAdmin = cp4
 
-ui :: forall eff. H.Component HH.HTML Input Unit Void (Aff (ajax :: AX.AJAX | eff ))
+ui :: H.Component HH.HTML Input Unit Void Top
 ui = H.lifecycleParentComponent
   { initialState: const init
   , initializer: Nothing
@@ -118,9 +115,7 @@ ui = H.lifecycleParentComponent
     init :: State
     init = { currentPage: EventsR, error: Nothing }
 
-    -- viewPage :: String -> H.ParentHTML Input ChildQuery ChildSlot m
-    -- viewPage Profile =
-    --   HH.slot' pathToProfile Profile.Slot Profile.ui unit absurd
+    viewPage :: Location -> H.ParentHTML Input ChildQuery ChildSlot Top
     viewPage AdminR = do
       HH.slot' pathToAdmin Admin.Slot Admin.ui unit absurd
     viewPage LoginR = do
@@ -133,7 +128,7 @@ ui = H.lifecycleParentComponent
       HH.slot' pathToEvents Event.Slot Event.ui unit absurd
     viewPage s = NotFound.view (show s)
 
-    eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void  (Aff (ajax :: AX.AJAX | eff ))
+    eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void Top
     eval (Goto Profile next) = do
       modify (_ { currentPage = Profile })
       pure next
@@ -159,18 +154,14 @@ ui = H.lifecycleParentComponent
       modify (_ { currentPage = (NotFoundR s) })
       pure next
 
-routeSignal :: forall eff. H.HalogenIO Input Void (Aff (HA.HalogenEffects eff))
-            -> Aff (HA.HalogenEffects eff) Unit
+routeSignal :: H.HalogenIO Input Void (Aff TopEffects)
+            -> Aff TopEffects Unit
 routeSignal driver = do
   Tuple old new <- matchesAff routing
   redirects driver old new
-
-redirects :: forall eff. H.HalogenIO Input Void (Aff (HA.HalogenEffects eff))
-          -> Maybe Location
-          -> Location
-          -> Aff (HA.HalogenEffects eff) Unit
-redirects driver _old =
-  driver.query <<< H.action <<< Goto
+  where
+  redirects driver _old =
+    driver.query <<< H.action <<< Goto
 
 
 

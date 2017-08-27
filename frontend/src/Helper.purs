@@ -1,5 +1,6 @@
 module Helper (
     styleClass
+  , styleClassIf
   , apiUrl
   , placeholder
   ) where
