@@ -48,3 +48,4 @@ instance PersistField Email.EmailAddress where
 
 instance PersistFieldSql Email.EmailAddress where
   sqlType _ = SqlOther "text"
+

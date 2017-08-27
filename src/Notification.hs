@@ -1,43 +1,33 @@
 module Notification where
 
 import Import
--- import Model.User
--- import SendMail
+import SendMail
 
--- import Data.Text.Lazy.Builder (toLazyText)
--- import Network.Mail.Mime (simpleMail')
--- import Text.Shakespeare.Text (textFile)
-
-data Notification = CuratorInvite CuratorInvite
+import Data.Text.Lazy.Builder (toLazyText)
+import Network.Mail.Mime (simpleMail')
+import Text.Shakespeare.Text (textFile)
+import qualified Text.Email.Validate as Email
 
 type Token = UUID
 
--- sendNotification :: Notification -> Handler ()
--- sendNotification n = do
---     recipients <- runDB $ notificationRecipients n
+sendInvite :: CuratorInvite -> Handler ()
+sendInvite i = do
+  _ <- runDB $ insert i
+  sendMail =<< (inviteToMail i)
 
---     mapM_ (sendMail <=< notificationToMail n) recipients
+inviteToMail :: CuratorInvite -> Handler Mail
+inviteToMail (CuratorInvite invitee inviter _ _) = do
+  site <- appSettings <$> getYesod
+  user <- runDBor404 $ get inviter
 
--- notificationToMail :: Notification -> CuratorInvite -> Handler Mail
--- notificationToMail n r = do
---     let c = notificationComment n
---         subject = "You've been invited to Curate"
---         comment = unMarkdown $ commentBody c
---         baseUrl = siteBaseUrl $ notificationSite n
---         articleUrl = commentArticleURL c
+  let subject = "You've been invited by " <> person <> " to join " <> siteName
+      siteName = fromMaybe "http://dusk.host" $ appRoot site
+      person :: Text = fromMaybe "an anonymous curator" $ userName user
+      from = Address (Just "dusk.host") $ siteName
 
---     body <- toLazyText <$> withUrlRenderer $(textFile "templates/mail/new_curator.text")
+  body <- toLazyText <$> withUrlRenderer $(textFile "templates/mail/new_curator.text")
 
---     return $ simpleMail' (curatorInviteIdent r) (curatorInviteInvitedBy n) subject body
+  return $ simpleMail' (simpleAddress invitee) from subject body
 
--- notificationRecipients :: Notification -> DB [Recipient]
--- notificationRecipients n = do
---     let c = notificationComment n
-
---     subs <- activeSubscriptions' $ notificationName n
---     users <- findUsers $ filter (/= commentUser c) $ map subscriptionUser subs
-
---     fmap catMaybes $ forM users $ \(Entity uid u) -> do
---         let msub = find ((== uid) . subscriptionUser) subs
-
---         return $ fmap (Recipient u . subscriptionToken) msub
+simpleAddress :: Email.EmailAddress -> Address
+simpleAddress e = Address Nothing (decodeUtf8 $ Email.toByteString e)

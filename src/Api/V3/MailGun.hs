@@ -22,9 +22,9 @@ sendMailGun :: Text          -- ^ domain
             -> Manager       -- ^ re-use an existing http manager
             -> Mail
             -> IO (Response LBS.ByteString)
-sendMailGun domain mailgunKey httpMan email = do
+sendMailGun _ mailgunKey httpMan email = do
     bs <- renderMail' email
-    request <- parseRequest $ unpack $ "https://api.mailgun.net/v3/" <> domain <> "/messages.mime"
+    request <- parseRequest $ unpack $ "https://api.mailgun.net/v3/dusk.host/messages.mime"
     preq <- postRequest (LBS.toStrict bs) request
     httpLbs (auth (C8.pack mailgunKey) preq) httpMan
   where
