@@ -4,5 +4,7 @@ import Import
 
 getProfileR :: Handler Value
 getProfileR = do
-  (_, user) <- requireAuthPair
-  return $ object [ "user" .= user]
+  (uid, user) <- requireAuthPair
+  return $ object [ "user_ident" .= userIdent user
+                  , "user_name"  .= userName user
+                  , "user_id"    .= uid ]

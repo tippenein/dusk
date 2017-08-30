@@ -1,5 +1,7 @@
 module App.Router where
 
+import App.Data.Profile
+
 import Component.Admin.Main as Admin
 import Component.Auth as Auth
 import Component.Curator as Curator
@@ -9,45 +11,42 @@ import Control.Monad.Aff (Aff)
 import Control.Monad.State.Class (modify)
 import Data.Either.Nested (Either4)
 import Data.Functor.Coproduct.Nested (Coproduct4)
+import Data.Generic.Rep.Eq (genericEq)
 import Halogen as H
 import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
 import Halogen.HTML as HH
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Properties as HP
-import Helper (styleClass, styleClassIf)
+import Helper (apiUrl, styleClass, styleClassIf)
 import Import hiding (div)
+import Network.HTTP.Affjax as AX
+import Network.HTTP.ResponseHeader (ResponseHeader, responseHeader)
 import Routing (matchesAff)
 import Routing.Match (Match)
 import Routing.Match.Class (int, lit, fail)
--- import Component.Profile as Profile
 
 data Location
   = HomeR
-  | Profile
+  | ProfileR
   | CuratorsR
   | EventsR
   | LoginR
+  | LogoutR
   | AdminR
   | EventR Int
   | NotFoundR String
 
-
+derive instance genericLocation :: Generic Location _
 
 instance showLocation :: Show Location where
-  show HomeR = "home"
-  show Profile = "profile"
-  show CuratorsR = "curators"
-  show LoginR = "login"
-  show EventsR = "events"
-  show AdminR = "admin"
-  show (EventR _) = "events"
-  show (NotFoundR s) = s
+  show = genericShow
 
 instance eqLocation :: Eq Location where
-  eq a b = show a == show b
+  eq = genericEq
 
 data Input a
   = Goto Location a
+  | CheckProfile a
 
 oneSlash :: Match Unit
 oneSlash = lit "/"
@@ -64,6 +63,7 @@ routing =
   events      <|>
   admins      <|>
   login       <|>
+  logout      <|>
   curators    <|>
   event       <|>
   home        <|>
@@ -71,6 +71,7 @@ routing =
   where
     home = HomeR <$ lit ""
     login = LoginR <$ lit "login"
+    logout = LogoutR <$ lit "logout"
     events = EventsR <$ lit "events"
     admins = AdminR <$ lit "admin"
     adminPath = lit "admin" *> homeSlash
@@ -81,6 +82,7 @@ routing =
 
 type State =
   { currentPage :: Location
+  , currentUser :: Maybe Profile
   , error :: Maybe String
   }
 
@@ -102,7 +104,7 @@ pathToAdmin = cp4
 ui :: H.Component HH.HTML Input Unit Void Top
 ui = H.lifecycleParentComponent
   { initialState: const init
-  , initializer: Nothing
+  , initializer: Just (H.action CheckProfile)
   , finalizer: Nothing
   , render
   , eval
@@ -113,7 +115,7 @@ ui = H.lifecycleParentComponent
       mainBody st (viewPage st.currentPage)
 
     init :: State
-    init = { currentPage: EventsR, error: Nothing }
+    init = { currentUser: Nothing, currentPage: HomeR, error: Nothing }
 
     viewPage :: Location -> H.ParentHTML Input ChildQuery ChildSlot Top
     viewPage AdminR = do
@@ -129,8 +131,13 @@ ui = H.lifecycleParentComponent
     viewPage s = NotFound.view (show s)
 
     eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void Top
-    eval (Goto Profile next) = do
-      modify (_ { currentPage = Profile })
+    eval (CheckProfile next) = do
+      response <- H.liftAff $ AX.get (apiUrl <> "/profile")
+      user <- pure $ decodeProfile response.response
+      modify (_ { currentUser = hush user})
+      pure next
+    eval (Goto ProfileR next) = do
+      modify (_ { currentPage = ProfileR })
       pure next
     eval (Goto CuratorsR next) = do
       modify (_ { currentPage = CuratorsR })
@@ -143,6 +150,9 @@ ui = H.lifecycleParentComponent
       pure next
     eval (Goto LoginR next) = do
       modify (_ { currentPage = LoginR })
+      pure next
+    eval (Goto LogoutR next) = do
+      modify (_ { currentPage = HomeR })
       pure next
     eval (Goto (EventR i) next) = do
       modify (_ { currentPage = EventR i })
@@ -168,7 +178,7 @@ routeSignal driver = do
 viewErrors (Just error) =
   div [ styleClass "container" ]
     [ div [ styleClass "row" ]
-      [ div [styleClass "alert alert-warning"] [ text error]]]
+      [ div [styleClass "alert alert-warning"] [ text error ]]]
 viewErrors Nothing = text ""
 
 viewBanner =
@@ -198,12 +208,13 @@ navbar st =
           , span [ styleClass "icon-bar"] [] ]
         ]
       , div [ HP.id_ "navbar", styleClass "collapse navbar-collapse" ]
-        [ ul [ styleClass "nav navbar-nav"] 
-          -- navbarItems st [(EventsR, "Events"), (CuratorsR, "Curators")]
+        [ ul [ styleClass "nav navbar-nav"]
           [ li [ checkActiveLogo st HomeR ] [ a [ HP.href "/" ] [text "DUSK"] ]
           , li [ checkActive st EventsR ] [ a [ HP.href "#events"] [text "Events"] ]
           , li [ checkActive st CuratorsR ][ a [ HP.href "#curators"] [text "Curators"] ]
           ]
+        , ul [ styleClass "nav navbar-nav navbar-right"]
+          (maybeAdminNavs st)
         ]
       ]
     ]
@@ -212,8 +223,23 @@ navbar st =
     checkActive st r = if isActive st r then styleClass "active" else styleClass ""
     isActive st r = st.currentPage == r
 
---   navbarItems st routes = map f routes
---     where f = (\(Tuple route routeName) ->
---                 [li
---                  [ checkActive st route ]
---                  [ a [ HP.href (Str.toLower routeName)] [text routeName] ]])
+    maybeAdminNavs st
+      | isJust st.currentUser =
+          [ li [ checkActive st AdminR ]
+            [ a [ HP.href "#admin"]
+              [ text (fromMaybe "Dashboard" $ getPreferredName <$> st.currentUser ) ] ]
+          , li_
+            [ a [ HP.href "#logout" ]
+              [ text "Logout" ]
+            ]
+          ]
+      | otherwise =
+          [ li [ checkActive st LoginR ]
+            [ a [ HP.href "#login"]
+              [ text "Login" ]
+            ]
+          ]
+
+getPreferredName :: Profile -> String
+getPreferredName (Profile { user_id, user_ident, user_name }) = do
+  fromMaybe user_ident user_name

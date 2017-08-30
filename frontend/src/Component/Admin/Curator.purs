@@ -103,5 +103,3 @@ render (State state) = form [ onSubmit (input PreventDefault) ]
                     ]
             ]
     ]
-
-encodeBody = undefined

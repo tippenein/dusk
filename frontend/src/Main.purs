@@ -20,7 +20,6 @@ ui' = H.hoist runTop Router.ui
 
 main :: Eff TopEffects Unit
 main = HA.runHalogenAff do
-  -- ui <- runTop Router.ui
   io <- runUI ui' unit =<< awaitBody'
   void $ forkAff $ Router.routeSignal io
 

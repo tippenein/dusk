@@ -39,13 +39,12 @@ getKeys bucket keyPrefix =
 
 get :: (MonadResource m, MonadAWS m)
     => S3.BucketName -> Text -> m S3.GetObjectResponse
-get bucket key = do
+get bucket key =
   send (S3.getObject bucket (S3.ObjectKey key))
---   view S3.gorsBody response `AWS.sinkBody` CC.mapM_ (liftIO . BS.putStr)
 
 put :: (ToBody a, MonadAWS m)
     => S3.BucketName
-    -> Text
+    -> Text            -- | the file name (key)
     -> a               -- | the file contents
     -> m S3.PutObjectResponse
 put b key body =
