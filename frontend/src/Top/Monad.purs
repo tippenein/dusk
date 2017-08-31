@@ -33,7 +33,6 @@ derive newtype instance applicativeTopM :: Applicative (TopM eff)
 derive newtype instance bindTopM :: Bind (TopM eff)
 derive newtype instance monadTopM :: Monad (TopM eff)
 
-
 newtype TopA eff a = TopA (FreeAp (TopM eff) a)
 
 derive newtype instance functorTopA :: Functor (TopA eff)

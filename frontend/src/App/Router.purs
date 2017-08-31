@@ -1,6 +1,7 @@
 module App.Router where
 
 import App.Data.Profile
+import Helper
 
 import Component.Admin.Main as Admin
 import Component.Auth as Auth
@@ -8,6 +9,7 @@ import Component.Curator as Curator
 import Component.Event as Event
 import Component.NotFound as NotFound
 import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.Console (log)
 import Control.Monad.State.Class (modify)
 import Data.Either.Nested (Either4)
 import Data.Functor.Coproduct.Nested (Coproduct4)
@@ -16,14 +18,16 @@ import Halogen as H
 import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
 import Halogen.HTML as HH
 import Halogen.HTML hiding (map)
+import Halogen.HTML.Events (input_, onClick)
 import Halogen.HTML.Properties as HP
-import Helper (apiUrl, styleClass, styleClassIf)
+import Halogen.HTML.Properties.ARIA as HP
 import Import hiding (div)
 import Network.HTTP.Affjax as AX
 import Network.HTTP.ResponseHeader (ResponseHeader, responseHeader)
 import Routing (matchesAff)
 import Routing.Match (Match)
 import Routing.Match.Class (int, lit, fail)
+import Message as Msg
 
 data Location
   = HomeR
@@ -31,7 +35,6 @@ data Location
   | CuratorsR
   | EventsR
   | LoginR
-  | LogoutR
   | AdminR
   | EventR Int
   | NotFoundR String
@@ -47,6 +50,7 @@ instance eqLocation :: Eq Location where
 data Input a
   = Goto Location a
   | CheckProfile a
+  | Logout a
 
 oneSlash :: Match Unit
 oneSlash = lit "/"
@@ -63,7 +67,6 @@ routing =
   events      <|>
   admins      <|>
   login       <|>
-  logout      <|>
   curators    <|>
   event       <|>
   home        <|>
@@ -71,7 +74,6 @@ routing =
   where
     home = HomeR <$ lit ""
     login = LoginR <$ lit "login"
-    logout = LogoutR <$ lit "logout"
     events = EventsR <$ lit "events"
     admins = AdminR <$ lit "admin"
     adminPath = lit "admin" *> homeSlash
@@ -83,7 +85,7 @@ routing =
 type State =
   { currentPage :: Location
   , currentUser :: Maybe Profile
-  , error :: Maybe String
+  , checkingUser :: Boolean
   }
 
 type ChildQuery = Coproduct4 Curator.Input Event.Input Auth.Input Admin.Input
@@ -115,7 +117,7 @@ ui = H.lifecycleParentComponent
       mainBody st (viewPage st.currentPage)
 
     init :: State
-    init = { currentUser: Nothing, currentPage: HomeR, error: Nothing }
+    init = { currentUser: Nothing, currentPage: HomeR, checkingUser: false }
 
     viewPage :: Location -> H.ParentHTML Input ChildQuery ChildSlot Top
     viewPage AdminR = do
@@ -132,9 +134,10 @@ ui = H.lifecycleParentComponent
 
     eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void Top
     eval (CheckProfile next) = do
+      modify (_ { checkingUser = true })
       response <- H.liftAff $ AX.get (apiUrl <> "/profile")
       user <- pure $ decodeProfile response.response
-      modify (_ { currentUser = hush user})
+      modify (_ { currentUser = hush user, checkingUser = false })
       pure next
     eval (Goto ProfileR next) = do
       modify (_ { currentPage = ProfileR })
@@ -146,13 +149,24 @@ ui = H.lifecycleParentComponent
       modify (_ { currentPage = EventsR })
       pure next
     eval (Goto AdminR next) = do
-      modify (_ { currentPage = AdminR })
-      pure next
+      s <- H.get
+      if isJust s.currentUser
+        then do
+          modify (_ { currentPage = AdminR })
+          pure next
+        else do
+          _ <- H.liftEff $ flashMessage Info Msg.loginRequired
+          modify (_ { currentPage = LoginR })
+          pure next
     eval (Goto LoginR next) = do
       modify (_ { currentPage = LoginR })
       pure next
-    eval (Goto LogoutR next) = do
-      modify (_ { currentPage = HomeR })
+    eval (Logout next) = do
+      response <- H.liftAff $ AX.post (apiUrl <> "/auth/logout") unit
+      H.liftAff $ log $ "logged out successfully: " <> response.response
+      H.liftEff $ flashMessage Success Msg.loggedOut
+      modify (_ { currentUser = Nothing
+                , currentPage = HomeR })
       pure next
     eval (Goto (EventR i) next) = do
       modify (_ { currentPage = EventR i })
@@ -164,22 +178,16 @@ ui = H.lifecycleParentComponent
       modify (_ { currentPage = (NotFoundR s) })
       pure next
 
+
 routeSignal :: H.HalogenIO Input Void (Aff TopEffects)
             -> Aff TopEffects Unit
 routeSignal driver = do
   Tuple old new <- matchesAff routing
   redirects driver old new
   where
-  redirects driver _old =
-    driver.query <<< H.action <<< Goto
+  redirects d _old =
+    d.query <<< H.action <<< Goto
 
-
-
-viewErrors (Just error) =
-  div [ styleClass "container" ]
-    [ div [ styleClass "row" ]
-      [ div [styleClass "alert alert-warning"] [ text error ]]]
-viewErrors Nothing = text ""
 
 viewBanner =
     div [ styleClass "banner masthead" ]
@@ -195,7 +203,12 @@ mainBody st sub =
   div [ HP.class_ $ ClassName "home-page" ]
     [ navbar st
     , if st.currentPage == HomeR then viewBanner else p_ [text ""]
-    , viewErrors st.error
+    , div [styleClass "container" ]
+      [ div [ styleClass "row", HP.id_ "app-messages" ]
+        [ div [styleClass "text-center alert", HP.hidden "true", HP.role "alert"]
+          [ p [ HP.id_ "app-message" ] [] ]
+        ]
+      ]
     , sub ]
 
 navbar st =
@@ -224,12 +237,13 @@ navbar st =
     isActive st r = st.currentPage == r
 
     maybeAdminNavs st
+      | st.checkingUser = [ li [ styleClass "spinner"] [ text "loading"] ]
       | isJust st.currentUser =
           [ li [ checkActive st AdminR ]
             [ a [ HP.href "#admin"]
               [ text (fromMaybe "Dashboard" $ getPreferredName <$> st.currentUser ) ] ]
           , li_
-            [ a [ HP.href "#logout" ]
+            [ a [ HP.href "#", onClick (input_ Logout) ]
               [ text "Logout" ]
             ]
           ]
@@ -241,5 +255,5 @@ navbar st =
           ]
 
 getPreferredName :: Profile -> String
-getPreferredName (Profile { user_id, user_ident, user_name }) = do
+getPreferredName (Profile { user_id, user_ident, user_name }) =
   fromMaybe user_ident user_name
