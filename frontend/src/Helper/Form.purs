@@ -1,6 +1,7 @@
 module Helper.Form where
 
 import FormValidation (Validator, formErrorHTML, formValueHTML, validator)
+import Halogen.HTML.Properties (ButtonType(..))
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Elements as Elements
 import Halogen.HTML.Events as E
@@ -26,18 +27,31 @@ emailValidator = validator go
       Just e -> Right e
 
 simpleTextInput accessor field name action =
+  genericInput "text" accessor field name action
+
+simpleTextAreaInput accessor field name action =
+  genericInput "textarea" accessor field name action
+
+genericInput typ accessor field name action =
   div [ styleClass "row" ]
-    [ div [ styleClass "col-md-4" ]
-      [ label [ HP.for field ] [ text name ] ]
-    , div [ styleClass "col-md-4" ]
-      [ Elements.input [ styleClass "form-control"
-                 , HP.name field
-                 , formValueHTML accessor
-                 , E.onValueChange (E.input action)
-              ]
-      ]
-    , div [ styleClass "col-md-4" ]
-      [ p [ styleClass "form-error" ]
-            [ formErrorHTML accessor ]
-      ]
+    [ div [ styleClass "form-group" ]
+      [ label [ HP.for $ "ff-" <> field ] [ text name ] ]
+      , Elements.input [
+           styleClass "form-control"
+         , HP.name field
+         , HP.id_ $ "ff-" <> field
+         , formValueHTML accessor
+         , E.onValueChange (E.input action)
+        ]
+      , div [ ]
+        [ p [ styleClass "form-error" ]
+          [ formErrorHTML accessor ]
+        ]
     ]
+
+formSubmit label action =
+  button [ HP.type_ ButtonSubmit
+         , styleClass "btn btn-default"
+         , E.onClick (E.input_ action)
+         ]
+         [ text label ]

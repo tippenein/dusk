@@ -66,7 +66,6 @@ ui =
           [ slot' pathToCurators Curator.Slot Curator.ui unit absurd ]
         , div [ styleClass "col-lg-6" ]
           [ slot' pathToEvents Event.Slot Event.ui unit absurd
-          , text "asdmin"
           ]
         ]
       ]

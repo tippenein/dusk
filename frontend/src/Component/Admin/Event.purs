@@ -26,11 +26,20 @@ derive instance ordSlot :: Ord Slot
 
 parseDateTime x = hush $ FD.unformatDateTime "AA, MMM D" x
 
-type EventForm = { name :: String }
+type EventForm =
+  { name :: FormValue' String
+  , description :: FormValue' String
+  }
+
+initialEventForm =
+  { name: initFormValue Form.nonBlank ""
+  , description: initFormValue Form.nonBlank ""
+  }
 type FormValue' a = FormValue String a
+
 type State =
   { loading :: Boolean
-  , name :: FormValue' String
+  , form :: EventForm
   , error :: Maybe String
   }
 
@@ -39,6 +48,7 @@ data Input a
   | PreventDefault DOM.Event a
   | FormSubmit a
   | UpdateName String a
+  | UpdateDescription String a
   | SelectEvent Int a
 
 ui :: H.Component HTML Input Unit Void Top
@@ -52,25 +62,28 @@ ui =
   where
 
   initialState :: State
-  initialState = { loading: false, name: initFormValue Form.nonBlank "", error: Nothing }
+  initialState = { loading: false, form: initialEventForm, error: Nothing }
 
   eval :: Input ~> H.ComponentDSL State Input Void Top
   eval (Noop next) = pure next
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
   eval (FormSubmit next) = do
-      -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (toPostData form)
-      -- es <- pure $ Event.decodeCreateResponse response.response
-      -- case es of
-      --   Left e ->
-      --     H.modify (_ { error = Just e, loading = false, form = Nothing})
-      --   Right (Event.CreateResponse {event: res}) ->
-      --     H.modify (_ { error = Nothing, loading = false, form = res})
-      state <- H.get
-      name <- runExceptT $ validateA state.name
-      pure next
+    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (toPostData form)
+    -- es <- pure $ Event.decodeCreateResponse response.response
+    -- case es of
+    --   Left e ->
+    --     H.modify (_ { error = Just e, loading = false, form = Nothing})
+    --   Right (Event.CreateResponse {event: res}) ->
+    --     H.modify (_ { error = Nothing, loading = false, form = res})
+    state <- H.get
+    name <- runExceptT $ validateA state.form.name
+    pure next
   eval (UpdateName name next) = do
-      H.modify (\st -> st { name = updateFormValue st.name name })
-      pure next
+    H.modify (\st -> st { form = st.form { name = updateFormValue st.form.name name } })
+    pure next
+  eval (UpdateDescription description next) = do
+    H.modify (\st -> st { form = st.form { description = updateFormValue st.form.description description } })
+    pure next
   eval (SelectEvent _ next) = pure next
 
 render :: State -> H.ComponentHTML Input
@@ -79,17 +92,13 @@ render st =
     [ div [ styleClass "row" ]
       [ div [ styleClass "col-lg-12" ]
         [ text (if st.loading then "posting..." else "") ]
-        , viewEventForm st
+        , viewEventForm st.form
         ]
     ]
 
-
-viewEventForm st = form [ E.onSubmit (E.input PreventDefault) ]
+viewEventForm st =
+  form [ E.onSubmit (E.input PreventDefault) ]
     [ Form.simpleTextInput st.name "name" "Name" UpdateName
-    , div [ styleClass "row" ]
-      [ div [ styleClass "col-md-12" ]
-        [ button [ E.onClick (E.input_ FormSubmit)]
-          [ text "Submit" ]
-        ]
-      ]
+    , Form.simpleTextAreaInput st.description "description" "Description" UpdateDescription
+    , Form.formSubmit "Submit" FormSubmit
     ]

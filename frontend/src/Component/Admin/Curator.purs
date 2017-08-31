@@ -71,11 +71,11 @@ ui =
 
 render :: State -> H.ComponentHTML Input
 render state = form [ E.onSubmit (E.input PreventDefault) ]
-    [ Form.simpleTextInput state.email "email" "Email" UpdateEmail
-    , div [ styleClass "row" ]
-            [ div [ styleClass "col-md-12" ]
-                    [ button [ E.onClick (E.input_ FormSubmit)]
-                                [ text "Submit" ]
-                    ]
-            ]
+  [ Form.simpleTextInput state.email "email" "Email" UpdateEmail
+  , div [ styleClass "row" ]
+    [ div [ styleClass "col-md-12" ]
+      [ button [ E.onClick (E.input_ FormSubmit)]
+        [ text "Submit" ]
+      ]
     ]
+  ]
