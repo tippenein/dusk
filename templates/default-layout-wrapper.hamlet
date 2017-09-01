@@ -19,6 +19,10 @@ $newline never
             integrity="sha256-JmvOoLtYsmqlsWxa7mDSLMwa6dZ9rrIdtrrVYRnDRH0="
             crossorigin="anonymous">
 
+    <link rel="stylesheet" href="https://unpkg.com/flatpickr/dist/flatpickr.min.css">
+    <script src="https://unpkg.com/flatpickr"></script>
+
+
     <title>Dusk
 
     ^{pageHead pc}

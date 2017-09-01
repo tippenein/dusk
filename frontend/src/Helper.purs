@@ -40,7 +40,6 @@ flashMessage s msg = do
     pure unit
   pure unit
 
-
 msgToString :: Message -> String
 msgToString Success = "success"
 msgToString Info    = "info"

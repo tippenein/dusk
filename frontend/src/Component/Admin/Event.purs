@@ -1,20 +1,33 @@
 module Component.Admin.Event where
 
 
+import Component.Admin.Event.Form
 import Helper
 
 import App.Data.Event as Event
 import Control.Monad.Aff (Aff)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
+import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
+import Data.DateTime (DateTime(..))
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
+import Data.Generic (gShow)
+import Data.Lens (Lens', lens, (%~))
+import Data.Lens.At (at)
+import Data.Lens.Record (prop)
+import Data.Symbol (SProxy(..))
 import FormValidation (FormValue, formValueHTML, initFormValue, updateFormValue, validateA)
 import Halogen as H
+import Halogen.Datepicker.Component.DateTime as Time
+import Halogen.Datepicker.Config (defaultConfig)
+import Halogen.Datepicker.Format.DateTime as Format
 import Halogen.HTML hiding (map)
+import Halogen.HTML.Events (onClick)
 import Halogen.HTML.Events as E
 import Halogen.HTML.Properties as HP
 import Helper.Form as Form
+import Helper.Format (formatDateTime, unformatDateTime)
 import Import hiding (div)
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
@@ -24,18 +37,31 @@ data Slot = Slot
 derive instance eqSlot :: Eq Slot
 derive instance ordSlot :: Ord Slot
 
-parseDateTime x = hush $ FD.unformatDateTime "AA, MMM D" x
+_form :: Lens' State EventForm
+_form = lens _.form _ { form = _ }
 
-type EventForm =
-  { name :: FormValue' String
-  , description :: FormValue' String
+newtype EventRequest = EventRequest
+  { name :: String
+  , description :: String
+  , startDatetime :: DateTime
+  , endDatetime :: DateTime
   }
+
+instance encodeEventRequest :: EncodeJson EventRequest where
+  encodeJson (EventRequest ef)
+     = "name" := ef.name
+    ~> "description" := ef.description
+    ~> "start_datetime" := (formatDateTime ef.startDatetime)
+    ~> "end_datetime" := (formatDateTime ef.endDatetime)
+    ~> jsonEmptyObject
+
 
 initialEventForm =
   { name: initFormValue Form.nonBlank ""
   , description: initFormValue Form.nonBlank ""
+  , startDatetime: initFormValue Form.validDateTime ""
+  , endDatetime: initFormValue Form.validDateTime ""
   }
-type FormValue' a = FormValue String a
 
 type State =
   { loading :: Boolean
@@ -49,12 +75,17 @@ data Input a
   | FormSubmit a
   | UpdateName String a
   | UpdateDescription String a
+  | UpdateStart String a
+  | UpdateEnd String a
   | SelectEvent Int a
+  | PostRender a
 
 ui :: H.Component HTML Input Unit Void Top
 ui =
-  H.component
+  H.lifecycleComponent
     { initialState: const initialState
+    , initializer: Just (H.action PostRender)
+    , finalizer: Nothing
     , render
     , eval
     , receiver: const Nothing
@@ -68,26 +99,43 @@ ui =
   eval (Noop next) = pure next
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
   eval (FormSubmit next) = do
-    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (toPostData form)
+    st <- H.get
+    -- er <- runExceptT $ do
+    --   name <- validateA st.form.name
+    --   description <- validateA st.form.description
+    --   startDatetime <- validateA st.form.startDatetime
+    --   endDatetime <- validateA st.form.endDatetime
+    --   pure $ EventRequest name description startDatetime endDatetime
+    -- st <- H.get
+    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeEventForm st.form)
     -- es <- pure $ Event.decodeCreateResponse response.response
     -- case es of
     --   Left e ->
     --     H.modify (_ { error = Just e, loading = false, form = Nothing})
     --   Right (Event.CreateResponse {event: res}) ->
     --     H.modify (_ { error = Nothing, loading = false, form = res})
-    state <- H.get
-    name <- runExceptT $ validateA state.form.name
+    -- name <- runExceptT $ validateA state.form.name
+    pure next
+  eval (PostRender next) = do
+    H.liftEff $ Form.flatpicker "#ff-start_datetime"
+    H.liftEff $ Form.flatpicker "#ff-end_datetime"
     pure next
   eval (UpdateName name next) = do
-    H.modify (\st -> st { form = st.form { name = updateFormValue st.form.name name } })
+    H.modify $ ((_form <<< _name) %~ (\f -> updateFormValue f name))
     pure next
   eval (UpdateDescription description next) = do
-    H.modify (\st -> st { form = st.form { description = updateFormValue st.form.description description } })
+    H.modify $ ((_form <<< _description) %~ (\f -> updateFormValue f description))
+    pure next
+  eval (UpdateStart start_datetime next) = do
+    H.modify $ ((_form <<< _startDatetime) %~ (\f -> updateFormValue f start_datetime))
+    pure next
+  eval (UpdateEnd end_datetime next) = do
+    H.modify $ ((_form <<< _endDatetime) %~ (\f -> updateFormValue f end_datetime))
     pure next
   eval (SelectEvent _ next) = pure next
 
 render :: State -> H.ComponentHTML Input
-render st =
+render st = do
   div [ styleClass "container page" ]
     [ div [ styleClass "row" ]
       [ div [ styleClass "col-lg-12" ]
@@ -96,9 +144,13 @@ render st =
         ]
     ]
 
-viewEventForm st =
+viewEventForm f = do
   form [ E.onSubmit (E.input PreventDefault) ]
-    [ Form.simpleTextInput st.name "name" "Name" UpdateName
-    , Form.simpleTextAreaInput st.description "description" "Description" UpdateDescription
+    [ Form.simpleTextInput f.name "name" "Name" UpdateName
+    , Form.simpleTextAreaInput f.description "description" "Description" UpdateDescription
+    , div [ HP.id_ "start_datetime" ]
+      [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
+    , div [ HP.id_ "end_datetime" ]
+      [ Form.simpleTextInput (f.endDatetime) "end_datetime" "End" UpdateEnd ]
     , Form.formSubmit "Submit" FormSubmit
     ]

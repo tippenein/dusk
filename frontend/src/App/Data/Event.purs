@@ -3,6 +3,7 @@ module App.Data.Event where
 import Data.DateTime (DateTime)
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
+import Helper.Format
 import Import
 
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
@@ -73,24 +74,3 @@ decodeEvent = decodeJson
 
 decodeEvents :: Json -> Either String Events
 decodeEvents = decodeJson
-
-formatDateTime :: DateTime.DateTime -> Maybe String
-formatDateTime x = hush $ FD.formatDateTime dtformat x
-
-dtformat :: String
-dtformat = "YYYY-MM-DDTHH:mmZ"
-
-unformatDateTime :: String -> Maybe DateTime.DateTime
-unformatDateTime x = hush $ FD.unformatDateTime dtformat x
-
-formatDate :: DateTime.Date -> Maybe String
-formatDate x = formatDateTime $ DateTime.DateTime x bottom
-
-unformatDate :: String -> Maybe DateTime.Date
-unformatDate x = map DateTime.date $ unformatDateTime x
-
-formatTime :: DateTime.Time -> Maybe String
-formatTime x = hush $ FD.formatDateTime "HH:mm:ss.SSS" $ DateTime.DateTime bottom x
-
-unformatTime :: String -> Maybe DateTime.Time
-unformatTime x = hush $ map DateTime.time $ FD.unformatDateTime "HH:mm:ss.SSS" x

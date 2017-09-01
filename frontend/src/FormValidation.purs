@@ -1,25 +1,15 @@
-module FormValidation
-  ( FormValue()
-  , FormValueG()
-  , FormValueP()
-  , Validator()
-  , ValidatorG()
-  , ValidatorP()
-  , formErrorHTML
-  , formValueHTML
-  , initFormValue
-  , updateFormValue
-  , validateA
-  , validator
-  ) where
+module FormValidation where
 -- https://github.com/slamdata/purescript-halogen/issues/235
 import Prelude
 
 import Control.Monad.Except.Trans (ExceptT(..))
+import Data.DateTime (DateTime(..))
 import Data.Either (Either, either)
+import Data.Maybe (fromMaybe)
 import Data.Monoid (mempty)
 import Halogen.HTML as H
 import Halogen.HTML.Properties as P
+import Helper.Format (formatDateTime)
 
 type IProp r i = P.IProp r (i Unit)
 
@@ -43,7 +33,7 @@ type FormValue a b = FormValueG String a b
 -- | A `FormValue` where `a` and `b` are the same thing.  This is similar to
 -- the difference between the `Lens` and `LensP`
 -- types.
-type FormValueP a = FormValue a a
+type FormValue' a = FormValue a a
 
 -- | A newtype wrapper around a function that takes an `a` and returns and
 -- `Either e b`.  This is the validation function.
@@ -123,6 +113,12 @@ validateA = ExceptT <<< pure <<< validate
 --         , ...
 --         ]
 -- ```
+
+formValueDateTimeHTML = P.value <<< fromMaybe "" <<< formatDateTime <<< rawFormValue
+  where
+    rawFormValue :: forall e a b . FormValueG e a b -> a
+    rawFormValue (FormValueG _ _ a) = a
+
 formValueHTML = P.value <<< rawFormValue
   where
     rawFormValue :: forall e a b . FormValueG e a b -> a

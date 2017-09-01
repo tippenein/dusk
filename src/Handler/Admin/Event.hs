@@ -2,6 +2,7 @@ module Handler.Admin.Event where
 
 import           Data.Conduit.Binary (sinkLbs)
 import           Control.Monad
+import Data.Aeson.Types
 import           Data.Conduit
 import           Data.Text               (Text)
 import           Data.Time
@@ -19,8 +20,8 @@ postAdminEventR :: Handler ()
 postAdminEventR = do
   ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
-  filename <- writeToServer (ef_fileInfo ef)
-  let e = eventFormToEvent ef userId filename
+  -- filename <- writeToServer (ef_fileInfo ef)
+  let e = eventFormToEvent ef userId "A"
   _ <- runDB $ insert e
   sendResponseStatus status201 ("CREATED" :: Text)
 
@@ -57,11 +58,20 @@ data EventForm
   , ef_description :: Maybe Text
   , ef_eventStartDatetime :: Maybe UTCTime
   , ef_eventEndDatetime :: Maybe UTCTime
-  , ef_fileInfo :: FileInfo
+  -- , ef_fileInfo :: FileInfo
   }
 
 instance FromJSON EventForm where
-  parseJSON = undefined
+  parseJSON (Object v) = do
+    -- mimage <- v .: "file_info"
+    EventForm
+      <$> v .:  "name"
+      <*> v .:? "description"
+      <*> v .:? "start_time"
+      <*> v .:? "end_time"
+--       -- <*> pure ""
+  parseJSON _ = fail "invalid json object"
+
 
 -- eventForm :: Form EventForm
 -- eventForm = renderBootstrap3 BootstrapBasicForm $
