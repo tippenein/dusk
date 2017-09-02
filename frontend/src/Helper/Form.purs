@@ -83,9 +83,10 @@ simpleDatetimeInput accessor field name action =
     ]
 
 
-formSubmit label action =
+formSubmit label action submitting =
   button [ HP.type_ ButtonSubmit
          , styleClass "btn btn-default"
+         , HP.prop (PropName "disabled") if submitting then "disabled" else ""
          , E.onClick (E.input_ action)
          ]
          [ text label ]

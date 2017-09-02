@@ -8,6 +8,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.JQuery as Q
 import Data.Generic (gShow)
 import Halogen.HTML.Properties (class_, src) as HP
+import Halogen.HTML.Properties.ARIA as HP
 import Prelude hiding (div)
 
 apiUrl :: String

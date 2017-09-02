@@ -151,11 +151,11 @@ render st = do
     [ div [ styleClass "row" ]
       [ div [ styleClass "col-lg-12" ]
         [ text (if st.loading then "posting..." else "") ]
-        , viewEventForm st.form
+        , viewEventForm st.form st.loading
         ]
     ]
 
-viewEventForm f = do
+viewEventForm f submitted= do
   form [ E.onSubmit (E.input PreventDefault) ]
     [ Form.simpleTextInput f.name "name" "Name" UpdateName
     , Form.simpleTextAreaInput f.description "description" "Description" UpdateDescription
@@ -163,5 +163,5 @@ viewEventForm f = do
       [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
     , div [ HP.id_ "end_datetime" ]
       [ Form.simpleTextInput f.endDatetime "end_datetime" "End" UpdateEnd ]
-    , Form.formSubmit "Submit" FormSubmit
+    , Form.formSubmit "Submit" FormSubmit submitted
     ]

@@ -28,9 +28,11 @@ derive instance ordSlot :: Ord Slot
 -- | The state of the application
 type State =
   { email :: FormValue String EmailAddress
+  , sending :: Boolean
   }
 initialState :: State
-initialState = { email: initFormValue Form.emailValidator "" }
+initialState = { sending: false
+               , email: initFormValue Form.emailValidator "" }
 
 -- | Inputs to the state machine
 data Input a
@@ -72,10 +74,5 @@ ui =
 render :: State -> H.ComponentHTML Input
 render state = form [ E.onSubmit (E.input PreventDefault) ]
   [ Form.simpleTextInput state.email "email" "Email" UpdateEmail
-  , div [ styleClass "row" ]
-    [ div [ styleClass "col-md-12" ]
-      [ button [ E.onClick (E.input_ FormSubmit)]
-        [ text "Submit" ]
-      ]
-    ]
+  , Form.formSubmit "Submit" FormSubmit state.sending
   ]
