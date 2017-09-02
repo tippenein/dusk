@@ -2,6 +2,7 @@
 /events            EventsR GET
 /events/#EventId   EventR GET
 /admin/events      AdminEventR GET POST
+/admin/events/logo AdminEventLogoR POST
 /admin/curators    AdminCuratorR POST
 /profile           ProfileR GET
 /curators          CuratorsR GET

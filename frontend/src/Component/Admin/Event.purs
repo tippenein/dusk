@@ -4,11 +4,12 @@ module Component.Admin.Event where
 import Component.Admin.Event.Form
 import Helper
 
-import App.Data.Event as Event
 import Control.Monad.Aff (Aff)
+import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
+import Data.Argonaut.Encode (encodeJson)
 import Data.DateTime (DateTime(..))
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
@@ -43,18 +44,22 @@ _form = lens _.form _ { form = _ }
 newtype EventRequest = EventRequest
   { name :: String
   , description :: String
-  , startDatetime :: DateTime
-  , endDatetime :: DateTime
+  , startDatetime :: String
+  , endDatetime :: String
+  , assetId :: Maybe String
   }
 
 instance encodeEventRequest :: EncodeJson EventRequest where
   encodeJson (EventRequest ef)
      = "name" := ef.name
     ~> "description" := ef.description
-    ~> "start_datetime" := (formatDateTime ef.startDatetime)
-    ~> "end_datetime" := (formatDateTime ef.endDatetime)
+    ~> "start_datetime" := ef.startDatetime
+    ~> "end_datetime" := ef.endDatetime
+    ~> "asset_id" := ef.assetId
     ~> jsonEmptyObject
 
+-- encodeEventRequest :: 
+-- encodeEventRequest = encodeJson
 
 initialEventForm =
   { name: initFormValue Form.nonBlank ""
@@ -98,16 +103,22 @@ ui =
   eval :: Input ~> H.ComponentDSL State Input Void Top
   eval (Noop next) = pure next
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
+
   eval (FormSubmit next) = do
     st <- H.get
-    -- er <- runExceptT $ do
-    --   name <- validateA st.form.name
-    --   description <- validateA st.form.description
-    --   startDatetime <- validateA st.form.startDatetime
-    --   endDatetime <- validateA st.form.endDatetime
-    --   pure $ EventRequest name description startDatetime endDatetime
-    -- st <- H.get
-    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeEventForm st.form)
+    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events/logo") (st.fileForm)
+    res <- runExceptT $ do
+      name <- validateA st.form.name
+      description <- validateA st.form.description
+      startDatetime <- validateA st.form.startDatetime
+      endDatetime <- validateA st.form.endDatetime
+      -- let er = { name = name, description = description, startDatetime = startDatetime, endDatetime = endDatetime, assetId = Nothing}
+      let er = EventRequest {name: name, description: description, startDatetime: startDatetime, endDatetime: endDatetime, assetId: Nothing}
+      H.modify (_ { loading = true })
+      response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson er)
+      H.modify (_ { loading = false })
+      H.liftAff $ log $ "derp" <> response.response
+      H.liftEff $ flashMessage Success "created new event"
     -- es <- pure $ Event.decodeCreateResponse response.response
     -- case es of
     --   Left e ->
@@ -151,6 +162,6 @@ viewEventForm f = do
     , div [ HP.id_ "start_datetime" ]
       [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
     , div [ HP.id_ "end_datetime" ]
-      [ Form.simpleTextInput (f.endDatetime) "end_datetime" "End" UpdateEnd ]
+      [ Form.simpleTextInput f.endDatetime "end_datetime" "End" UpdateEnd ]
     , Form.formSubmit "Submit" FormSubmit
     ]

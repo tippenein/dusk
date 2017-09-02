@@ -4,12 +4,12 @@ import Control.Monad.Logger (runStderrLoggingT)
 import Database.Persist.Postgresql (pgConnStr, withPostgresqlConn, runSqlConn)
 import Data.Time.Clock
 
-type EventTuple = (Text, Text, Text, UserId, Integer)
+type EventTuple = (Text, Text, UserId, Integer)
 
 insertEvent :: MonadIO m => EventTuple-> ReaderT SqlBackend m ()
-insertEvent (name, description, asset, uid, daysFromNow)= do
+insertEvent (name, description, uid, daysFromNow)= do
   (s,e) <- liftIO $ addDays daysFromNow
-  insert_ $ Event name (Just description) asset uid False (Just s) (Just e)
+  insert_ $ Event name (Just description) Nothing uid False (Just s) (Just e)
 
 insertUser :: MonadIO m => (Text, Role) -> ReaderT SqlBackend m ()
 insertUser (ident, role) = do
@@ -26,11 +26,11 @@ users = [
 
 events :: [EventTuple]
 events =
-  [ ("Zombie Shit Fest", mkDescript 2, "asdf", (toSqlKey 1), 11)
-  , ("ROBOT PARTY",      mkDescript 1, "asdf", (toSqlKey 1), 12)
-  , ("THE FEST 2017",    mkDescript 4, "asdf", (toSqlKey 2), 13)
-  , ("Yerp Terp",        mkDescript 5, "asdf", (toSqlKey 1), 14)
-  , ("Churrrrrrch",      mkDescript 3, "asdf", (toSqlKey 2), 15)
+  [ ("Zombie Shit Fest", mkDescript 2, (toSqlKey 1), 11)
+  , ("ROBOT PARTY",      mkDescript 1, (toSqlKey 1), 12)
+  , ("THE FEST 2017",    mkDescript 4, (toSqlKey 2), 13)
+  , ("Yerp Terp",        mkDescript 5, (toSqlKey 1), 14)
+  , ("Churrrrrrch",      mkDescript 3, (toSqlKey 2), 15)
   ]
   where
     mkDescript n = intercalate "\n\n" $ lorems n

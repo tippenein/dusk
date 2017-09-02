@@ -54,7 +54,7 @@ CuratorInvite sql=curator_invites
 Event sql=events
     name           Text
     description    Text Maybe
-    asset_id       Text
+    asset_id       Text Maybe
     owner_id       UserId
     all_day        Bool          default=False
     start_datetime UTCTime Maybe
@@ -63,14 +63,14 @@ Event sql=events
 |]
 
 formatDateTime :: UTCTime -> Text
-formatDateTime = pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%MZ"
+formatDateTime = pack . formatTime defaultTimeLocale "%Y-%m-%d %H:%M"
 
 instance ToJSON (Entity Event) where
   toJSON (Entity i Event{..}) = object [
       "id" .= i
     , "name" .= eventName
     , "description" .= eventDescription
-    , "asset_id" .= presign eventAsset_id
+    , "asset_id" .= if isJust eventAsset_id then (presign <$> eventAsset_id) else Nothing
     , "owner_id" .= toJSON eventOwner_id
     , "all_day" .= toJSON eventAll_day
     , "start_datetime" .= (formatDateTime <$> eventStart_datetime)

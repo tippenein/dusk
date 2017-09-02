@@ -1,12 +1,12 @@
 module Handler.Admin.Event where
 
-import           Data.Conduit.Binary (sinkLbs)
 import           Control.Monad
-import Data.Aeson.Types
-import           Data.Conduit
-import           Data.Text               (Text)
-import           Data.Time
 import           Control.Monad.Trans.AWS
+import           Data.Aeson.Types
+import           Data.Conduit
+import           Data.Conduit.Binary (sinkLbs)
+import           Data.Text (Text)
+import           Data.Time
 
 import           Import
 import qualified S3
@@ -16,21 +16,31 @@ getAdminEventR = do
   _ <- requireAuthId
   return $ object [ "status" .= String "ok" ]
 
+postAdminEventLogoR :: Handler ()
+postAdminEventLogoR = do
+  -- type RequestBodyContents = ([(Text, Text)], [(Text, FileInfo)])
+  req <- runRequestBody
+  let efs = map snd . snd $ req
+  case efs of
+    [] -> pure ()
+    (file:files) -> do
+      filename <- writeToServer file
+      sendResponseStatus status201 filename
+
 postAdminEventR :: Handler ()
 postAdminEventR = do
   ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
-  -- filename <- writeToServer (ef_fileInfo ef)
-  let e = eventFormToEvent ef userId "A"
+  let e = eventFormToEvent ef userId
   _ <- runDB $ insert e
   sendResponseStatus status201 ("CREATED" :: Text)
 
-eventFormToEvent :: EventForm -> UserId -> Text -> Event
-eventFormToEvent EventForm{..} uid filename = do
+eventFormToEvent :: EventForm -> UserId -> Event
+eventFormToEvent EventForm{..} uid = do
   Event {
       eventName = ef_name
     , eventDescription = ef_description
-    , eventAsset_id = filename
+    , eventAsset_id = ef_asset_id
     , eventOwner_id = uid
     , eventAll_day = False
     , eventStart_datetime = ef_eventStartDatetime
@@ -58,7 +68,7 @@ data EventForm
   , ef_description :: Maybe Text
   , ef_eventStartDatetime :: Maybe UTCTime
   , ef_eventEndDatetime :: Maybe UTCTime
-  -- , ef_fileInfo :: FileInfo
+  , ef_asset_id :: Maybe Text
   }
 
 instance FromJSON EventForm where
@@ -69,7 +79,7 @@ instance FromJSON EventForm where
       <*> v .:? "description"
       <*> v .:? "start_time"
       <*> v .:? "end_time"
---       -- <*> pure ""
+      <*> v .:? "asset_id"
   parseJSON _ = fail "invalid json object"
 
 
