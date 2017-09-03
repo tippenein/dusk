@@ -4,11 +4,13 @@ module Component.Admin.Event where
 import Component.Admin.Event.Form
 import Helper
 
+import App.Data.Event (EventCreateResponse(..), decodeEventCreateResponse)
 import Control.Monad.Aff (Aff)
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
+import Data.Argonaut.Core (fromString)
 import Data.Argonaut.Encode (encodeJson)
 import Data.DateTime (DateTime(..))
 import Data.DateTime as DateTime
@@ -18,6 +20,7 @@ import Data.Lens (Lens', lens, (%~))
 import Data.Lens.At (at)
 import Data.Lens.Record (prop)
 import Data.Symbol (SProxy(..))
+import FileUpload (fileUpload)
 import FormValidation (FormValue, formValueHTML, initFormValue, updateFormValue, validateA)
 import Halogen as H
 import Halogen.Datepicker.Component.DateTime as Time
@@ -30,6 +33,7 @@ import Halogen.HTML.Properties as HP
 import Helper.Form as Form
 import Helper.Format (formatDateTime, unformatDateTime)
 import Import hiding (div)
+import Message as Msg
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
 
@@ -43,9 +47,9 @@ _form = lens _.form _ { form = _ }
 
 newtype EventRequest = EventRequest
   { name :: String
-  , description :: String
-  , startDatetime :: String
-  , endDatetime :: String
+  , description :: Maybe String
+  , startDatetime :: Maybe String
+  , endDatetime :: Maybe String
   , assetId :: Maybe String
   }
 
@@ -58,9 +62,6 @@ instance encodeEventRequest :: EncodeJson EventRequest where
     ~> "asset_id" := ef.assetId
     ~> jsonEmptyObject
 
--- encodeEventRequest :: 
--- encodeEventRequest = encodeJson
-
 initialEventForm =
   { name: initFormValue Form.nonBlank ""
   , description: initFormValue Form.nonBlank ""
@@ -71,7 +72,6 @@ initialEventForm =
 type State =
   { loading :: Boolean
   , form :: EventForm
-  , error :: Maybe String
   }
 
 data Input a
@@ -98,7 +98,8 @@ ui =
   where
 
   initialState :: State
-  initialState = { loading: false, form: initialEventForm, error: Nothing }
+  initialState = { loading: false, form: initialEventForm }
+
 
   eval :: Input ~> H.ComponentDSL State Input Void Top
   eval (Noop next) = pure next
@@ -106,26 +107,31 @@ ui =
 
   eval (FormSubmit next) = do
     st <- H.get
-    -- response <- H.liftAff $ AX.post (apiUrl <> "/admin/events/logo") (st.fileForm)
     res <- runExceptT $ do
       name <- validateA st.form.name
       description <- validateA st.form.description
       startDatetime <- validateA st.form.startDatetime
       endDatetime <- validateA st.form.endDatetime
-      -- let er = { name = name, description = description, startDatetime = startDatetime, endDatetime = endDatetime, assetId = Nothing}
-      let er = EventRequest {name: name, description: description, startDatetime: startDatetime, endDatetime: endDatetime, assetId: Nothing}
-      H.modify (_ { loading = true })
-      response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson er)
-      H.modify (_ { loading = false })
-      H.liftAff $ log $ "derp" <> response.response
-      H.liftEff $ flashMessage Success "created new event"
-    -- es <- pure $ Event.decodeCreateResponse response.response
-    -- case es of
-    --   Left e ->
-    --     H.modify (_ { error = Just e, loading = false, form = Nothing})
-    --   Right (Event.CreateResponse {event: res}) ->
-    --     H.modify (_ { error = Nothing, loading = false, form = res})
-    -- name <- runExceptT $ validateA state.form.name
+      pure $ EventRequest {
+          name: name
+        , description: stringToMaybe description
+        , startDatetime: stringToMaybe startDatetime
+        , endDatetime: stringToMaybe endDatetime
+        , assetId: Nothing }
+    case res of
+      Left err ->
+        H.liftAff $ log $ "invalid " <> err
+      Right valid_req -> do
+        H.modify (_ { loading = true })
+        response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson valid_req)
+        H.modify (_ { loading = false })
+        createResponse <- pure $ decodeEventCreateResponse response.response
+        case createResponse of
+          Left e -> H.liftAff $ log ("create response error: " <> e)
+          Right (EventCreateResponse cr ) -> do
+            -- H.liftAff $ log ("id: " <> show cr.id)
+            H.liftEff $ flashMessage Success "Created new event"
+            H.liftEff $ fileUpload "logo_asset" (mkLogoUrl cr.id)
     pure next
   eval (PostRender next) = do
     H.liftEff $ Form.flatpicker "#ff-start_datetime"
@@ -145,6 +151,9 @@ ui =
     pure next
   eval (SelectEvent _ next) = pure next
 
+mkLogoUrl :: Int -> String
+mkLogoUrl i =  apiUrl <> "/admin/events/" <> (show i) <> "/logo"
+
 render :: State -> H.ComponentHTML Input
 render st = do
   div [ styleClass "container page" ]
@@ -155,13 +164,22 @@ render st = do
         ]
     ]
 
-viewEventForm f submitted= do
-  form [ E.onSubmit (E.input PreventDefault) ]
-    [ Form.simpleTextInput f.name "name" "Name" UpdateName
-    , Form.simpleTextAreaInput f.description "description" "Description" UpdateDescription
-    , div [ HP.id_ "start_datetime" ]
-      [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
-    , div [ HP.id_ "end_datetime" ]
-      [ Form.simpleTextInput f.endDatetime "end_datetime" "End" UpdateEnd ]
-    , Form.formSubmit "Submit" FormSubmit submitted
+stringToMaybe :: String -> Maybe String
+stringToMaybe "" = Nothing
+stringToMaybe a = Just a
+
+viewEventForm f submitted =
+  div [ styleClass "admin--form centered"] [
+      h3 [] [ text Msg.eventFormHeader ]
+    , p_ [ text Msg.eventFormHelp ]
+    , form [ E.onSubmit (E.input PreventDefault) ]
+      [ Form.simpleTextInput f.name "name" "Name" UpdateName
+      , Form.simpleTextAreaInput f.description "description" "Description" UpdateDescription
+      , div [ HP.id_ "start_datetime" ]
+        [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
+      , div [ HP.id_ "end_datetime" ]
+        [ Form.simpleTextInput f.endDatetime "end_datetime" "End" UpdateEnd ]
+      , Form.simpleFileInput "logo_asset" "Logo"
+      , Form.formSubmit "Submit" FormSubmit submitted
+      ]
     ]

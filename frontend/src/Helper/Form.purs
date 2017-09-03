@@ -2,13 +2,14 @@ module Helper.Form where
 
 import Control.Monad.Eff (Eff)
 import DOM (DOM)
+import DOM.File.Types (File)
 import Data.DateTime (DateTime(..))
 import Data.String (length)
 import FormValidation (Validator, formErrorHTML, formValueDateTimeHTML, formValueHTML, validator)
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Elements as Elements
 import Halogen.HTML.Events as E
-import Halogen.HTML.Properties (ButtonType(..))
+import Halogen.HTML.Properties (ButtonType(..), InputType(..))
 import Halogen.HTML.Properties as HP
 import Helper (styleClass)
 import Helper.Flatpicker as Flatpicker
@@ -18,6 +19,7 @@ import Text.Email.Validate (EmailAddress(..), emailAddress)
 import Top.Monad (TopEffects)
 
 
+-- | ensures the datetime is parseable but leaves it as string for the form
 validDateTime :: Validator String String
 validDateTime = validator go
   where
@@ -82,6 +84,18 @@ simpleDatetimeInput accessor field name action =
         ]
     ]
 
+
+simpleFileInput field name =
+  div [ styleClass "row" ]
+    [ div [ styleClass "form-group" ]
+      [ label [ HP.for field ] [ text name ] ]
+      , Elements.input [
+           styleClass "form-control"
+         , HP.type_ InputFile
+         , HP.name field
+         , HP.id_ field
+        ]
+    ]
 
 formSubmit label action submitting =
   button [ HP.type_ ButtonSubmit

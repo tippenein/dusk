@@ -1,29 +1,16 @@
 module Component.Admin.Main where
 
 
-import Helper
-
 import Component.Admin.Curator as Curator
 import Component.Admin.Event as Event
-import Control.Monad.Aff (Aff)
-import Control.Monad.Aff.Console (CONSOLE)
-import Control.Monad.Eff.Exception (EXCEPTION)
-import Data.DateTime as DateTime
 import Data.Either.Nested (Either2)
-import Data.Eq (class Eq)
-import Data.Formatter.DateTime as FD
 import Data.Functor.Coproduct.Nested (Coproduct2)
-import Data.Generic (gEq)
 import Halogen as H
-import Halogen.Component.ChildPath (ChildPath(..), cp1, cp2)
+import Halogen.Component.ChildPath (ChildPath, cp1, cp2)
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (input_, onClick)
-import Halogen.HTML.Events as HE
-import Halogen.HTML.Properties as HP
-import Halogen.HTML.Properties.ARIA as HP
 import Import hiding (div)
-import Network.HTTP.Affjax as AX
-
+import Helper
 
 data Slot = Slot
 
@@ -79,15 +66,15 @@ ui =
       pure next
 
   render st =
-    div [ styleClass "container admin-page" ]
-      [ div [ styleClass "row" ]
-        [ ul [ styleClass "nav nav-tabs" ]
-          [ li [ styleClassIf (st.activeTab == Invite) "active" ]
-            [ a [ onClick (input_ ShowInvite) ] [ text "Invite" ] ]
-          , li [ styleClassIf (st.activeTab == Announce) "active" ]
-            [ a [ onClick (input_ ShowAnnounce) ] [ text "Announce" ] ]
-          ]
-        , div [ styleClassIf (st.activeTab /= Announce) "hidden" ]
+    div [ styleClass "container admin--page" ]
+      [ ul [ styleClass "nav nav-tabs" ]
+        [ li [ styleClassIf (st.activeTab == Announce) "active" ]
+          [ a [ onClick (input_ ShowAnnounce) ] [ text "Announce" ] ]
+        , li [ styleClassIf (st.activeTab == Invite) "active" ]
+          [ a [ onClick (input_ ShowInvite) ] [ text "Invite" ] ]
+        ]
+      , div [ styleClass "col-md-4 col-md-offset-4 centered" ]
+        [ div [ styleClassIf (st.activeTab /= Announce) "hidden" ]
           [ slot' pathToEvents Event.Slot Event.ui unit absurd ]
         , div [ styleClassIf (st.activeTab /= Invite) "hidden" ]
           [ slot' pathToCurators Curator.Slot Curator.ui unit absurd ]

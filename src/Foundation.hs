@@ -65,7 +65,7 @@ instance Yesod App where
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
     isAuthorized AdminEventR _ = checkAuth Role.canCreateEvent
-    isAuthorized AdminEventLogoR _ = checkAuth Role.canCreateEvent
+    isAuthorized (AdminEventLogoR _) _ = checkAuth Role.canCreateEvent
     isAuthorized AdminCuratorR _ = checkAuth Role.canInvite
 
     addStaticContent ext mime content = do

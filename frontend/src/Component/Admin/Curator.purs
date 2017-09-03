@@ -72,7 +72,12 @@ ui =
         pure next
 
 render :: State -> H.ComponentHTML Input
-render state = form [ E.onSubmit (E.input PreventDefault) ]
-  [ Form.simpleTextInput state.email "email" "Email" UpdateEmail
-  , Form.formSubmit "Submit" FormSubmit state.sending
+render state =
+  div [ styleClass "admin--form centered"] [
+      h3 [] [ text "Invite" ]
+    , p_ [ text "Send an email inviting your coolest curator to the platform" ]
+    , form [ E.onSubmit (E.input PreventDefault) ]
+      [ Form.simpleTextInput state.email "email" "Email" UpdateEmail
+      , Form.formSubmit "Submit" FormSubmit state.sending
+    ]
   ]

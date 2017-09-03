@@ -1,37 +1,64 @@
 module App.Data.Event where
 
-import Data.DateTime (DateTime)
-import Data.DateTime as DateTime
-import Data.Formatter.DateTime as FD
-import Helper.Format
 import Import
 
-import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, jsonEmptyObject, (.?), (:=), (~>))
+import Data.Argonaut (class DecodeJson, class EncodeJson, Json, decodeJson, encodeJson, jsonEmptyObject, toObject, (.?), (:=), (~>))
+import Data.Argonaut.Core (isNull)
+import Data.Formatter.DateTime as FD
+import Data.StrMap (StrMap)
+import Data.StrMap as SM
+
 
 data CreateResponse e a = Failure e | Success (Tuple Int a)
+
+infix 7 getFieldOptionalNull as .??
+
+-- | Either it's there and null, or not there at all, either way it's Nothing
+getFieldOptionalNull :: forall a. (DecodeJson a) => StrMap Json -> String -> Either String (Maybe a)
+getFieldOptionalNull strMap s =
+  case SM.lookup s strMap of
+    Nothing -> pure Nothing
+    Just v -> checkNull v
+  where
+    checkNull j
+      | isNull j = pure Nothing
+      | otherwise = decodeJson j
+
+newtype EventCreateResponse = EventCreateResponse
+  { id :: Int
+  }
+
+instance decodeJsonEventCreateResponse :: DecodeJson EventCreateResponse where
+  decodeJson json = do
+    obj <- decodeJson json
+    id <- obj .? "id"
+    pure $ EventCreateResponse { id }
 
 newtype Event = Event
   { id :: Int
   , name :: String
-  , description :: String
-  , asset_id    :: String
+  , description :: Maybe String
+  , asset_id    :: Maybe String
   , owner_id    :: Int
   , all_day     :: Boolean
-  , start_datetime :: Maybe DateTime
-  , end_datetime   :: Maybe DateTime
+  , start_datetime :: Maybe String
+  , end_datetime   :: Maybe String
   }
+
+derive instance eqEvent :: Eq Event
+derive instance genericEvent :: Generic Event _
 
 instance decodeJsonEvent :: DecodeJson Event where
   decodeJson json = do
     obj <- decodeJson json
     id <- obj .? "id"
     name <- obj .? "name"
-    description <- obj .? "description"
-    asset_id <- obj .? "asset_id"
+    description <- obj .?? "description"
+    asset_id <- obj .?? "asset_id"
     owner_id <- obj .? "owner_id"
     all_day <- obj .? "all_day"
-    start_datetime <- unformatDateTime <$> (obj .? "start_datetime")
-    end_datetime <- unformatDateTime <$> (obj .? "end_datetime")
+    start_datetime <- obj .?? "start_datetime"
+    end_datetime <- obj .?? "end_datetime"
     pure $ Event {
         id
       , name
@@ -43,7 +70,7 @@ instance decodeJsonEvent :: DecodeJson Event where
       , end_datetime
       }
 
-instance encodeEvent :: EncodeJson Event where
+instance encodeJsonEvent :: EncodeJson Event where
   encodeJson (Event event)
      = "id" := event.id
     ~> "name" := event.name
@@ -51,8 +78,8 @@ instance encodeEvent :: EncodeJson Event where
     ~> "asset_id" := event.asset_id
     ~> "owner_id" := event.owner_id
     ~> "all_day" := event.all_day
-    ~> "start_datetime" := (formatDateTime <$> event.start_datetime)
-    ~> "end_datetime" := (formatDateTime <$> event.end_datetime)
+    ~> "start_datetime" := event.start_datetime
+    ~> "end_datetime" := event.end_datetime
     ~> jsonEmptyObject
 
 
@@ -69,8 +96,14 @@ instance encodeEvents :: EncodeJson Events where
      = "events" := events.events
     ~> jsonEmptyObject
 
+encodeEvent :: Event -> Json
+encodeEvent = encodeJson
+
 decodeEvent :: Json -> Either String Event
 decodeEvent = decodeJson
 
 decodeEvents :: Json -> Either String Events
 decodeEvents = decodeJson
+
+decodeEventCreateResponse :: Json -> Either String EventCreateResponse
+decodeEventCreateResponse = decodeJson

@@ -9,11 +9,11 @@ import Halogen as H
 import Halogen.HTML (HTML, a, div, div_, h2_, h3, h3_, img, p_, text)
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-import Network.HTTP.Affjax as AX
-
-import Top.Monad (Top)
-import Helper (apiUrl, styleClass)
+import Helper (apiUrl, placeholder, styleClass)
+import Helper.Format (unformatDateTime)
 import Import hiding (div)
+import Network.HTTP.Affjax as AX
+import Top.Monad (Top)
 
 
 data Slot = Slot
@@ -81,16 +81,14 @@ render st =
     viewEvents events =
       div [ styleClass "event-list" ] (map viewEvent events)
 
-
-
 viewEvent :: forall t. Event -> HTML t (Input Unit)
 viewEvent (Event event) = eventRow timeContent b c
   where
-  timeContent = [ p_ [ text (fromMaybe "TBA" (formatDateTime =<< event.start_datetime))] ]
+  timeContent = [ p_ [ text (fromMaybe "TBA" (formatDateTime =<< (unformatDateTime =<< event.start_datetime)))] ]
   b = [ a [ styleClass "event-image event-default"
           , HP.href "javascript:void(0)"
           , HE.onClick (HE.input_ (SelectEvent event.id)) ]
-        [ img [ HP.src event.asset_id, HP.height 250, HP.width 250 ]  ]
+        [ maybeImageSrc event.asset_id 250 250 ]
       ]
   c = [ h2_ [ text event.name ], p_ [ truncated event.description ] ]
 
@@ -104,10 +102,14 @@ viewEvent (Event event) = eventRow timeContent b c
         [ h3 [ styleClass "event-info" ] rightCol ]
       ]
 
-truncated s =
-  div_ [ text s', ellipsisLink "#" ]
+maybeImageSrc (Just s) h w = img [ HP.src s, HP.height h, HP.width w ]
+maybeImageSrc Nothing h w = placeholder h w
+
+truncated (Just s) =
+  div_ [ text s', ellipsisLink "#events" ]
   where s' = if Str.length s > 140
              then (Str.take 140 s)
              else s
+truncated Nothing = div_ [ text "We don't know anything about this event yet" ]
 
 ellipsisLink e = a [ HP.href e ] [ text "..."]

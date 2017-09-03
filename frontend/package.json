@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "bower install",
     "test": "pulp test",
-    "build": "pulp browserify --optimise --to output/bundle.js"
+    "build": "pulp browserify --optimise --to output/bundle.js",
+    "build-dev": "pulp browserify --to output/bundle.js"
   },
   "repository": {
     "type": "git",

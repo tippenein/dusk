@@ -4,6 +4,7 @@ import           Control.Monad
 import           Control.Monad.Trans.AWS
 import           Data.Aeson.Types
 import           Data.Conduit
+import           Database.Persist.Sql
 import           Data.Conduit.Binary (sinkLbs)
 import           Data.Text (Text)
 import           Data.Time
@@ -16,8 +17,8 @@ getAdminEventR = do
   _ <- requireAuthId
   return $ object [ "status" .= String "ok" ]
 
-postAdminEventLogoR :: Handler ()
-postAdminEventLogoR = do
+postAdminEventLogoR :: Key Event -> Handler ()
+postAdminEventLogoR event_id = do
   -- type RequestBodyContents = ([(Text, Text)], [(Text, FileInfo)])
   req <- runRequestBody
   let efs = map snd . snd $ req
@@ -25,15 +26,16 @@ postAdminEventLogoR = do
     [] -> pure ()
     (file:files) -> do
       filename <- writeToServer file
-      sendResponseStatus status201 filename
+      runDB $ updateGet event_id [EventAsset_id =. (Just filename)]
+      sendResponseStatus status201 ("CREATED" :: Text)
 
-postAdminEventR :: Handler ()
+postAdminEventR :: Handler Value
 postAdminEventR = do
   ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
   let e = eventFormToEvent ef userId
-  _ <- runDB $ insert e
-  sendResponseStatus status201 ("CREATED" :: Text)
+  i <- runDB $ insert e
+  return $ toJSON $ EventCreateResponse (fromSqlKey i)
 
 eventFormToEvent :: EventForm -> UserId -> Event
 eventFormToEvent EventForm{..} uid = do
@@ -70,6 +72,10 @@ data EventForm
   , ef_eventEndDatetime :: Maybe UTCTime
   , ef_asset_id :: Maybe Text
   }
+
+data EventCreateResponse = EventCreateResponse { ecr_id :: Int64}
+instance ToJSON EventCreateResponse where
+  toJSON (EventCreateResponse i) = object [ "id" .= i ]
 
 instance FromJSON EventForm where
   parseJSON (Object v) = do

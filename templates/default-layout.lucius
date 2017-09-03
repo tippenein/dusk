@@ -1,5 +1,6 @@
 @purple: #9b02ff;
 @dark: rgb(27, 28, 29);
+@red: #a94442;
 html {
     font-family: sans-serif;
     line-height: 1.15;
@@ -14,6 +15,10 @@ body {
     font-size: 14px;
     font-weight: 400;
     color: #182026;
+}
+
+.form-error {
+    color: #{red};
 }
 .alert {
     color: #{dark};

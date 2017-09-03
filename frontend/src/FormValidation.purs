@@ -31,11 +31,10 @@ data FormValueG e a b = FormValueG FormValueState (ValidatorG e a b) a
 type FormValue a b = FormValueG String a b
 
 -- | A `FormValue` where `a` and `b` are the same thing.  This is similar to
--- the difference between the `Lens` and `LensP`
--- types.
+-- the difference between the `Lens` and `LensP` types.
 type FormValue' a = FormValue a a
 
--- | A newtype wrapper around a function that takes an `a` and returns and
+-- | A newtype wrapper around a function that takes an `a` and returns an
 -- `Either e b`.  This is the validation function.
 --
 -- This is similar to a `PrismP a b`.
@@ -114,15 +113,16 @@ validateA = ExceptT <<< pure <<< validate
 --         ]
 -- ```
 
+formValueHTML = P.value <<< rawFormValue
+  where
+    rawFormValue :: forall e a b . FormValueG e a b -> a
+    rawFormValue (FormValueG _ _ a) = a
+
 formValueDateTimeHTML = P.value <<< fromMaybe "" <<< formatDateTime <<< rawFormValue
   where
     rawFormValue :: forall e a b . FormValueG e a b -> a
     rawFormValue (FormValueG _ _ a) = a
 
-formValueHTML = P.value <<< rawFormValue
-  where
-    rawFormValue :: forall e a b . FormValueG e a b -> a
-    rawFormValue (FormValueG _ _ a) = a
 
 
 -- | Similarly to `formValueHTML`, it takes a `FormValue` and turns it into text.
