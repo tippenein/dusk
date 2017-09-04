@@ -1,14 +1,11 @@
+
 module TestImport
     ( module TestImport
     , module X
     ) where
 
 import Application           (makeFoundation, makeLogWare)
-#if MIN_VERSION_classy_prelude(1, 0, 0)
 import ClassyPrelude         as X hiding (delete, deleteBy, Handler)
-#else
-import ClassyPrelude         as X hiding (delete, deleteBy)
-#endif
 import Database.Persist      as X hiding (get)
 import Database.Persist.Sql  (SqlPersistM, SqlBackend, runSqlPersistMPool, rawExecute, rawSql, unSingle, connEscapeName)
 import Foundation            as X
@@ -77,5 +74,5 @@ createUser :: Text -> YesodExample App (Entity User)
 createUser ident = do
     runDB $ insertEntity User
         { userIdent = ident
-        , userPassword = Nothing
+        , userName = Nothing
         }

@@ -7,7 +7,7 @@ base_db_name = rsvp_site
 
 FRONTEND_DIR = frontend
 
-all: check frontend publish
+all: check frontend deploy
 
 frontend:
 	$(MAKE) -C $(FRONTEND_DIR)
