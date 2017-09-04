@@ -1,9 +1,6 @@
 module Helper.Form where
 
 import Control.Monad.Eff (Eff)
-import DOM (DOM)
-import DOM.File.Types (File)
-import Data.DateTime (DateTime(..))
 import Data.String (length)
 import FormValidation (Validator, formErrorHTML, formValueDateTimeHTML, formValueHTML, validator)
 import Halogen.HTML hiding (map)
@@ -11,22 +8,44 @@ import Halogen.HTML.Elements as Elements
 import Halogen.HTML.Events as E
 import Halogen.HTML.Properties (ButtonType(..), InputType(..))
 import Halogen.HTML.Properties as HP
-import Helper (styleClass)
+import Helper (stringToMaybe, styleClass)
 import Helper.Flatpicker as Flatpicker
 import Helper.Format (unformatDateTime)
 import Import hiding (div)
-import Text.Email.Validate (EmailAddress(..), emailAddress)
+import Text.Email.Validate (EmailAddress, emailAddress)
 import Top.Monad (TopEffects)
 
 
+-- | same as validDateTime but doesn't fail on empty
+validDateTimeOpt :: Validator String String
+validDateTimeOpt = validator go
+  where
+    go :: String -> Either String String
+    go "" = Right ""
+    go dt = case unformatDateTime dt of
+      Nothing -> Left "invalid datetime"
+      Just e -> Right dt
+
 -- | ensures the datetime is parseable but leaves it as string for the form
-validDateTime :: Validator String String
-validDateTime = validator go
+validDateTimeReq :: Validator String String
+validDateTimeReq = validator go
   where
     go :: String -> Either String String
     go dt = case unformatDateTime dt of
       Nothing -> Left "invalid datetime"
       Just e -> Right dt
+
+fieldToMaybe :: Validator String (Maybe String)
+fieldToMaybe = validator go
+  where
+    go :: String -> Either String (Maybe String)
+    go a = pure $ stringToMaybe a
+
+
+allValid :: Validator String String
+allValid = validator go
+  where
+    go a = pure a
 
 nonBlank :: Validator String String
 nonBlank = validator go

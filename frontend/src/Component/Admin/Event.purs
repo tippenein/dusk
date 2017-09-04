@@ -64,9 +64,9 @@ instance encodeEventRequest :: EncodeJson EventRequest where
 
 initialEventForm =
   { name: initFormValue Form.nonBlank ""
-  , description: initFormValue Form.nonBlank ""
-  , startDatetime: initFormValue Form.validDateTime ""
-  , endDatetime: initFormValue Form.validDateTime ""
+  , description: initFormValue Form.allValid ""
+  , startDatetime: initFormValue Form.validDateTimeOpt ""
+  , endDatetime: initFormValue Form.validDateTimeOpt ""
   }
 
 type State =
@@ -163,10 +163,6 @@ render st = do
         , viewEventForm st.form st.loading
         ]
     ]
-
-stringToMaybe :: String -> Maybe String
-stringToMaybe "" = Nothing
-stringToMaybe a = Just a
 
 viewEventForm f submitted =
   div [ styleClass "admin--form centered"] [

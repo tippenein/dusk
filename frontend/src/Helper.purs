@@ -1,15 +1,15 @@
 module Helper where
 
-import Halogen.HTML (ClassName(..), img)
-import Timer (timeout)
-import Top.Monad (TopEffects)
-
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.JQuery as Q
 import Data.Generic (gShow)
+import Halogen.HTML (ClassName(..), img)
 import Halogen.HTML.Properties (class_, src) as HP
 import Halogen.HTML.Properties.ARIA as HP
+import Import (Maybe(..))
 import Prelude hiding (div)
+import Timer (timeout)
+import Top.Monad (TopEffects)
 
 apiUrl :: String
 apiUrl = "http://localhost:3000"
@@ -46,3 +46,8 @@ msgToString Success = "success"
 msgToString Info    = "info"
 msgToString Warning = "warning"
 msgToString Failure = "danger"
+
+
+stringToMaybe :: String -> Maybe String
+stringToMaybe "" = Nothing
+stringToMaybe a = Just a
