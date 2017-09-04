@@ -1,9 +1,13 @@
-all: build_dev copy
+all: prod build copy
 
-release: build copy
+dev: build_dev copy
 
 build:
 	npm run build
+
+prod:
+	sed -i 's/http:\/\/localhost:3000/http:\/\/dusk.host/' src/Helper.purs
+
 build_dev:
 	npm run build-dev
 

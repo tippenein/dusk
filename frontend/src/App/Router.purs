@@ -232,7 +232,7 @@ navbar st =
       ]
     ]
   where
-    checkActiveLogo st r = styleClassIf (isActive st r) "logo"
+    checkActiveLogo st r = styleClassIf (isActive st r) "active-logo logo"
     checkActive st r = if isActive st r then styleClass "active" else styleClass ""
     isActive st r = st.currentPage == r
 

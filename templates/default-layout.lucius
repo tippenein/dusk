@@ -49,6 +49,11 @@ input:required {
     border-bottom: 2px solid #{purple};
 }
 
+.navbar-default .navbar-nav > .active-logo > a {
+    background-color: transparent;
+    border: 2px solid #{purple};
+}
+
 .logo {
     color: #{purple};
 }
