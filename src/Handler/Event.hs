@@ -12,6 +12,6 @@ getEventR event_id = do
 
 getEventsR :: Handler Value
 getEventsR = do
-  events <- runDB $ selectList [] [Asc EventStart_datetime]
+  now <- liftIO getCurrentTime
+  events <- runDB $ selectList [ EventStart_datetime >=. Just now ] [Asc EventStart_datetime]
   return $ object ["events" .= events]
-
