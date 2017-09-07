@@ -1,23 +1,22 @@
 module Component.Admin.Event.Form where
 
 import Data.Lens
-import Data.DateTime (DateTime)
-import FormValidation (FormValue')
 
 type EventForm =
-  { name :: FormValue' String
-  , description :: FormValue' String
-  , startDatetime :: FormValue' String
-  , endDatetime :: FormValue' String
+  { name :: String
+  , description :: String
+  , startDatetime :: String
+  , endDatetime :: String
   }
-_name :: Lens' EventForm (FormValue' String)
+
+_name :: Lens' EventForm String
 _name = lens _.name _ { name = _ }
 
-_description :: Lens' EventForm (FormValue' String)
+_description :: Lens' EventForm String
 _description = lens _.description _ { description = _ }
 
-_startDatetime :: Lens' EventForm (FormValue' String)
+_startDatetime :: Lens' EventForm String
 _startDatetime = lens _.startDatetime _ { startDatetime = _ }
 
-_endDatetime :: Lens' EventForm (FormValue' String)
+_endDatetime :: Lens' EventForm String
 _endDatetime = lens _.endDatetime _ { endDatetime = _ }

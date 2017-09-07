@@ -1,0 +1,32 @@
+{
+    "name": "dusk",
+    "set": "psc-0.11.6",
+    "source": "https://github.com/purescript/package-sets.git",
+    "depends": [
+        "halogen",
+        "prelude",
+        "prelude",
+        "console",
+        "pux",
+        "aff",
+        "smolder",
+        "affjax",
+        "argonaut",
+        "arrays",
+        "dom",
+        "echarts",
+        "foldable-traversable",
+        "aff-coroutines",
+        "parallel",
+        "halogen-css",
+        "css",
+        "dom-classy",
+        "datetime",
+        "now",
+        "routing",
+        "jquery",
+        "email-validate",
+        "datetime-formatter",
+        "profunctor-lenses"
+    ]
+}

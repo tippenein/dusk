@@ -30,12 +30,13 @@ import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (onClick)
 import Halogen.HTML.Events as E
 import Halogen.HTML.Properties as HP
-import Helper.Form as Form
+import WForm as Form
 import Helper.Format (formatDateTime, unformatDateTime)
 import Import hiding (div)
 import Message as Msg
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
+import Helper.Form (flatpicker)
 
 data Slot = Slot
 
@@ -63,10 +64,10 @@ instance encodeEventRequest :: EncodeJson EventRequest where
     ~> jsonEmptyObject
 
 initialEventForm =
-  { name: initFormValue Form.nonBlank ""
-  , description: initFormValue Form.allValid ""
-  , startDatetime: initFormValue Form.validDateTimeOpt ""
-  , endDatetime: initFormValue Form.validDateTimeOpt ""
+  { name: ""
+  , description: ""
+  , startDatetime: ""
+  , endDatetime: ""
   }
 
 type State =
@@ -77,11 +78,7 @@ type State =
 data Input a
   = Noop a
   | PreventDefault DOM.Event a
-  | FormSubmit a
-  | UpdateName String a
-  | UpdateDescription String a
-  | UpdateStart String a
-  | UpdateEnd String a
+  | NewEvent (Form.FormInput EventForm) a
   | SelectEvent Int a
   | PostRender a
 
@@ -104,50 +101,31 @@ ui =
   eval :: Input ~> H.ComponentDSL State Input Void Top
   eval (Noop next) = pure next
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
+  eval (NewEvent ev next) = handleNewEvent ev $> next
+    where
+      handleNewEvent Form.Submit = do
+        st <- H.get
+        H.liftAff $ log $ "blerble"
+        -- case res of
+        --   Left err ->
+        --     H.liftAff $ log $ "invalid " <> err
+        --   Right valid_req -> do
+        --     H.modify (_ { loading = true })
+        --     response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson valid_req)
+        --     H.modify (_ { loading = false })
+        --     createResponse <- pure $ decodeEventCreateResponse response.response
+        --     case createResponse of
+        --       Left e -> H.liftAff $ log ("create response error: " <> e)
+        --       Right (EventCreateResponse cr ) -> do
+        --         -- H.liftAff $ log ("id: " <> show cr.id)
+        --         H.liftEff $ flashMessage Success "Created new event"
+        --         H.liftEff $ fileUpload "logo_asset" (mkLogoUrl cr.id)
+      handleNewEvent (Form.Edit f) =
+        H.modify (_form %~ f)
 
-  eval (FormSubmit next) = do
-    st <- H.get
-    res <- runExceptT $ do
-      name <- validateA st.form.name
-      description <- validateA st.form.description
-      startDatetime <- validateA st.form.startDatetime
-      endDatetime <- validateA st.form.endDatetime
-      pure $ EventRequest {
-          name: name
-        , description: stringToMaybe description
-        , startDatetime: stringToMaybe startDatetime
-        , endDatetime: stringToMaybe endDatetime
-        , assetId: Nothing }
-    case res of
-      Left err ->
-        H.liftAff $ log $ "invalid " <> err
-      Right valid_req -> do
-        H.modify (_ { loading = true })
-        response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson valid_req)
-        H.modify (_ { loading = false })
-        createResponse <- pure $ decodeEventCreateResponse response.response
-        case createResponse of
-          Left e -> H.liftAff $ log ("create response error: " <> e)
-          Right (EventCreateResponse cr ) -> do
-            -- H.liftAff $ log ("id: " <> show cr.id)
-            H.liftEff $ flashMessage Success "Created new event"
-            H.liftEff $ fileUpload "logo_asset" (mkLogoUrl cr.id)
-    pure next
   eval (PostRender next) = do
-    H.liftEff $ Form.flatpicker "#ff-start_datetime"
-    H.liftEff $ Form.flatpicker "#ff-end_datetime"
-    pure next
-  eval (UpdateName name next) = do
-    H.modify $ ((_form <<< _name) %~ (\f -> updateFormValue f name))
-    pure next
-  eval (UpdateDescription description next) = do
-    H.modify $ ((_form <<< _description) %~ (\f -> updateFormValue f description))
-    pure next
-  eval (UpdateStart start_datetime next) = do
-    H.modify $ ((_form <<< _startDatetime) %~ (\f -> updateFormValue f start_datetime))
-    pure next
-  eval (UpdateEnd end_datetime next) = do
-    H.modify $ ((_form <<< _endDatetime) %~ (\f -> updateFormValue f end_datetime))
+    H.liftEff $ flatpicker "#start_datetime"
+    H.liftEff $ flatpicker "#end_datetime"
     pure next
   eval (SelectEvent _ next) = pure next
 
@@ -168,14 +146,14 @@ viewEventForm f submitted =
   div [ styleClass "admin--form centered"] [
       h3 [] [ text Msg.eventFormHeader ]
     , p_ [ text Msg.eventFormHelp ]
-    , form [ E.onSubmit (E.input PreventDefault) ]
-      [ Form.simpleTextInput f.name "name" "Name" UpdateName
-      , Form.simpleTextAreaInput f.description "description" "Description" UpdateDescription
-      , div [ HP.id_ "start_datetime" ]
-        [ Form.simpleTextInput f.startDatetime "start_datetime" "Start" UpdateStart ]
-      , div [ HP.id_ "end_datetime" ]
-        [ Form.simpleTextInput f.endDatetime "end_datetime" "End" UpdateEnd ]
-      , Form.simpleFileInput "logo_asset" "Logo"
-      , Form.formSubmit "Submit" FormSubmit submitted
-      ]
-    ]
+    , div_ $
+      Form.renderForm f NewEvent do
+        _ <- Form.textField "name" "Name" (_name) noopValidation
+        _ <- Form.textField "description" "Description" (_description) noopValidation
+        _ <- Form.textField "start_datetime" "Start" _startDatetime  noopValidation
+        Form.textField "end_datetime" "End" _endDatetime noopValidation
+      -- , Form.fileField "logo_asset" "Logo" f.assetId (const Noop)
+        -- Form.submitButton_ Form.Submit
+  ]
+
+noopValidation s = Right s

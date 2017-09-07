@@ -41,7 +41,7 @@ ui =
           [ div [ styleClass "row" ]
             [ div [ styleClass "col-lg-12" ]
               [ text (if st.loading then "loading..." else "")
-              , a [ HP.href authGoogleUrl ] [ text "Sign in with Google"]
+              , a [ styleClass "loginBtn loginBtn--google", HP.href authGoogleUrl ] [ text "Sign in with Google"]
               ]
             ]
           ]

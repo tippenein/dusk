@@ -28,3 +28,6 @@ frontend/output
 frontend/*.log
 frontend/.psci_modules
 frontend/.psc-ide*
+**/GTAGS
+**/TAGS
+frontend/.psc-package
