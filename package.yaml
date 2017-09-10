@@ -33,6 +33,7 @@ library:
   - Foundation
   - Helper.Util
   - Helper.Validation
+  - Helper.LoadEnv
   - Helper.Presentation
   - Api.V3.MailGun
   - Import
@@ -87,6 +88,7 @@ library:
   - safe
   - errors
   - unordered-containers
+  - parsec
   - esqueleto
   - template-haskell
   - email-validate

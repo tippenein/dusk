@@ -71,14 +71,15 @@ ui =
         handleNewCurator (Form.Submit) = do
           state <- H.get
           H.liftAff $ log $ "blerble"
-          -- case _email of
-          --   Left err ->
-          --     H.liftAff $
-          --         log $ "invalid email" <> err
-          --   Right e -> do
-          --     let invite = CuratorInvite { invitee: e, inviter: 1}
-          --     response <- H.liftAff $ AX.post (apiUrl <> "/admin/curators") (encodeJson invite)
-          --     H.liftAff $ log $ "invite was sent: " <> response.response
+          let email = state.form.email
+          case emailAddress email of
+            Nothing ->
+              H.liftAff $
+                  log $ "invalid email"
+            Just e -> do
+              let invite = CuratorInvite { invitee: e, inviter: 1}
+              response <- H.liftAff $ AX.post (apiUrl <> "/admin/curators") (encodeJson invite)
+              H.liftAff $ log $ "invite was sent: " <> response.response
         handleNewCurator (Form.Edit f) = do
             H.modify (_CuratorForm %~ f)
 
@@ -89,5 +90,4 @@ render state =
     , p_ [ text "Send an email inviting your coolest curator to the platform" ]
     , div_ $ Form.renderForm state.form NewCurator do
         Form.textField "email" "Email" (_email) (Form.nonBlank <=< Form.emailValidator)
-      -- , Form.formSubmit "Submit" Form.Submit state.sending
   ]

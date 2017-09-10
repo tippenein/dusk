@@ -15,7 +15,7 @@ import Unsafe.Coerce
 import Data.Array hiding ((..))
 import Data.String as Str
 import Halogen (action)
-import Halogen.HTML (ClassName(..))
+import Halogen.HTML (ClassName(..), PropName(..))
 import Halogen.HTML as H
 import Halogen.HTML.Core (Prop(..), HTML(..))
 import Halogen.HTML.Events as E
@@ -104,7 +104,7 @@ field inpType id_ label lens_ validator = do
         , H.input
           [ P.id_ id_
           , P.classes [ ClassName "form-control" ]
-          -- , P.inputType inpType
+          , P.prop (PropName "type") inpType
           , P.value item
           , E.onValueChange (E.input (eventType <<< Edit <<< set lens_))
           ]

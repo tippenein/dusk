@@ -23,8 +23,8 @@ sendMail = send
 sendViaMailGun :: Mail -> Handler ()
 sendViaMailGun m = do
   manager <- appHttpManager <$> getYesod
-  mailgunKey <- liftIO $ getEnv "MAILGUN_KEY"
-  void $ liftIO $ forkIO $ void $ sendMailGun "dusk.host" mailgunKey manager m
+  mailgunKey <- fmap (appMailgunKey . appSettings) getYesod
+  void $ liftIO $ sendMailGun "dusk.host" mailgunKey manager m
 
 sendToLog :: Mail -> Handler ()
 sendToLog mail = do

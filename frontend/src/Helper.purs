@@ -32,12 +32,14 @@ flashMessage :: Message -> String -> Eff TopEffects Unit
 flashMessage s msg = do
   let klass = "alert-" <> msgToString s
   alert <- Q.select ".alert"
+  message <- Q.select "#app-message"
   Q.addClass klass alert
   Q.display alert
-  Q.appendText msg =<< (Q.select "#app-message")
+  Q.appendText msg message
   t <- timeout 5500 $ do
     Q.removeClass klass alert
     Q.hide alert
+    Q.clear message
     pure unit
   pure unit
 

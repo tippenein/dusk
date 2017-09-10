@@ -30,13 +30,13 @@ import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (onClick)
 import Halogen.HTML.Events as E
 import Halogen.HTML.Properties as HP
-import WForm as Form
+import Helper.Form (flatpicker)
 import Helper.Format (formatDateTime, unformatDateTime)
 import Import hiding (div)
 import Message as Msg
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
-import Helper.Form (flatpicker)
+import WForm as Form
 
 data Slot = Slot
 
@@ -54,6 +54,16 @@ newtype EventRequest = EventRequest
   , assetId :: Maybe String
   }
 
+formToRequest :: EventForm -> EventRequest
+formToRequest f = EventRequest
+    { name: f.name
+    , description: stringToMaybe f.description
+    , startDatetime: stringToMaybe f.startDatetime
+    , endDatetime: stringToMaybe f.endDatetime
+    -- | assetId is added after initial successful post
+    , assetId: Nothing
+    }
+
 instance encodeEventRequest :: EncodeJson EventRequest where
   encodeJson (EventRequest ef)
      = "name" := ef.name
@@ -68,6 +78,7 @@ initialEventForm =
   , description: ""
   , startDatetime: ""
   , endDatetime: ""
+  , logo: ""
   }
 
 type State =
@@ -103,25 +114,21 @@ ui =
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
   eval (NewEvent ev next) = handleNewEvent ev $> next
     where
+      handleNewEvent (Form.Edit f) =
+        H.modify (_form %~ f)
       handleNewEvent Form.Submit = do
         st <- H.get
         H.liftAff $ log $ "blerble"
-        -- case res of
-        --   Left err ->
-        --     H.liftAff $ log $ "invalid " <> err
-        --   Right valid_req -> do
-        --     H.modify (_ { loading = true })
-        --     response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson valid_req)
-        --     H.modify (_ { loading = false })
-        --     createResponse <- pure $ decodeEventCreateResponse response.response
-        --     case createResponse of
-        --       Left e -> H.liftAff $ log ("create response error: " <> e)
-        --       Right (EventCreateResponse cr ) -> do
-        --         -- H.liftAff $ log ("id: " <> show cr.id)
-        --         H.liftEff $ flashMessage Success "Created new event"
-        --         H.liftEff $ fileUpload "logo_asset" (mkLogoUrl cr.id)
-      handleNewEvent (Form.Edit f) =
-        H.modify (_form %~ f)
+        H.modify (_ { loading = true })
+        response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson (formToRequest st.form))
+        H.modify (_ { loading = false })
+        createResponse <- pure $ decodeEventCreateResponse response.response
+        case createResponse of
+          Left e -> H.liftAff $ log ("create response error: " <> e)
+          Right (EventCreateResponse cr ) -> do
+            -- H.liftAff $ log ("id: " <> show cr.id)
+            H.liftEff $ flashMessage Success "Created new event"
+            H.liftEff $ fileUpload "logo_asset" (mkLogoUrl cr.id)
 
   eval (PostRender next) = do
     H.liftEff $ flatpicker "#start_datetime"
@@ -134,26 +141,25 @@ mkLogoUrl i =  apiUrl <> "/admin/events/" <> (show i) <> "/logo"
 
 render :: State -> H.ComponentHTML Input
 render st = do
-  div [ styleClass "container page" ]
-    [ div [ styleClass "row" ]
-      [ div [ styleClass "col-lg-12" ]
-        [ text (if st.loading then "posting..." else "") ]
-        , viewEventForm st.form st.loading
-        ]
-    ]
-
-viewEventForm f submitted =
   div [ styleClass "admin--form centered"] [
       h3 [] [ text Msg.eventFormHeader ]
     , p_ [ text Msg.eventFormHelp ]
     , div_ $
-      Form.renderForm f NewEvent do
-        _ <- Form.textField "name" "Name" (_name) noopValidation
-        _ <- Form.textField "description" "Description" (_description) noopValidation
-        _ <- Form.textField "start_datetime" "Start" _startDatetime  noopValidation
-        Form.textField "end_datetime" "End" _endDatetime noopValidation
-      -- , Form.fileField "logo_asset" "Logo" f.assetId (const Noop)
-        -- Form.submitButton_ Form.Submit
+      Form.renderForm st.form NewEvent do
+        void $ Form.textField "name" "Name" (_name) Form.nonBlank
+        void $ Form.textField "description" "Description" (_description) noopValidation
+        void $ Form.textField "start_datetime" "Start" _startDatetime Form.nonBlank
+        void $ Form.textField "end_datetime" "End" _endDatetime noopValidation
+        Form.fileField "logo_asset" "Logo" _logo noopValidation
   ]
+  -- div [ styleClass "container page" ]
+  --   [ div [ styleClass "row" ]
+  --     [ div [ styleClass "col-lg-12" ]
+        -- [ text (if st.loading then "posting..." else "") ]
+    --     , viewEventForm st.form st.loading
+    --     ]
+    -- ]
+
+-- viewEventForm f submitted =
 
 noopValidation s = Right s

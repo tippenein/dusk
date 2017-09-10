@@ -27,6 +27,7 @@ library
           Foundation
           Helper.Util
           Helper.Validation
+          Helper.LoadEnv
           Helper.Presentation
           Api.V3.MailGun
           Import
@@ -67,9 +68,6 @@ library
         , persistent >=2.0 && <2.7
         , persistent-postgresql >=2.1.1 && <2.7
         , persistent-template >=2.0 && <2.7
-        , esqueleto
-        , template-haskell
-        , email-validate
         , shakespeare >=2.0 && <2.1
         , hjsmin >=0.1 && <0.3
         , monad-control >=0.3 && <1.1
@@ -78,7 +76,6 @@ library
         , http-conduit >=2.1 && <2.3
         , directory >=1.1 && <1.4
         , warp >=3.0 && <3.3
-        , data-default
         , aeson >=0.6 && <1.1
         , conduit >=1.0 && <2.0
         , conduit-extra >=1.0 && <2.0
@@ -91,6 +88,11 @@ library
         , safe
         , errors
         , unordered-containers
+        , parsec
+        , esqueleto
+        , template-haskell
+        , email-validate
+        , data-default
         , containers
         , vector
         , time
@@ -98,8 +100,6 @@ library
         , amazonka-s3
         , amazonka-core
         , transformers
-        , elm-export
-        , elm-export-persistent
         , lens
         , uuid
         , mime-mail

@@ -1,9 +1,8 @@
 module Api.V3.MailGun where
 
-import           Prelude (String, IO, ($), map, return)
+import           Prelude (IO, ($), map, return)
 
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Char8 as C8
 import qualified Data.ByteString.Lazy as LBS
 import           Data.Maybe
 import           Data.Monoid ((<>))
@@ -18,7 +17,7 @@ addressToText address =
     maybe "" (<> " ") (addressName address) <> "<" <> addressEmail address <> ">"
 
 sendMailGun :: Text          -- ^ domain
-            -> String
+            -> Text
             -> Manager       -- ^ re-use an existing http manager
             -> Mail
             -> IO (Response LBS.ByteString)
@@ -26,10 +25,10 @@ sendMailGun _ mailgunKey httpMan email = do
     bs <- renderMail' email
     request <- parseRequest $ unpack $ "https://api.mailgun.net/v3/dusk.host/messages.mime"
     preq <- postRequest (LBS.toStrict bs) request
-    httpLbs (auth (C8.pack mailgunKey) preq) httpMan
+    httpLbs (auth (encodeUtf8 mailgunKey) preq) httpMan
   where
     to = encodeUtf8 $ intercalate "," $ map addressToText $ mailTo email
-    auth key = applyBasicAuth "api" key
+    auth = applyBasicAuth "api"
     postRequest message = formDataBody
       [ partBS "to" to
       , partFileBS "message" message

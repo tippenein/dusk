@@ -7,6 +7,7 @@ type EventForm =
   , description :: String
   , startDatetime :: String
   , endDatetime :: String
+  , logo :: String
   }
 
 _name :: Lens' EventForm String
@@ -20,3 +21,6 @@ _startDatetime = lens _.startDatetime _ { startDatetime = _ }
 
 _endDatetime :: Lens' EventForm String
 _endDatetime = lens _.endDatetime _ { endDatetime = _ }
+
+_logo :: Lens' EventForm String
+_logo = lens _.logo _ { logo = _ }

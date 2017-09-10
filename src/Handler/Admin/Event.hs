@@ -49,10 +49,6 @@ eventFormToEvent EventForm{..} uid = do
     , eventEnd_datetime = ef_eventEndDatetime
     }
 
-fromRight :: Either a b -> Maybe b
-fromRight (Right a) = Just a
-fromRight (Left _) = Nothing
-
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
   bucketname <- fmap (appBucketName . appSettings) getYesod
@@ -71,7 +67,7 @@ data EventForm
   , ef_eventStartDatetime :: Maybe UTCTime
   , ef_eventEndDatetime :: Maybe UTCTime
   , ef_asset_id :: Maybe Text
-  }
+  } deriving Show
 
 data EventCreateResponse = EventCreateResponse { ecr_id :: Int64}
 instance ToJSON EventCreateResponse where
@@ -79,15 +75,20 @@ instance ToJSON EventCreateResponse where
 
 instance FromJSON EventForm where
   parseJSON (Object v) = do
-    -- mimage <- v .: "file_info"
+    mstart <- v .:? "start_datetime"
+    mend <- v .:? "end_datetime"
     EventForm
       <$> v .:  "name"
       <*> v .:? "description"
-      <*> v .:? "start_time"
-      <*> v .:? "end_time"
+      <*> decodeMaybeDT mstart
+      <*> decodeMaybeDT mend
       <*> v .:? "asset_id"
   parseJSON _ = fail "invalid json object"
 
+
+decodeMaybeDT :: (Monad m) => Maybe Text -> m (Maybe UTCTime)
+decodeMaybeDT (Just dt) = pure $ parseISO8601 dt
+decodeMaybeDT Nothing = pure Nothing
 
 -- eventForm :: Form EventForm
 -- eventForm = renderBootstrap3 BootstrapBasicForm $

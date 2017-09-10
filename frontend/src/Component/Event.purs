@@ -22,7 +22,7 @@ derive instance eqSlot :: Eq Slot
 derive instance ordSlot :: Ord Slot
 
 formatDateTime ∷ DateTime.DateTime -> Maybe String
-formatDateTime x = hush $ FD.formatDateTime "AA, MMM D" x
+formatDateTime x = hush $ FD.formatDateTime "ddd, MMM D" x
 
 type State =
   { loading :: Boolean

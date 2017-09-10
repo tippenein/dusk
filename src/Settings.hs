@@ -34,9 +34,9 @@ data AppSettings = AppSettings
     , appSkipCombining          :: Bool
     -- ^ Perform no stylesheet/script combining
     , appCopyright              :: Text
-    , appAnalytics              :: Maybe Text
     , appAuthDummyLogin         :: Bool
     , appSendMail               :: Bool
+    , appMailgunKey             :: Text
     , appGoogleAuthKey          :: Text
     , appGoogleAuthSecret       :: Text
     , appBucketName             :: BucketName
@@ -64,10 +64,10 @@ instance FromJSON AppSettings where
         appSkipCombining          <- o .:? "skip-combining"   .!= defaultDev
 
         appSendMail               <- o .:  "send-mail"        .!= not defaultDev
+        appMailgunKey             <- o .:  "mailgun-key"
         appCopyright              <- o .:  "copyright"
-        appAnalytics              <- o .:? "analytics"
-        appGoogleAuthKey          <- o .: "google_auth_key"
-        appGoogleAuthSecret       <- o .: "google_auth_secret"
+        appGoogleAuthKey          <- o .: "google-auth-key"
+        appGoogleAuthSecret       <- o .: "google-auth-secret"
 
         appBucketName             <- BucketName <$> o .:  "bucketname"
         appAuthDummyLogin         <- o .:? "auth-dummy-login"      .!= defaultDev
