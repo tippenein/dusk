@@ -5,6 +5,11 @@ resolver: lts-8.18
 # will not be run. This is useful for tweaking upstream packages.
 packages:
 - '.'
+- location:
+    git: git@github.com:tippenein/purescript-bridge
+    commit: 922c5c081d609fbb55fb87c018a42b4d6ca28fb1
+  extra-dep: true
+
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps: []

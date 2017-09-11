@@ -31,3 +31,4 @@ frontend/.psc-ide*
 **/GTAGS
 **/TAGS
 frontend/.psc-package
+frontend/src/App/CodeGen.purs

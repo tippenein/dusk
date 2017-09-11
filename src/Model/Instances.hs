@@ -7,6 +7,8 @@ module Model.Instances
 
 import           ClassyPrelude.Yesod
 
+import qualified Data.Text.Encoding as Encoding
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import           Data.UUID (UUID)
 import qualified Data.UUID as UUID
@@ -49,3 +51,8 @@ instance PersistField Email.EmailAddress where
 instance PersistFieldSql Email.EmailAddress where
   sqlType _ = SqlOther "text"
 
+instance FromJSON Email.EmailAddress where
+  parseJSON (String e) = case Email.validate (Encoding.encodeUtf8 e) of
+    Left _ -> error "invalid email"
+    Right r -> pure r
+  parseJSON _ = fail "not email"

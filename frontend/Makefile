@@ -1,6 +1,6 @@
-all: prod build copy
+all: prod build
 
-dev: build_dev copy
+dev: build_dev
 
 build:
 	npm run build
@@ -12,5 +12,3 @@ build_dev:
 	sed -i 's/http:\/\/dusk.host/http:\/\/localhost:3000/' src/Helper.purs
 	npm run build-dev
 
-copy:
-	mv output/bundle.js ../static/js/bundle.js

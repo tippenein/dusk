@@ -75,6 +75,50 @@ passwordField = field P.InputPassword
 dateField = field P.InputDate
 fileField = field P.InputFile
 
+fileFieldOpt = fieldOpt P.InputFile
+textFieldOpt = fieldOpt P.InputText
+
+fieldOpt
+  :: forall a b f v
+   . P.InputType
+  -> String
+  -> String
+  -> Lens' a (Maybe String)
+  -> (String -> Either String String)
+  -> WForm v f a
+fieldOpt inpType id_ label lens_ validator = do
+    Tuple data_ eventType <- ask
+    let item = data_ ^. lens_
+        validation = case item of
+                          Nothing -> Right ""
+                          Just i -> validator i
+        classes = case validation of
+                       Left _ -> [ ClassName "form-group has-error" ]
+                       Right _ -> [ ClassName "form-group" ]
+        errMsg = case validation of
+                      Left str -> str
+                      Right _ -> ""
+    tell [html eventType errMsg classes item]
+    -- TODO: handle this better
+    pure (unsafeCoerce item)
+  where
+    html :: FormAction f a -> String -> Array ClassName -> (Maybe String) -> HTML v (f Unit)
+    html eventType errMsg classes item =
+      H.div [ P.classes classes ]
+        [ H.label [ P.for id_ ] [ H.text label ]
+        , H.input
+          [ P.id_ id_
+          , P.classes [ ClassName "form-control" ]
+          , P.prop (PropName "type") inpType
+          , P.value $ fromMaybe "" item
+          , E.onValueChange (E.input (\a -> eventType (Edit (\b -> set lens_ (stringToMaybe a) b))))
+          ]
+        , H.span_ [ H.text errMsg ]
+        ]
+
+stringToMaybe "" = Nothing
+stringToMaybe a = Just a
+
 field
   :: forall a b f v
    . P.InputType
@@ -106,7 +150,8 @@ field inpType id_ label lens_ validator = do
           , P.classes [ ClassName "form-control" ]
           , P.prop (PropName "type") inpType
           , P.value item
-          , E.onValueChange (E.input (eventType <<< Edit <<< set lens_))
+          , E.onValueChange (E.input (\a -> eventType (Edit (\b -> set lens_ a b))))
+          -- , E.onValueChange (E.input (eventType <<< Edit <<< set lens_))
           ]
         , H.span_ [ H.text errMsg ]
         ]

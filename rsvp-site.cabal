@@ -33,6 +33,7 @@ library
           Import
           Import.NoFoundation
           Model
+          App.CodeGen
           Model.BCrypt
           Model.Instances
           Settings
@@ -96,6 +97,7 @@ library
         , containers
         , vector
         , time
+        , purescript-bridge
         , amazonka
         , amazonka-s3
         , amazonka-core

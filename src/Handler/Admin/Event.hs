@@ -1,13 +1,14 @@
 module Handler.Admin.Event where
 
+import           App.CodeGen
 import           Control.Monad
 import           Control.Monad.Trans.AWS
 import           Data.Aeson.Types
 import           Data.Conduit
-import           Database.Persist.Sql
 import           Data.Conduit.Binary (sinkLbs)
 import           Data.Text (Text)
 import           Data.Time
+import           Database.Persist.Sql
 
 import           Import
 import qualified S3
@@ -34,20 +35,26 @@ postAdminEventR = do
   ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
   let e = eventFormToEvent ef userId
-  i <- runDB $ insert e
-  return $ toJSON $ EventCreateResponse (fromSqlKey i)
+  case e of
+    Left err ->
+      return $ toJSON $ CreateFailure err
+    Right ev -> do
+      i <- runDB $ insert ev
+      return $ toJSON $ CreateSuccess (fromSqlKey i)
 
-eventFormToEvent :: EventForm -> UserId -> Event
+eventFormToEvent :: EventForm -> UserId -> Either Text Event
 eventFormToEvent EventForm{..} uid = do
-  Event {
-      eventName = ef_name
-    , eventDescription = ef_description
-    , eventAsset_id = ef_asset_id
-    , eventOwner_id = uid
-    , eventAll_day = False
-    , eventStart_datetime = ef_eventStartDatetime
-    , eventEnd_datetime = ef_eventEndDatetime
-    }
+    mstart <- parseDateTimeM ef_startDatetime
+    mend <- parseDateTimeM ef_endDatetime
+    pure $ Event {
+        eventName = ef_name
+      , eventDescription = ef_description
+      , eventAsset_id = Nothing -- | XXX We upload this separately
+      , eventOwner_id = uid
+      , eventAll_day = False
+      , eventStart_datetime = mstart
+      , eventEnd_datetime =  mend
+      }
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
@@ -60,30 +67,17 @@ writeToServer file = do
   where
     genFileName lbs = "logo/upload-" <> (pack $ base64md5 lbs)
 
-data EventForm
-  = EventForm
-  { ef_name :: Text
-  , ef_description :: Maybe Text
-  , ef_eventStartDatetime :: Maybe UTCTime
-  , ef_eventEndDatetime :: Maybe UTCTime
-  , ef_asset_id :: Maybe Text
-  } deriving Show
-
-data EventCreateResponse = EventCreateResponse { ecr_id :: Int64}
-instance ToJSON EventCreateResponse where
-  toJSON (EventCreateResponse i) = object [ "id" .= i ]
-
-instance FromJSON EventForm where
-  parseJSON (Object v) = do
-    mstart <- v .:? "start_datetime"
-    mend <- v .:? "end_datetime"
-    EventForm
-      <$> v .:  "name"
-      <*> v .:? "description"
-      <*> decodeMaybeDT mstart
-      <*> decodeMaybeDT mend
-      <*> v .:? "asset_id"
-  parseJSON _ = fail "invalid json object"
+-- instance FromJSON EventForm where
+--   parseJSON (Object v) = do
+--     mstart <- v .:? "start_datetime"
+--     mend <- v .:? "end_datetime"
+--     EventForm
+--       <$> v .:  "name"
+--       <*> v .:? "description"
+--       <*> decodeMaybeDT mstart
+--       <*> decodeMaybeDT mend
+--       <*> v .:? "asset_id"
+--   parseJSON _ = fail "invalid json object"
 
 
 decodeMaybeDT :: (Monad m) => Maybe Text -> m (Maybe UTCTime)
@@ -123,5 +117,12 @@ decodeMaybeDT Nothing = pure Nothing
 parseISO8601 :: Text -> Maybe UTCTime
 parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
 
-parseDatetime :: Text -> Either FormMessage UTCTime
-parseDatetime = maybe (Left MsgInvalidDay) Right . parseISO8601
+parseDateTime :: Text -> Either Text UTCTime
+parseDateTime = maybe (Left "invalid datetime") Right . parseISO8601
+
+parseDateTimeM :: Maybe Text -> Either Text (Maybe UTCTime)
+parseDateTimeM (Just dt) =
+  case parseISO8601 dt of
+    Just s -> Right $ Just s
+    Nothing -> Left $ "invalid datetime: " <> dt
+parseDateTimeM Nothing = Right Nothing

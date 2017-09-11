@@ -31,7 +31,9 @@
     "purescript-halogen-datepicker": "^0.1.0",
     "purescript-cookie": "^0.1.2",
     "purescript-jquery": "^4.2.1",
-    "purescript-profunctor-lenses": "^3.6.1"
+    "purescript-profunctor-lenses": "^3.6.1",
+    "purescript-maybe": "^3.0.0",
+    "purescript-argonaut-generic-codecs": "^6.0.4"
   },
   "devDependencies": {
     "purescript-debug": "^3.0.0",

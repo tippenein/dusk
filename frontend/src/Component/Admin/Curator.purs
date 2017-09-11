@@ -1,23 +1,20 @@
 module Component.Admin.Curator where
 
-import App.Data.Curator
-
+import App.CodeGen (CuratorForm(..), _cf_invitee)
+import App.Response (handleCreateResponse)
+import Data.Lens (Lens', lens, (%~), (^.))
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
-import Data.Argonaut (encodeJson)
-import Data.Lens ((%~), Lens', lens)
+import Data.Argonaut.Generic.Aeson (encodeJson)
 import Halogen as H
 import Halogen.HTML hiding (map)
-import Halogen.HTML.Elements as Elements
-import Halogen.HTML.Events as E
-import Halogen.HTML.Properties as HP
-import Helper (apiUrl, styleClass)
-import WForm as Form
+import Helper
 import Import hiding (div)
 import Network.HTTP.Affjax as AX
-import Text.Email.Validate (EmailAddress(..), emailAddress)
+import Text.Email.Validate (emailAddress)
 import Top.Monad (Top)
+import WForm as Form
 
 data Slot = Slot
 
@@ -31,16 +28,11 @@ type State =
   , sending :: Boolean
   }
 
-type CuratorForm = { email :: String }
-
-_email :: Lens' CuratorForm String
-_email = lens _.email _ { email = _ }
-
-_CuratorForm :: Lens' State CuratorForm
-_CuratorForm = lens _.form _ { form = _}
+_form :: Lens' State CuratorForm
+_form = lens _.form _ { form = _}
 
 initialForm :: CuratorForm
-initialForm = {email: ""}
+initialForm = CuratorForm { cf_invitee: "" }
 
 initialState :: State
 initialState = { sending: false
@@ -70,18 +62,17 @@ ui =
       where
         handleNewCurator (Form.Submit) = do
           state <- H.get
-          H.liftAff $ log $ "blerble"
-          let email = state.form.email
+          let email = state ^. (_form <<< _cf_invitee)
           case emailAddress email of
-            Nothing ->
-              H.liftAff $
-                  log $ "invalid email"
+            Nothing -> H.liftAff $ log $ "invalid email"
             Just e -> do
-              let invite = CuratorInvite { invitee: e, inviter: 1}
-              response <- H.liftAff $ AX.post (apiUrl <> "/admin/curators") (encodeJson invite)
-              H.liftAff $ log $ "invite was sent: " <> response.response
+              H.modify (_ { sending = true })
+              response <- H.liftAff $ AX.post (apiUrl <> "/admin/curators") (encodeJson state.form)
+              H.modify (_ { sending = false })
+              let Tuple typ msg = handleCreateResponse response
+              H.liftEff $ flashMessage typ msg
         handleNewCurator (Form.Edit f) = do
-            H.modify (_CuratorForm %~ f)
+            H.modify (_form %~ f)
 
 render :: State -> H.ComponentHTML Input
 render state =
@@ -89,5 +80,5 @@ render state =
       h3 [] [ text "Invite" ]
     , p_ [ text "Send an email inviting your coolest curator to the platform" ]
     , div_ $ Form.renderForm state.form NewCurator do
-        Form.textField "email" "Email" (_email) (Form.nonBlank <=< Form.emailValidator)
+        Form.textField "email" "Email" (_cf_invitee) (Form.nonBlank <=< Form.emailValidator)
   ]

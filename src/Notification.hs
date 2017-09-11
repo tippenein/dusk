@@ -12,7 +12,6 @@ type Token = UUID
 
 sendInvite :: CuratorInvite -> Handler ()
 sendInvite i = do
-  _ <- runDB $ insert i
   sendMail =<< (inviteToMail i)
 
 inviteToMail :: CuratorInvite -> Handler Mail

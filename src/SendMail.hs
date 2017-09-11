@@ -6,12 +6,12 @@ module SendMail
     , Mail(..)
     ) where
 
-import           Import
+import Import
 
-import           Api.V3.MailGun
-import           Control.Concurrent (forkIO)
-import           Network.Mail.Mime (Address(..), Mail(..), renderMail')
-import           System.Environment (getEnv)
+import Api.V3.MailGun
+import Control.Concurrent (forkIO)
+import Network.Mail.Mime (Address(..), Mail(..), renderMail')
+import System.Environment (getEnv)
 
 sendMail :: Mail -> Handler ()
 sendMail = send

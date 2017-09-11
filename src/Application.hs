@@ -41,6 +41,8 @@ import Handler.Curator
 import Handler.Admin.Event
 import Handler.Admin.Curator
 
+import qualified App.CodeGen as CodeGen
+
 mkYesodDispatch "App" resourcesApp
 
 -- | This function allocates resources (such as a database connection pool),
@@ -122,6 +124,7 @@ getApplicationDev = do
 
 getAppSettings :: IO AppSettings
 getAppSettings = do
+  CodeGen.main
   loadEnv
   loadYamlSettings [configSettingsYml] [] useEnv
 
