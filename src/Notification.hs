@@ -11,8 +11,8 @@ import qualified Text.Email.Validate as Email
 type Token = UUID
 
 sendInvite :: CuratorInvite -> Handler ()
-sendInvite i = do
-  sendMail =<< (inviteToMail i)
+sendInvite i =
+  sendMail =<< inviteToMail i
 
 inviteToMail :: CuratorInvite -> Handler Mail
 inviteToMail (CuratorInvite invitee inviter _ _) = do
@@ -22,7 +22,7 @@ inviteToMail (CuratorInvite invitee inviter _ _) = do
   let subject = "You've been invited by " <> person <> " to join " <> siteName
       siteName = fromMaybe "http://dusk.host" $ appRoot site
       person :: Text = fromMaybe "an anonymous curator" $ userName user
-      from = Address (Just "dusk.host") $ siteName
+      from = Address (Just "dusk.host") siteName
 
   body <- toLazyText <$> withUrlRenderer $(textFile "templates/mail/new_curator.text")
 

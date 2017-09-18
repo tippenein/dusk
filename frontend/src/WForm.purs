@@ -75,8 +75,11 @@ passwordField = field P.InputPassword
 dateField = field P.InputDate
 fileField = field P.InputFile
 
-fileFieldOpt = fieldOpt P.InputFile
+emailFieldOpt = fieldOpt P.InputEmail
 textFieldOpt = fieldOpt P.InputText
+passwordFieldOpt = fieldOpt P.InputPassword
+dateFieldOpt = fieldOpt P.InputDate
+fileFieldOpt = fieldOpt P.InputFile
 
 fieldOpt
   :: forall a b f v

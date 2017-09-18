@@ -24,16 +24,6 @@ getFieldOptionalNull strMap s =
       | isNull j = pure Nothing
       | otherwise = decodeJson j
 
-newtype EventCreateResponse = EventCreateResponse
-  { id :: Int
-  }
-
-instance decodeJsonEventCreateResponse :: DecodeJson EventCreateResponse where
-  decodeJson json = do
-    obj <- decodeJson json
-    id <- obj .? "id"
-    pure $ EventCreateResponse { id }
-
 newtype Event = Event
   { id :: Int
   , name :: String
@@ -104,6 +94,3 @@ decodeEvent = decodeJson
 
 decodeEvents :: Json -> Either String Events
 decodeEvents = decodeJson
-
-decodeEventCreateResponse :: Json -> Either String EventCreateResponse
-decodeEventCreateResponse = decodeJson
