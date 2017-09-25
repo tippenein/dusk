@@ -9,6 +9,7 @@ import           Data.Conduit.Binary (sinkLbs)
 import           Data.Text (Text)
 import           Data.Time
 import           Database.Persist.Sql
+import           Handler.Crud (CreateResponse(..))
 
 import           Import
 import qualified S3
@@ -25,9 +26,9 @@ postAdminEventLogoR event_id = do
   let efs = map snd . snd $ req
   case efs of
     [] -> pure ()
-    (file:files) -> do
+    (file:_files) -> do
       filename <- writeToServer file
-      runDB $ updateGet event_id [EventAsset_id =. (Just filename)]
+      _ <- runDB $ updateGet event_id [EventAsset_id =. (Just filename)]
       sendResponseStatus status201 ("CREATED" :: Text)
 
 postAdminEventR :: Handler Value

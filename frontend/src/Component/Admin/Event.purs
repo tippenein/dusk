@@ -1,12 +1,12 @@
 module Component.Admin.Event where
 
 
-import App.Response (handleCreateResponse)
 import App.CodeGen (EventForm(EventForm), _ef_description, _ef_endDatetime, _ef_logo, _ef_name, _ef_startDatetime)
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
-import Data.Argonaut.Generic.Aeson (encodeJson)
+import Data.Argonaut.Generic.Aeson (encodeJson, decodeJson)
+import Handler.Crud
 import Data.Lens (Lens', lens, (%~))
 import FileUpload (fileUpload)
 import Halogen as H
@@ -87,6 +87,14 @@ ui =
     H.liftEff $ flatpicker "#end_datetime"
     pure next
   eval (SelectEvent _ next) = pure next
+
+handleCreateResponse res =
+  case decodeJson res.response of
+    Left e -> Tuple Failure e
+    Right cr -> case cr of
+      CreateSuccess _ -> Tuple Success "Event Created!"
+      FailedUniquenessConstraint -> Tuple Warning "This Event already exists"
+      CreateFailure t -> Tuple Failure t
 
 mkLogoUrl :: String -> String
 mkLogoUrl i =  apiUrl <> "/admin/events/" <> i <> "/logo"

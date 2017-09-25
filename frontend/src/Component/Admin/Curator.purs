@@ -1,12 +1,12 @@
 module Component.Admin.Curator where
 
 import App.CodeGen (CuratorForm(..), _cf_invitee)
-import App.Response (handleCreateResponse)
 import Data.Lens (Lens', lens, (%~), (^.))
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
-import Data.Argonaut.Generic.Aeson (encodeJson)
+import Data.Argonaut.Generic.Aeson (encodeJson, decodeJson)
+import Handler.Crud
 import Halogen as H
 import Halogen.HTML hiding (map)
 import Helper
@@ -73,6 +73,14 @@ ui =
               H.liftEff $ flashMessage typ msg
         handleNewCurator (Form.Edit f) = do
             H.modify (_form %~ f)
+
+handleCreateResponse res =
+  case decodeJson res.response of
+    Left e -> Tuple Failure e
+    Right cr -> case cr of
+      CreateSuccess _ -> Tuple Success "Sent invite"
+      FailedUniquenessConstraint -> Tuple Warning "You've already sent this person an invite"
+      CreateFailure t -> Tuple Failure t
 
 render :: State -> H.ComponentHTML Input
 render state =

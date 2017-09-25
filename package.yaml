@@ -88,6 +88,7 @@ library:
   - bcrypt
   - safe
   - errors
+  - http-api-data
   - unordered-containers
   - parsec
   - esqueleto
@@ -141,10 +142,11 @@ executables:
 
   seed:
     main:           Seed.hs
-    source-dirs:    test
+    source-dirs:    config
     dependencies:
     - base
     - time
+    - random
     - rsvp-site
     - monad-logger
     - persistent

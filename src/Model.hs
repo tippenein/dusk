@@ -46,9 +46,10 @@ Rsvp sql=rsvps
     event_id EventId
 
 CuratorInvite sql=curator_invites
-    ident EmailAddress
+    email EmailAddress
     invited_by UserId
     token UUID         sqltype=uuid
+    UniqueRecipient email
     sent_at UTCTime
 
 Event sql=events

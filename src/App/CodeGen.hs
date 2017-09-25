@@ -7,6 +7,7 @@ import qualified Text.Email.Validate as Email
 import Language.PureScript.Bridge
 import Language.PureScript.Bridge.PSTypes (psInt)
 import Model.Instances()
+import Handler.Crud
 
 data CuratorForm
   = CuratorForm
@@ -14,14 +15,6 @@ data CuratorForm
   } deriving (Generic, Typeable, Show)
 
 instance FromJSON CuratorForm
-
-data CreateResponse
-  = CreateSuccess Int64
-  | CreateFailure Text
-  deriving (Generic, Typeable, Show)
-
-instance ToJSON CreateResponse
-instance FromJSON CreateResponse
 
 data EventForm
   = EventForm
@@ -34,18 +27,11 @@ data EventForm
 
 instance FromJSON EventForm
 
-data EventCreateResponse = EventCreateResponse { ecr_id :: Either Text Int64 }
-  deriving (Generic, Typeable, Show)
-
-instance ToJSON EventCreateResponse where
-  toEncoding = genericToEncoding defaultOptions
-
 myTypes :: [SumType 'Haskell]
 myTypes = [
     mkSumType (Proxy :: Proxy CuratorForm)
-  , mkSumType (Proxy :: Proxy CreateResponse)
   , mkSumType (Proxy :: Proxy EventForm)
-  , mkSumType (Proxy :: Proxy EventCreateResponse)
+  , mkSumType (Proxy :: Proxy CreateResponse)
   ]
 
 int64Bridge :: BridgePart

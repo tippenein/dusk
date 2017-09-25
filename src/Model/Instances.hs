@@ -40,13 +40,17 @@ data Role = Admin | Curator | Fan
 
 derivePersistField "Role"
 
-instance PersistField Email.EmailAddress where
-  toPersistValue e = PersistDbSpecific . Email.toByteString $ e
-  fromPersistValue (PersistDbSpecific t) =
+validEmail t =
     case (Email.emailAddress =<< Email.canonicalizeEmail t) of
       Just x -> Right x
-      Nothing -> Left "Invalid UUID"
-  fromPersistValue _ = Left "Not PersistDBSpecific"
+      Nothing -> Left "Invalid Email"
+
+instance PersistField Email.EmailAddress where
+  toPersistValue e = PersistByteString . Email.toByteString $ e
+  fromPersistValue (PersistDbSpecific t) = validEmail t
+  fromPersistValue (PersistByteString t) = validEmail t
+  fromPersistValue (PersistText t) = validEmail . encodeUtf8 $ t
+  fromPersistValue _ = Left "What is this email"
 
 instance PersistFieldSql Email.EmailAddress where
   sqlType _ = SqlOther "text"
@@ -56,3 +60,6 @@ instance FromJSON Email.EmailAddress where
     Left _ -> error "invalid email"
     Right r -> pure r
   parseJSON _ = fail "not email"
+
+instance ToJSON Email.EmailAddress where
+  toJSON = String . pack . B8.unpack . Email.toByteString

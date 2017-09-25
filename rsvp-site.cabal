@@ -48,6 +48,7 @@ library
           Handler.Curator
           Handler.Event
     other-modules:
+          Handler.Crud
           Model.User
           Notification
           Role
@@ -88,6 +89,7 @@ library
         , bcrypt
         , safe
         , errors
+        , http-api-data
         , unordered-containers
         , parsec
         , esqueleto
@@ -135,22 +137,16 @@ executable rsvp-site
 executable seed
     main-is: Seed.hs
     hs-source-dirs:
-          test
+          config
     default-extensions: BangPatterns ConstraintKinds DataKinds DeriveDataTypeable DeriveGeneric EmptyDataDecls FlexibleContexts FlexibleInstances GADTs GeneralizedNewtypeDeriving MultiParamTypeClasses NoImplicitPrelude NoMonomorphismRestriction OverloadedStrings QuasiQuotes RankNTypes RecordWildCards ScopedTypeVariables TemplateHaskell TupleSections TypeFamilies TypeOperators ViewPatterns
     build-depends:
           base
         , time
+        , random
         , rsvp-site
         , monad-logger
         , persistent
         , persistent-postgresql
-    other-modules:
-          Handler.CommonSpec
-          Handler.EventSpec
-          Handler.HomeSpec
-          Handler.ProfileSpec
-          Spec
-          TestImport
     default-language: Haskell2010
 
 test-suite test
@@ -162,7 +158,6 @@ test-suite test
           Handler.EventSpec
           Handler.HomeSpec
           Handler.ProfileSpec
-          Seed
           TestImport
     hs-source-dirs:
           test

@@ -1,8 +1,11 @@
+{-# LANGUAGE OverloadedLists #-}
 module Handler.Event where
 
 
 import Import
 
+import qualified Handler.Crud as Crud
+import qualified Data.Map as Map
 
 getEventR :: EventId -> Handler Value
 getEventR event_id = do
@@ -13,5 +16,7 @@ getEventR event_id = do
 getEventsR :: Handler Value
 getEventsR = do
   now <- liftIO getCurrentTime
-  events <- runDB $ selectList [ EventStart_datetime >=. Just now ] [Asc EventStart_datetime]
+  params <- Map.fromList <$> (reqGetParams <$> getRequest)
+  events <- runDB $ do
+    Crud.list [ EventStart_datetime >=. Just now ] [Asc EventStart_datetime] params
   return $ object ["events" .= events]
