@@ -31,5 +31,4 @@ frontend/.psc-ide*
 **/GTAGS
 **/TAGS
 frontend/.psc-package
-frontend/src/App/CodeGen.purs
-frontend/src/Handler/Crud.purs
+frontend/src/App/**

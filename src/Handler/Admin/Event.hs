@@ -1,6 +1,5 @@
 module Handler.Admin.Event where
 
-import           App.CodeGen
 import           Control.Monad
 import           Control.Monad.Trans.AWS
 import           Data.Aeson.Types
@@ -9,7 +8,8 @@ import           Data.Conduit.Binary (sinkLbs)
 import           Data.Text (Text)
 import           Data.Time
 import           Database.Persist.Sql
-import           Handler.Crud (CreateResponse(..))
+import           App.Crud (CreateResponse(..))
+import           App.Form
 
 import           Import
 import qualified S3

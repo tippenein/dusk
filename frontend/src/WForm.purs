@@ -102,7 +102,6 @@ fieldOpt inpType id_ label lens_ validator = do
                       Left str -> str
                       Right _ -> ""
     tell [html eventType errMsg classes item]
-    -- TODO: handle this better
     pure (unsafeCoerce item)
   where
     html :: FormAction f a -> String -> Array ClassName -> (Maybe String) -> HTML v (f Unit)
@@ -154,7 +153,6 @@ field inpType id_ label lens_ validator = do
           , P.prop (PropName "type") inpType
           , P.value item
           , E.onValueChange (E.input (\a -> eventType (Edit (\b -> set lens_ a b))))
-          -- , E.onValueChange (E.input (eventType <<< Edit <<< set lens_))
           ]
         , H.span_ [ H.text errMsg ]
         ]

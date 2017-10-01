@@ -1,12 +1,10 @@
 module Component.Admin.Event where
 
 
-import App.CodeGen (EventForm(EventForm), _ef_description, _ef_endDatetime, _ef_logo, _ef_name, _ef_startDatetime)
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
 import Data.Argonaut.Generic.Aeson (encodeJson, decodeJson)
-import Handler.Crud
 import Data.Lens (Lens', lens, (%~))
 import FileUpload (fileUpload)
 import Halogen as H
@@ -17,6 +15,9 @@ import Import hiding (div)
 import Message as Msg
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
+import Req (handleCreateResponse)
+import App.Crud
+import App.Form
 import WForm as Form
 
 
@@ -76,7 +77,7 @@ ui =
         H.modify (_ { loading = true })
         response <- H.liftAff $ AX.post (apiUrl <> "/admin/events") (encodeJson st.form)
         H.modify (_ { loading = false })
-        let Tuple typ msg = handleCreateResponse response
+        let Tuple typ msg = handleCreateResponse "admin.event" response
         H.liftEff $ flashMessage typ msg
         case typ of
           Success -> H.liftEff $ fileUpload "logo_asset" (mkLogoUrl msg)
@@ -87,14 +88,6 @@ ui =
     H.liftEff $ flatpicker "#end_datetime"
     pure next
   eval (SelectEvent _ next) = pure next
-
-handleCreateResponse res =
-  case decodeJson res.response of
-    Left e -> Tuple Failure e
-    Right cr -> case cr of
-      CreateSuccess _ -> Tuple Success "Event Created!"
-      FailedUniquenessConstraint -> Tuple Warning "This Event already exists"
-      CreateFailure t -> Tuple Failure t
 
 mkLogoUrl :: String -> String
 mkLogoUrl i =  apiUrl <> "/admin/events/" <> i <> "/logo"

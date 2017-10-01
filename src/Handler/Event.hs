@@ -4,7 +4,7 @@ module Handler.Event where
 
 import Import
 
-import qualified Handler.Crud as Crud
+import qualified App.Crud as Crud
 import qualified Data.Map as Map
 
 getEventR :: EventId -> Handler Value

@@ -33,6 +33,8 @@ library
           Import
           Import.NoFoundation
           Model
+          App.Crud
+          App.Form
           App.CodeGen
           Model.BCrypt
           Model.Instances
@@ -48,7 +50,6 @@ library
           Handler.Curator
           Handler.Event
     other-modules:
-          Handler.Crud
           Model.User
           Notification
           Role
@@ -112,7 +113,7 @@ library
         , wai
         , wai-cors
     if (flag(dev)) || (flag(library-only))
-        ghc-options: -Wall -fwarn-tabs -O0
+        ghc-options: -Wall -fwarn-tabs -fno-warn-missing-signatures -O0
         cpp-options: -DDEVELOPMENT
         build-depends:
               foreign-store

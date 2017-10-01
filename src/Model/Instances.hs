@@ -8,12 +8,12 @@ module Model.Instances
 import           ClassyPrelude.Yesod
 
 import qualified Data.Text.Encoding as Encoding
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as B8
 import           Data.UUID (UUID)
 import qualified Data.UUID as UUID
 import           Database.Persist.Sql
 import qualified Text.Email.Validate as Email
+import           Text.Email.Validate (EmailAddress)
 
 instance ToJSON UUID where
   toJSON = String . pack . UUID.toString
@@ -45,21 +45,13 @@ validEmail t =
       Just x -> Right x
       Nothing -> Left "Invalid Email"
 
-instance PersistField Email.EmailAddress where
-  toPersistValue e = PersistByteString . Email.toByteString $ e
-  fromPersistValue (PersistDbSpecific t) = validEmail t
-  fromPersistValue (PersistByteString t) = validEmail t
-  fromPersistValue (PersistText t) = validEmail . encodeUtf8 $ t
-  fromPersistValue _ = Left "What is this email"
-
-instance PersistFieldSql Email.EmailAddress where
-  sqlType _ = SqlOther "text"
-
-instance FromJSON Email.EmailAddress where
+instance FromJSON EmailAddress where
   parseJSON (String e) = case Email.validate (Encoding.encodeUtf8 e) of
     Left _ -> error "invalid email"
     Right r -> pure r
   parseJSON _ = fail "not email"
 
-instance ToJSON Email.EmailAddress where
+instance ToJSON EmailAddress where
   toJSON = String . pack . B8.unpack . Email.toByteString
+
+derivePersistField "EmailAddress"

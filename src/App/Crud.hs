@@ -1,4 +1,4 @@
-module Handler.Crud where
+module App.Crud where
 
 import Database.Esqueleto
 import Control.Lens.TH
@@ -15,7 +15,7 @@ data PaginationParams
   , _order :: Maybe Text
   }
 
-list filters sorts params = selectList filters (withParams sorts)
+list filters sorts_ params = selectList filters (withParams sorts_)
   where
     pagination = getPaginationParams params
     withParams sorts =

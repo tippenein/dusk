@@ -1,12 +1,10 @@
 module Handler.Admin.Curator where
 
+import           App.Crud
+import           App.Form
+import           Control.Lens
 import qualified Data.UUID.V4 as UUID
-
 import           Helper.Validation (mkEmailAddress)
-
-import Control.Lens
-import           App.CodeGen
-import           Handler.Crud
 import           Import
 import           Notification (sendInvite)
 

@@ -39,6 +39,8 @@ library:
   - Import
   - Import.NoFoundation
   - Model
+  - App.Crud
+  - App.Form
   - App.CodeGen
   - Model.BCrypt
   - Model.Instances
@@ -116,6 +118,7 @@ library:
       ghc-options:
       - -Wall
       - -fwarn-tabs
+      - -fno-warn-missing-signatures
       - -O0
       cpp-options: -DDEVELOPMENT
       dependencies:

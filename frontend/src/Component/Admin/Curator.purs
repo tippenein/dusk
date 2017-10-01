@@ -1,20 +1,24 @@
 module Component.Admin.Curator where
 
-import App.CodeGen (CuratorForm(..), _cf_invitee)
 import Data.Lens (Lens', lens, (%~), (^.))
 import Control.Monad.Aff.Console (log)
 import DOM.Event.Event (preventDefault)
 import DOM.Event.Types as DOM
 import Data.Argonaut.Generic.Aeson (encodeJson, decodeJson)
-import Handler.Crud
 import Halogen as H
 import Halogen.HTML hiding (map)
 import Helper
 import Import hiding (div)
 import Network.HTTP.Affjax as AX
 import Text.Email.Validate (emailAddress)
+import Data.String
+
 import Top.Monad (Top)
+import Message as Msg
 import WForm as Form
+import Req (handleCreateResponse)
+import App.Form
+import App.Crud
 
 data Slot = Slot
 
@@ -69,24 +73,16 @@ ui =
               H.modify (_ { sending = true })
               response <- H.liftAff $ AX.post (apiUrl <> "/admin/curators") (encodeJson state.form)
               H.modify (_ { sending = false })
-              let Tuple typ msg = handleCreateResponse response
+              let Tuple typ msg = handleCreateResponse "admin.curator" response
               H.liftEff $ flashMessage typ msg
         handleNewCurator (Form.Edit f) = do
             H.modify (_form %~ f)
-
-handleCreateResponse res =
-  case decodeJson res.response of
-    Left e -> Tuple Failure e
-    Right cr -> case cr of
-      CreateSuccess _ -> Tuple Success "Sent invite"
-      FailedUniquenessConstraint -> Tuple Warning "You've already sent this person an invite"
-      CreateFailure t -> Tuple Failure t
 
 render :: State -> H.ComponentHTML Input
 render state =
   div [ styleClass "admin--form centered"] [
       h3 [] [ text "Invite" ]
-    , p_ [ text "Send an email inviting your coolest curator to the platform" ]
+    , p_ [ text "Send an email inviting your coolest curator" ]
     , div_ $ Form.renderForm state.form NewCurator do
         Form.textField "email" "Email" (_cf_invitee) (Form.nonBlank <=< Form.emailValidator)
   ]
