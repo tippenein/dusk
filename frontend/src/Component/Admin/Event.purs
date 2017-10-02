@@ -15,7 +15,7 @@ import Import hiding (div)
 import Message as Msg
 import Network.HTTP.Affjax as AX
 import Top.Monad (Top)
-import Req (handleCreateResponse)
+import Req (handleCreateResponse, handleUpdateResponse)
 import App.Crud
 import App.Form
 import WForm as Form

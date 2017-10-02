@@ -8,11 +8,11 @@ import App.Form
 import App.Crud
 import Control.Lens
 
-psDate :: TypeInfo 'PureScript
-psDate = TypeInfo {
+psDateTime :: TypeInfo 'PureScript
+psDateTime = TypeInfo {
     _typePackage = ""
   , _typeModule = "Types"
-  , _typeName = "Date"
+  , _typeName = "DateStamp"
   , _typeParameters = []
   }
 
@@ -37,13 +37,11 @@ myTypes = [
   , mkSumType (Proxy :: Proxy FilterParams)
   -- , mkSumType (Proxy :: Proxy Event)
   -- , mkSumType (Proxy :: Proxy User)
-  , mkSumType (Proxy :: Proxy FExp)
+  , mkSumType (Proxy :: Proxy FilterExpr)
   ]
 
--- There is currently no Generic instance for PureScript's Data.Date,
--- so just use the JSON string in the frontend:
 utcTimeBridge :: BridgePart
-utcTimeBridge = typeName ^== "UTCTime" >> return psDate
+utcTimeBridge = typeName ^== "UTCTime" >> return psDateTime
 
 int64Bridge :: BridgePart
 int64Bridge = typeName ^== "Int64" >> return psInt

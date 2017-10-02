@@ -8,16 +8,16 @@ import Data.Formatter.DateTime as FD
 
 
 prettyDateTime :: String -> Maybe DateTime
-prettyDateTime x = hush $ FD.unformatDateTime "AA, MMM D" x
+prettyDateTime x = hush $ FD.unformatDateTime "ddd, MMM D" x
 
-formatDateTime :: DateTime.DateTime -> Maybe String
+formatDateTime :: DateTime -> Maybe String
 formatDateTime x = hush $ FD.formatDateTime dtformat x
 
 dtformat :: String
 dtformat = "YYYY-MM-DD HH:mm"
 -- dtformat = "YYYY-MM-DDTHH:mmZ"
 
-unformatDateTime :: String -> Maybe DateTime.DateTime
+unformatDateTime :: String -> Maybe DateTime
 unformatDateTime x = hush $ FD.unformatDateTime dtformat x
 
 formatDate :: DateTime.Date -> Maybe String

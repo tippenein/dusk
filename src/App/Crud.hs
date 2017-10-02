@@ -9,16 +9,16 @@ import Web.Internal.HttpApiData (parseQueryParamMaybe)
 
 data FilterParams
   = FilterParams
-  { f_expressions :: [FExp]
+  { f_expressions :: [FilterExpr]
   } deriving (Generic, Typeable, Show)
 
-data FExp
-  = IsEq FExp FExp
-  | IsNotEq FExp FExp
-  | IsEmpty FExp
-  | IsNotEmpty FExp
-  | LessThan FExp FExp
-  | GreaterThan FExp FExp
+data FilterExpr
+  = IsEq FilterExpr FilterExpr
+  | IsNotEq FilterExpr FilterExpr
+  | IsEmpty FilterExpr
+  | IsNotEmpty FilterExpr
+  | LessThan FilterExpr FilterExpr
+  | GreaterThan FilterExpr FilterExpr
   | FParam Text
   | FValue Text
   deriving (Generic, Typeable, Show)
@@ -31,11 +31,15 @@ data PaginationParams
   , pp_order :: Maybe Text
   } deriving (Generic, Typeable, Show)
 
+findBy i = do
+  e <- runDBor404 $ get i
+  return $ Entity i e
+
 list filters sorts_ params = selectList filters (withParams sorts_)
   where
     pagination = getPaginationParams params
     withParams sorts =
-      [OffsetBy (_page pagination), LimitTo (_perPage pagination)] ++ sorts
+      [OffsetBy (pp_page pagination), LimitTo (pp_perPage pagination)] ++ sorts
 
 getPaginationParams ps = PaginationParams
   { pp_perPage = fromMaybe 50 $ getParam "per_page" ps
@@ -54,6 +58,10 @@ create e = do
   k <- Persist.insert e
   return $ CreateSuccess $ fromSqlKey k
 
+update e = do
+  k <- Persist.insert e
+  return $ CreateSuccess $ fromSqlKey k
+
 createUnique e = do
   k <- Persist.insertUnique e
   case k of
@@ -66,8 +74,37 @@ data CreateResponse
   | FailedUniquenessConstraint
   deriving (Generic, Typeable, Show)
 
-makePrisms ''CreateResponse
+data GetResponse e
+  = PaginatedResponse PaginationParams [e]
+  | NonPaginatedResponse [e]
+  | FindResponse e
+  | NotFound Text
+  deriving (Generic, Typeable, Show)
 
+-- data PaginatedResponse e = PaginatedResponse PaginationParams e
+--   deriving (Generic, Typeable, Show)
+-- instance (ToJSON a) => ToJSON (PaginatedResponse a) where
+--   toEncoding = genericToEncoding defaultOptions
+-- instance (FromJSON a) => FromJSON (PaginatedResponse a)
+-- data NonPaginatedResponse e = NonPaginatedResponse e
+--   deriving (Generic, Typeable, Show)
+
+-- instance (ToJSON a) => ToJSON (NonPaginatedResponse a) where
+--   toEncoding = genericToEncoding defaultOptions
+-- instance (FromJSON a) => FromJSON (NonPaginatedResponse a)
+
+instance FromJSON PaginationParams
+instance ToJSON PaginationParams where
+  toEncoding = genericToEncoding defaultOptions
 instance ToJSON CreateResponse where
   toEncoding = genericToEncoding defaultOptions
 instance FromJSON CreateResponse
+
+instance (ToJSON a) => ToJSON (GetResponse a) where
+  toEncoding = genericToEncoding defaultOptions
+instance (FromJSON a) => FromJSON (GetResponse a)
+
+instance FromJSON FilterExpr
+makePrisms ''CreateResponse
+makePrisms ''GetResponse
+makePrisms ''FilterExpr
