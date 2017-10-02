@@ -20,12 +20,13 @@ sendMailGun :: Text          -- ^ domain
             -> Text
             -> Manager       -- ^ re-use an existing http manager
             -> Mail
-            -> IO (Response LBS.ByteString)
+            -> IO ()
 sendMailGun _ mailgunKey httpMan email = do
     bs <- renderMail' email
     request <- parseRequest $ unpack $ "https://api.mailgun.net/v3/dusk.host/messages.mime"
     preq <- postRequest (LBS.toStrict bs) request
-    httpLbs (auth (encodeUtf8 mailgunKey) preq) httpMan
+    _ <- httpLbs (auth (encodeUtf8 mailgunKey) preq) httpMan
+    return ()
   where
     to = encodeUtf8 $ intercalate "," $ map addressToText $ mailTo email
     auth = applyBasicAuth "api"
