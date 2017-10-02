@@ -7,13 +7,29 @@ import qualified Database.Persist as Persist
 import Import
 import Web.Internal.HttpApiData (parseQueryParamMaybe)
 
+data FilterParams
+  = FilterParams
+  { f_expressions :: [FExp]
+  } deriving (Generic, Typeable, Show)
+
+data FExp
+  = IsEq FExp FExp
+  | IsNotEq FExp FExp
+  | IsEmpty FExp
+  | IsNotEmpty FExp
+  | LessThan FExp FExp
+  | GreaterThan FExp FExp
+  | FParam Text
+  | FValue Text
+  deriving (Generic, Typeable, Show)
+
 data PaginationParams
   = PaginationParams
-  { _perPage :: Int
-  , _page :: Int
-  , _orderBy :: Maybe Text
-  , _order :: Maybe Text
-  }
+  { pp_perPage :: Int
+  , pp_page :: Int
+  , pp_orderBy :: Maybe Text
+  , pp_order :: Maybe Text
+  } deriving (Generic, Typeable, Show)
 
 list filters sorts_ params = selectList filters (withParams sorts_)
   where
@@ -22,10 +38,10 @@ list filters sorts_ params = selectList filters (withParams sorts_)
       [OffsetBy (_page pagination), LimitTo (_perPage pagination)] ++ sorts
 
 getPaginationParams ps = PaginationParams
-  { _perPage = fromMaybe 50 $ getParam "per_page" ps
-  , _page = fromMaybe 1 $ getParam "page" ps
-  , _orderBy = getParam "order_by" ps
-  , _order = getParam "order" ps
+  { pp_perPage = fromMaybe 50 $ getParam "per_page" ps
+  , pp_page = fromMaybe 1 $ getParam "page" ps
+  , pp_orderBy = getParam "order_by" ps
+  , pp_order = getParam "order" ps
   }
   where
     getParam p qs = case lookup p qs of
