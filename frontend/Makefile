@@ -1,5 +1,6 @@
-all: prod build
+all: build_dev
 
+release: prod build
 dev: build_dev
 
 build:

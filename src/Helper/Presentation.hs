@@ -26,3 +26,20 @@ lorems n = take n $ cycle [a,b,c]
     a = "Nos istuc amplitudines fuisse consuetudinis tamdiu manu instat illic, mira motus, atque e alibi caste huc id commendavi auris."
     b = "Scirent subditus turibulis vult fit interrogare en."
     c = "Dum multiplices dicere hae latis a habiti valida quaerit palliata ipso ambiendum ex os ne nam tam eo impium tuus dinoscens."
+
+parseISO8601 :: Text -> Maybe UTCTime
+parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
+
+parseDateTime :: Text -> Either Text UTCTime
+parseDateTime = maybe (Left "invalid datetime") Right . parseISO8601
+
+parseDateTimeM :: Maybe Text -> Either Text (Maybe UTCTime)
+parseDateTimeM (Just dt) =
+  case parseISO8601 dt of
+    Just s -> Right $ Just s
+    Nothing -> Left $ "invalid datetime: " <> dt
+parseDateTimeM Nothing = Right Nothing
+
+decodeMaybeDT :: (Monad m) => Maybe Text -> m (Maybe UTCTime)
+decodeMaybeDT (Just dt) = pure $ parseISO8601 dt
+decodeMaybeDT Nothing = pure Nothing

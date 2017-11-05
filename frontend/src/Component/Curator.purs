@@ -6,6 +6,7 @@ import Halogen.HTML hiding (map)
 import Halogen.HTML.Properties as HP
 import Network.HTTP.Affjax as AX
 import Data.Generic (gShow)
+import Routes as Routes
 
 import Helper (apiUrl, styleClass, placeholder)
 import Import hiding (div)
@@ -26,7 +27,7 @@ data Input a
   = Noop a
   | GetCurators a
 
-ui :: H.Component HTML Input Unit Void Top
+ui :: H.Component HTML Input Unit Routes.ChildAction Top
 ui =
   H.lifecycleComponent
     { initialState: const initialState
@@ -41,7 +42,7 @@ ui =
   initialState :: State
   initialState = { loading: false, curators: [], error: Nothing }
 
-  eval :: Input ~> H.ComponentDSL State Input Void Top
+  eval :: Input ~> H.ComponentDSL State Input Routes.ChildAction Top
   eval = case _ of
     Noop next -> pure next
     GetCurators next -> do

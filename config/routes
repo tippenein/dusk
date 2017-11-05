@@ -1,12 +1,12 @@
 /                  HomeR GET
 /events            EventsR GET
 /events/#EventId   EventR GET
-/admin/events      AdminEventR GET POST
+/admin/events      AdminEventsR POST
+/admin/events/#EventId AdminEventR PUT DELETE
 /admin/events/#EventId/logo AdminEventLogoR POST
 /admin/curators    AdminCuratorR POST
 /profile           ProfileR GET
 /curators          CuratorsR GET
-/curators/#UserId  CuratorR GET
 
 /auth         AuthR Auth   getAuth
 

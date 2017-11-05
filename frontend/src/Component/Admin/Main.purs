@@ -11,6 +11,7 @@ import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (input_, onClick)
 import Import hiding (div)
 import Helper
+import Routes as Routes
 
 data Slot = Slot
 
@@ -43,7 +44,7 @@ pathToCurators = cp1
 pathToEvents :: ChildPath Event.Input ChildQuery Event.Slot ChildSlot
 pathToEvents = cp2
 
-ui :: H.Component HTML Input Unit Void Top
+ui :: H.Component HTML Input Unit Routes.ChildAction Top
 ui =
   H.parentComponent
     { initialState: const initialState
@@ -55,7 +56,7 @@ ui =
 
   initialState = { loading: false, error: Nothing, activeTab: Announce }
 
-  eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void Top
+  eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Routes.ChildAction Top
   eval = case _ of
     Noop next -> pure next
     ShowInvite next -> do
@@ -75,8 +76,8 @@ ui =
         ]
       , div [ styleClass "col-md-4 col-md-offset-4 centered" ]
         [ div [ styleClassIf (st.activeTab /= Announce) "hidden" ]
-          [ slot' pathToEvents Event.Slot Event.ui unit absurd ]
+          [ slot' pathToEvents Event.Slot Event.ui unit (\_ -> Nothing) ]
         , div [ styleClassIf (st.activeTab /= Invite) "hidden" ]
-          [ slot' pathToCurators Curator.Slot Curator.ui unit absurd ]
+          [ slot' pathToCurators Curator.Slot Curator.ui unit (\_ -> Nothing)]
         ]
       ]

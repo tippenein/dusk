@@ -1,6 +1,7 @@
 module Component.Event where
 
 import App.Data.Event (Event(..), Events(..), decodeEvents)
+import Routes as Routes
 import Control.Monad.Aff (Aff)
 import Data.DateTime as DateTime
 import Data.Formatter.DateTime as FD
@@ -21,7 +22,7 @@ data Slot = Slot
 derive instance eqSlot :: Eq Slot
 derive instance ordSlot :: Ord Slot
 
-formatDateTime ∷ DateTime.DateTime -> Maybe String
+formatDateTime :: DateTime.DateTime -> Maybe String
 formatDateTime x = hush $ FD.formatDateTime "ddd, MMM D" x
 
 type State =
@@ -35,7 +36,7 @@ data Input a
   | GetEventList a
   | SelectEvent Int a
 
-ui :: H.Component HTML Input Unit Void Top
+ui :: H.Component HTML Input Unit Routes.ChildAction Top
 ui =
   H.lifecycleComponent
     { initialState: const initialState
@@ -50,7 +51,7 @@ ui =
   initialState :: State
   initialState = { loading: false, events: [], error: Nothing }
 
-  eval :: Input ~> H.ComponentDSL State Input Void Top
+  eval :: Input ~> H.ComponentDSL State Input Routes.ChildAction Top
   eval = case _ of
     Noop next -> pure next
     GetEventList next -> do
@@ -65,7 +66,7 @@ ui =
           H.modify (_ { error = Nothing, loading = false, events = res})
       pure next
 
-    SelectEvent _ next -> do
+    SelectEvent i next -> do
       pure next
 
 render :: State -> H.ComponentHTML Input

@@ -9,15 +9,11 @@ import           Data.Text (Text)
 import           Data.Time
 import           Database.Persist.Sql
 import           App.Crud (CreateResponse(..))
+import qualified App.Crud as Crud
 import           App.Form
 
 import           Import
 import qualified S3
-
-getAdminEventR :: Handler Value
-getAdminEventR = do
-  _ <- requireAuthId
-  return $ object [ "status" .= String "ok" ]
 
 postAdminEventLogoR :: Key Event -> Handler ()
 postAdminEventLogoR event_id = do
@@ -31,8 +27,25 @@ postAdminEventLogoR event_id = do
       _ <- runDB $ updateGet event_id [EventAsset_id =. (Just filename)]
       sendResponseStatus status201 ("CREATED" :: Text)
 
-postAdminEventR :: Handler Value
-postAdminEventR = do
+putAdminEventR :: EventId -> Handler Value
+putAdminEventR k = do
+  req <- requireJsonBody :: Handler EventForm
+  _ <- requireAuthId
+  case eventFormToEventUpdate req of
+    Left err ->
+      return $ toJSON $ CreateFailure err
+    Right updated -> do
+      r <- runDB $ update k updated
+      pure $ toJSON r
+
+
+deleteAdminEventR :: EventId -> Handler ()
+deleteAdminEventR event_id = do
+  _ <- requireAuthId
+  Crud.delete event_id
+
+postAdminEventsR :: Handler Value
+postAdminEventsR = do
   ef <- requireJsonBody :: Handler EventForm
   userId  <- requireAuthId
   let e = eventFormToEvent ef userId
@@ -43,19 +56,30 @@ postAdminEventR = do
       i <- runDB $ insert ev
       return $ toJSON $ CreateSuccess (fromSqlKey i)
 
+eventFormToEventUpdate :: EventForm -> Either Text [Update Event]
+eventFormToEventUpdate EventForm{..} = do
+  mstart <- parseDateTimeM ef_startDatetime
+  mend <- parseDateTimeM ef_endDatetime
+  pure $ [
+      EventName =. ef_name
+    , EventDescription =. ef_description
+    , EventStart_datetime =. mstart
+    , EventEnd_datetime =.  mend
+    ]
+
 eventFormToEvent :: EventForm -> UserId -> Either Text Event
 eventFormToEvent EventForm{..} uid = do
-    mstart <- parseDateTimeM ef_startDatetime
-    mend <- parseDateTimeM ef_endDatetime
-    pure $ Event {
-        eventName = ef_name
-      , eventDescription = ef_description
-      , eventAsset_id = Nothing -- | XXX We upload this separately
-      , eventOwner_id = uid
-      , eventAll_day = False
-      , eventStart_datetime = mstart
-      , eventEnd_datetime =  mend
-      }
+  mstart <- parseDateTimeM ef_startDatetime
+  mend <- parseDateTimeM ef_endDatetime
+  pure $ Event {
+      eventName = ef_name
+    , eventDescription = ef_description
+    , eventAsset_id = Nothing -- | XXX We upload this separately
+    , eventOwner_id = uid
+    , eventAll_day = False
+    , eventStart_datetime = mstart
+    , eventEnd_datetime =  mend
+    }
 
 writeToServer :: FileInfo -> Handler Text
 writeToServer file = do
@@ -80,10 +104,6 @@ writeToServer file = do
 --       <*> v .:? "asset_id"
 --   parseJSON _ = fail "invalid json object"
 
-
-decodeMaybeDT :: (Monad m) => Maybe Text -> m (Maybe UTCTime)
-decodeMaybeDT (Just dt) = pure $ parseISO8601 dt
-decodeMaybeDT Nothing = pure Nothing
 
 -- eventForm :: Form EventForm
 -- eventForm = renderBootstrap3 BootstrapBasicForm $
@@ -114,16 +134,3 @@ decodeMaybeDT Nothing = pure Nothing
 --               , ("placeholder", p)
 --               ]
 --           }
-
-parseISO8601 :: Text -> Maybe UTCTime
-parseISO8601 = parseTimeM True defaultTimeLocale "%Y-%-m-%-d %H:%M" . unpack
-
-parseDateTime :: Text -> Either Text UTCTime
-parseDateTime = maybe (Left "invalid datetime") Right . parseISO8601
-
-parseDateTimeM :: Maybe Text -> Either Text (Maybe UTCTime)
-parseDateTimeM (Just dt) =
-  case parseISO8601 dt of
-    Just s -> Right $ Just s
-    Nothing -> Left $ "invalid datetime: " <> dt
-parseDateTimeM Nothing = Right Nothing

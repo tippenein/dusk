@@ -58,13 +58,13 @@ instance Yesod App where
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
     isAuthorized (StaticR _) _ = return Authorized
-    isAuthorized (CuratorR _) _ = return Authorized
     isAuthorized CuratorsR _ = return Authorized
 
     isAuthorized ProfileR _ = isLoggedIn
     isAuthorized EventsR _ = return Authorized
     isAuthorized (EventR _) _ = return Authorized
-    isAuthorized AdminEventR _ = checkAuth Role.canCreateEvent
+    isAuthorized AdminEventsR _ = checkAuth Role.canCreateEvent
+    isAuthorized (AdminEventR _) _ = checkAuth Role.canCreateEvent
     isAuthorized (AdminEventLogoR _) _ = checkAuth Role.canCreateEvent
     isAuthorized AdminCuratorR _ = checkAuth Role.canInvite
 

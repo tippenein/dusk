@@ -1,5 +1,6 @@
 module Component.Profile where
 
+import Routes as Routes
 import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
@@ -16,7 +17,7 @@ data Slot = Slot
 derive instance eqSlot :: Eq Slot
 derive instance ordSlot :: Ord Slot
 
-ui :: H.Component HH.HTML Input Unit Void Top
+ui :: H.Component HH.HTML Input Unit Routes.ChildAction Top
 ui = H.component
   { initialState: const unit
   , render
@@ -30,5 +31,5 @@ ui = H.component
         , HH.p_ [ HH.text "what a nice profile!" ]
         ]
 
-    eval :: Input ~> H.ComponentDSL State Input Void Top
+    eval :: Input ~> H.ComponentDSL State Input Routes.ChildAction Top
     eval (Noop n) = pure n

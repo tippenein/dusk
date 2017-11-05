@@ -1,8 +1,6 @@
 module App.Router where
 
-import App.Data.Profile
-import Helper
-
+import App.Data.Profile (Profile(..), decodeProfile)
 import Component.Admin.Main as Admin
 import Component.Auth as Auth
 import Component.Curator as Curator
@@ -13,7 +11,6 @@ import Control.Monad.Aff.Console (log)
 import Control.Monad.State.Class (modify)
 import Data.Either.Nested (Either4)
 import Data.Functor.Coproduct.Nested (Coproduct4)
-import Data.Generic.Rep.Eq (genericEq)
 import Halogen as H
 import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
 import Halogen.HTML as HH
@@ -21,46 +18,22 @@ import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (input_, onClick)
 import Halogen.HTML.Properties as HP
 import Halogen.HTML.Properties.ARIA as HP
+import Helper (Message(..), apiUrl, flashMessage, styleClass, styleClassIf)
 import Import hiding (div)
+import Message as Msg
 import Network.HTTP.Affjax as AX
 import Network.HTTP.ResponseHeader (ResponseHeader, responseHeader)
+import Routes (Input(..), Location(..), ChildAction(..))
 import Routing (matchesAff)
 import Routing.Match (Match)
 import Routing.Match.Class (int, lit, fail)
-import Message as Msg
 
-data Location
-  = HomeR
-  | ProfileR
-  | CuratorsR
-  | EventsR
-  | LoginR
-  | AdminR
-  | EventR Int
-  | NotFoundR String
-
-derive instance genericLocation :: Generic Location _
-
-instance showLocation :: Show Location where
-  show = genericShow
-
-instance eqLocation :: Eq Location where
-  eq = genericEq
-
-data Input a
-  = Goto Location a
-  | CheckProfile a
-  | Logout a
 
 oneSlash :: Match Unit
 oneSlash = lit "/"
 
 homeSlash :: Match Unit
 homeSlash = lit ""
-
-data CRUD
-  = Index
-  | Show Number
 
 routing :: Match Location
 routing =
@@ -103,7 +76,7 @@ pathToAuth = cp3
 pathToAdmin :: ChildPath Admin.Input ChildQuery Admin.Slot ChildSlot
 pathToAdmin = cp4
 
-ui :: H.Component HH.HTML Input Unit Void Top
+ui :: H.Component HH.HTML Input Unit ChildAction Top
 ui = H.lifecycleParentComponent
   { initialState: const init
   , initializer: Just (H.action CheckProfile)
@@ -113,6 +86,7 @@ ui = H.lifecycleParentComponent
   , receiver: const Nothing
   }
   where
+    render :: State -> H.ParentHTML Input ChildQuery ChildSlot Top
     render st =
       mainBody st (viewPage st.currentPage)
 
@@ -121,18 +95,23 @@ ui = H.lifecycleParentComponent
 
     viewPage :: Location -> H.ParentHTML Input ChildQuery ChildSlot Top
     viewPage AdminR = do
-      HH.slot' pathToAdmin Admin.Slot Admin.ui unit absurd
+      HH.slot' pathToAdmin Admin.Slot Admin.ui unit listen
     viewPage LoginR = do
-      HH.slot' pathToAuth Auth.Slot Auth.ui unit absurd
+      HH.slot' pathToAuth Auth.Slot Auth.ui unit listen
     viewPage EventsR = do
-      HH.slot' pathToEvents Event.Slot Event.ui unit absurd
+      HH.slot' pathToEvents Event.Slot Event.ui unit listen
     viewPage CuratorsR = do
-      HH.slot' pathToCurators Curator.Slot Curator.ui unit absurd
+      HH.slot' pathToCurators Curator.Slot Curator.ui unit listen
     viewPage HomeR =
-      HH.slot' pathToEvents Event.Slot Event.ui unit absurd
+      HH.slot' pathToEvents Event.Slot Event.ui unit listen
     viewPage s = NotFound.view (show s)
 
-    eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot Void Top
+    -- listen :: ChildSlot -> ChildAction -> Maybe (Input Unit)
+    listen = Just <<< case _ of
+      Redirect loc -> H.action $ Goto loc
+
+    eval :: Input ~> H.ParentDSL State Input ChildQuery ChildSlot ChildAction Top
+    eval (Noop next) = pure next
     eval (CheckProfile next) = do
       modify (_ { checkingUser = true })
       response <- H.liftAff $ AX.get (apiUrl <> "/profile")
@@ -179,7 +158,7 @@ ui = H.lifecycleParentComponent
       pure next
 
 
-routeSignal :: H.HalogenIO Input Void (Aff TopEffects)
+routeSignal :: H.HalogenIO Input ChildAction (Aff TopEffects)
             -> Aff TopEffects Unit
 routeSignal driver = do
   Tuple old new <- matchesAff routing

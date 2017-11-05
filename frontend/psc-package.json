@@ -5,7 +5,6 @@
     "depends": [
         "halogen",
         "prelude",
-        "prelude",
         "console",
         "pux",
         "aff",

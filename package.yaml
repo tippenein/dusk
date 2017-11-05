@@ -10,6 +10,7 @@ default-extensions:
 - EmptyDataDecls
 - FlexibleContexts
 - FlexibleInstances
+- FunctionalDependencies
 - GADTs
 - GeneralizedNewtypeDeriving
 - MultiParamTypeClasses

@@ -39,7 +39,7 @@ list filters sorts_ params = selectList filters (withParams sorts_)
   where
     pagination = getPaginationParams params
     withParams sorts =
-      [OffsetBy (pp_page pagination), LimitTo (pp_perPage pagination)] ++ sorts
+      [OffsetBy (pp_page pagination - 1), LimitTo (pp_perPage pagination)] ++ sorts
 
 getPaginationParams ps = PaginationParams
   { pp_perPage = fromMaybe 50 $ getParam "per_page" ps
@@ -58,9 +58,8 @@ create e = do
   k <- Persist.insert e
   return $ CreateSuccess $ fromSqlKey k
 
-update e = do
-  k <- Persist.insert e
-  return $ CreateSuccess $ fromSqlKey k
+delete k =
+  runDB $ Persist.delete k
 
 createUnique e = do
   k <- Persist.insertUnique e

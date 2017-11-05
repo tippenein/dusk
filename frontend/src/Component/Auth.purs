@@ -7,6 +7,7 @@ import Helper (styleClass)
 import Import (Maybe(..))
 import Prelude hiding (div)
 import Top.Monad (Top)
+import Routes as Routes
 
 authGoogleUrl :: String
 authGoogleUrl = "/auth/page/googleemail2/forward"
@@ -23,7 +24,7 @@ type State =
   , error :: Maybe String
   }
 
-ui :: H.Component HTML Input Unit Void Top
+ui :: H.Component HTML Input Unit Routes.ChildAction Top
 ui =
   H.component
     { initialState: const initialState
@@ -46,5 +47,5 @@ ui =
             ]
           ]
 
-      eval :: Input ~> H.ComponentDSL State Input Void Top
+      eval :: Input ~> H.ComponentDSL State Input Routes.ChildAction Top
       eval (Noop next) = pure next

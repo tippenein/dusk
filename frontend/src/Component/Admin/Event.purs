@@ -18,6 +18,7 @@ import Top.Monad (Top)
 import Req (handleCreateResponse, handleUpdateResponse)
 import App.Crud
 import App.Form
+import Routes as Routes
 import WForm as Form
 
 
@@ -48,9 +49,10 @@ data Input a
   | PreventDefault DOM.Event a
   | NewEvent (Form.FormInput EventForm) a
   | SelectEvent Int a
+  | Raise (Routes.Input Unit) a
   | PostRender a
 
-ui :: H.Component HTML Input Unit Void Top
+ui :: H.Component HTML Input Unit (Routes.Input Unit) Top
 ui =
   H.lifecycleComponent
     { initialState: const initialState
@@ -65,13 +67,15 @@ ui =
   initialState :: State
   initialState = { loading: false, form: initialEventForm }
 
-  eval :: Input ~> H.ComponentDSL State Input Void Top
+  eval :: Input ~> H.ComponentDSL State Input (Routes.Input Unit) Top
   eval (Noop next) = pure next
   eval (PreventDefault e next) = H.liftEff (preventDefault e) $> next
+  eval (Raise o next) = H.raise o $> next
   eval (NewEvent ev next) = handleNewEvent ev $> next
     where
-      handleNewEvent (Form.Edit f) =
+      handleNewEvent (Form.Edit f) = do
         H.modify (_form %~ f)
+        pure $ Routes.Goto Routes.EventsR next
       handleNewEvent Form.Submit = do
         st <- H.get
         H.modify (_ { loading = true })
@@ -80,8 +84,13 @@ ui =
         let Tuple typ msg = handleCreateResponse "admin.event" response
         H.liftEff $ flashMessage typ msg
         case typ of
-          Success -> H.liftEff $ fileUpload "logo_asset" (mkLogoUrl msg)
-          _ ->  H.liftAff $ log "did not upload asset"
+          Success -> do
+            H.liftEff $ fileUpload "logo_asset" (mkLogoUrl msg)
+            pure $ Routes.Goto Routes.EventsR next
+          _ -> do
+            H.liftAff $ log "did not upload asset"
+            pure $ Routes.Noop next
+
 
   eval (PostRender next) = do
     H.liftEff $ flatpicker "#start_datetime"

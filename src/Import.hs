@@ -10,3 +10,7 @@ import Helper.Presentation  as Import
 import Import.NoFoundation  as Import
 import Model.BCrypt         as Import
 import Model.Instances      as Import
+
+hush :: Either a b -> Maybe b
+hush (Left _) = Nothing
+hush (Right x) = Just x
