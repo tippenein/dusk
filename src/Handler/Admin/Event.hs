@@ -6,7 +6,6 @@ import           Data.Aeson.Types
 import           Data.Conduit
 import           Data.Conduit.Binary (sinkLbs)
 import           Data.Text (Text)
-import           Data.Time
 import           Database.Persist.Sql
 import           App.Crud (CreateResponse(..))
 import qualified App.Crud as Crud

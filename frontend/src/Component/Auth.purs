@@ -40,7 +40,7 @@ ui =
       render st =
         div [ styleClass "container page" ]
           [ div [ styleClass "row" ]
-            [ div [ styleClass "col-lg-12" ]
+            [ div [ styleClass "col-lg-12 center" ]
               [ text (if st.loading then "loading..." else "")
               , a [ styleClass "loginBtn loginBtn--google", HP.href authGoogleUrl ] [ text "Sign in with Google"]
               ]

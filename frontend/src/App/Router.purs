@@ -16,13 +16,12 @@ import Halogen.Component.ChildPath (ChildPath, cp1, cp2, cp3, cp4)
 import Halogen.HTML as HH
 import Halogen.HTML hiding (map)
 import Halogen.HTML.Events (input_, onClick)
-import Halogen.HTML.Properties as HP
-import Halogen.HTML.Properties.ARIA as HP
+import Halogen.HTML.Properties (class_, href, id_) as HP
+import Halogen.HTML.Properties.ARIA (hidden, role) as HP
 import Helper (Message(..), apiUrl, flashMessage, styleClass, styleClassIf)
 import Import hiding (div)
 import Message as Msg
 import Network.HTTP.Affjax as AX
-import Network.HTTP.ResponseHeader (ResponseHeader, responseHeader)
 import Routes (Input(..), Location(..), ChildAction(..))
 import Routing (matchesAff)
 import Routing.Match (Match)
@@ -106,7 +105,7 @@ ui = H.lifecycleParentComponent
       HH.slot' pathToEvents Event.Slot Event.ui unit listen
     viewPage s = NotFound.view (show s)
 
-    -- listen :: ChildSlot -> ChildAction -> Maybe (Input Unit)
+    listen :: ChildAction -> Maybe (Input Unit)
     listen = Just <<< case _ of
       Redirect loc -> H.action $ Goto loc
 

@@ -10,9 +10,12 @@ import Import (Maybe(..))
 import Prelude hiding (div)
 import Timer (timeout)
 import Top.Monad (TopEffects)
+import Halogen.HTML (ClassName(ClassName), div, img)
 
 apiUrl :: String
 apiUrl = "http://localhost:3000"
+
+col n = div [ styleClass $ "col-sm-" <> show n]
 
 styleClass = styleClassIf true
 
