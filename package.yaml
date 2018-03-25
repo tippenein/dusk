@@ -1,4 +1,4 @@
-name: rsvp-site
+name: dusk
 version: '0.0.0'
 license: MIT
 default-extensions:
@@ -130,7 +130,7 @@ library:
       - -fwarn-tabs
       - -O2
 executables:
-  rsvp-site:
+  dusk:
     main: main.hs
     source-dirs: app
     ghc-options:
@@ -139,7 +139,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - base
-    - rsvp-site
+    - dusk
     when:
     - condition: flag(library-only)
       buildable: false
@@ -151,7 +151,7 @@ executables:
     - base
     - time
     - random
-    - rsvp-site
+    - dusk
     - monad-logger
     - persistent
     - persistent-postgresql
@@ -163,7 +163,7 @@ tests:
     ghc-options: -Wall
     dependencies:
     - base
-    - rsvp-site
+    - dusk
     - yesod-auth
     - yesod-test >=1.5.2 && <1.6
     - yesod-core

@@ -7,13 +7,13 @@
 ###
 set -e
 
-case "${1:-rsvp-site-staging}" in
-  rsvp-site-staging)
-    heroku docker:release --app rsvp-site-staging
+case "${1:-dusk-staging}" in
+  dusk-staging)
+    heroku docker:release --app dusk-staging
     ;;
-  rsvp-site-production)
-    heroku pipeline:promote --app rsvp-site-staging
-    heroku restart --app rsvp-site-production
+  dusk-production)
+    heroku pipeline:promote --app dusk-staging
+    heroku restart --app dusk-production
     ;;
   *)
     sed '/^# \(usage:.*\)/!d; s//\1/' "$0" >&2

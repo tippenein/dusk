@@ -1,9 +1,9 @@
 .PHONY: check clean docs seed publish image_push deploy frontend
 
 BUILD_IMAGE = "fpco/stack-build:lts-8.18"
-IMAGE_NAME := tippenein/rsvp-site
-EXE_NAME := rsvp-site
-base_db_name = rsvp_site
+IMAGE_NAME := tippenein/dusk
+EXE_NAME := dusk
+base_db_name = dusk
 
 FRONTEND_DIR = frontend
 
@@ -13,10 +13,10 @@ frontend:
 	$(MAKE) -C $(FRONTEND_DIR)
 
 ghci:
-	stack ghci --ghci-options -fobject-code rsvp-site:lib
+	stack ghci --ghci-options -fobject-code dusk:lib
 
 dev:
-	stack build --fast --file-watch rsvp-site:lib --exec rsvp-site
+	stack build --fast --file-watch dusk:lib --exec dusk
 
 db:
 	psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = '$(base_db_name)'" | grep -q 1 || psql -U postgres -c "CREATE DATABASE $(base_db_name)"
@@ -45,7 +45,7 @@ seed:
 deploy: fat_image image_push publish
 
 publish:
-	scp app.env root@dusk.host:/home/doc/
+	scp app.env doc@deltadrome.us:/home/doc/
 
 image_push:
 	docker push "$(IMAGE_NAME):latest"

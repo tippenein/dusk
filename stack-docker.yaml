@@ -25,7 +25,7 @@ docker:
 image:
   container:
     # New image will be called snoyberg/yesodweb
-    name: tippenein/rsvp-site
+    name: tippenein/dusk
     # Base it on the stack-run images
     base: fpco/stack-run
     # Include some config and static files in the image

@@ -27,12 +27,12 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 # change oauth redirect here
 # https://console.developers.google.com/apis/credentials?project=rsvp-173703
 database:
-  user:     "_env:PGUSER:rsvp_site"
-  password: "_env:PGPASS:rsvp_site"
+  user:     "_env:PGUSER:dusk"
+  password: "_env:PGPASS:dusk"
   host:     "_env:PGHOST:localhost"
   port:     "_env:PGPORT:5432"
   # See config/test-settings.yml for an override during tests
-  database: "_env:PGDATABASE:rsvp_site"
+  database: "_env:PGDATABASE:dusk"
   poolsize: "_env:PGPOOLSIZE:10"
 
 bucketname: "_env:BUCKETNAME:duskhost"

@@ -15,8 +15,7 @@ stanzas:
     #
     # The path given is for Stack projects. If you're still using cabal, change
     # to
-    # exec: ../dist/build/rsvp-site/rsvp-site
-    exec: ../dist/bin/rsvp-site
+    exec: ../dist/bin/dusk
 
     # Command line options passed to your application.
     args: []
@@ -25,7 +24,7 @@ stanzas:
       # You can specify one or more hostnames for your application to respond
       # to. The primary hostname will be used for generating your application
       # root.
-      - www.rsvp-site.com
+      - www.dusk.host
 
     # Enable to force Keter to redirect to https
     # Can be added to any stanza
@@ -34,7 +33,7 @@ stanzas:
   # Static files.
   - type: static-files
     hosts:
-      - static.rsvp-site.com
+      - static.dusk.host
     root: ../static
 
     # Uncomment to turn on directory listings.
@@ -44,9 +43,9 @@ stanzas:
   - type: redirect
 
     hosts:
-      - rsvp-site.com
+      - dusk.host
     actions:
-      - host: www.rsvp-site.com
+      - host: www.dusk.host
         # secure: false
         # port: 80
 

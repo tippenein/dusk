@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports #-}
-import "rsvp-site" Application (develMain)
+import "dusk" Application (develMain)
 import Prelude (IO)
 
 main :: IO ()

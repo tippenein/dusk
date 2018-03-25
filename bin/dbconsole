@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker exec -it postgres psql -U rsvp_site  rsvp_site
+docker exec -it postgres psql -U dusk dusk
